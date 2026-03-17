@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elite Kitchens</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--g:#111827;--g2:#000000;--gl:#f3f4f6;--gm:#d1d5db;--gray:#6b7280;--grayL:#f3f4f6;--grayM:#e5e7eb;--grayD:#374151;--red:#991b1b;--redL:#fee2e2;--blue:#1e3a8a;--blueL:#dbeafe;--gold:#d97706;--amberL:#fef3c7;--black:#111827;--white:#fff;--r:8px;--rL:12px}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;background:#f5f5f3;color:var(--black)}
+button,input,select,textarea{font-family:inherit}
+/* LAYOUT */
+.sb{width:210px;min-height:100vh;background:var(--g);position:fixed;top:0;left:0;z-index:100}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-logo h1{color:#fff;font-size:16px;font-weight:700;margin-bottom:2px}
+.sb-logo small{color:rgba(255,255,255,.45);font-size:11px}
+.sb-sec{color:rgba(255,255,255,.4);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:14px 18px 4px}
+.sb a{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(255,255,255,.72);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .15s;cursor:pointer}
+.sb a:hover,.sb a.on{color:#fff;background:rgba(255,255,255,.1);border-left-color:#9ca3af}
+.main{margin-left:210px;padding:28px 32px}
+/* SCREENS */
+.scr{display:none}.scr.on{display:block}
+/* CARDS */
+.card{background:#fff;border:1px solid var(--grayM);border-radius:var(--rL);padding:20px 22px;margin-bottom:16px}
+.ct{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none}
+.btn-g{background:var(--g);color:#fff}.btn-g:hover{background:var(--g2)}
+.btn-o{background:#fff;color:var(--grayD);border:1px solid var(--grayM)}.btn-o:hover{background:var(--grayL)}
+.btn-r{background:var(--redL);color:var(--red);border:1px solid #fca5a5}
+.btn-sm{padding:5px 11px;font-size:12px}
+/* FORMS */
+.fl{display:block;font-size:12px;font-weight:600;color:var(--grayD);margin-bottom:4px}
+.fc{width:100%;padding:8px 10px;border:1px solid var(--grayM);border-radius:var(--r);font-size:13px;color:var(--black);background:#fff}
+.fc:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(26,92,58,.1)}
+.fg{margin-bottom:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;padding:0 0 8px;border-bottom:1px solid var(--grayM);text-align:left}
+td{padding:10px 0;border-bottom:1px solid var(--grayL);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+/* BADGES */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.b-draft{background:var(--grayL);color:var(--gray)}
+.b-sent{background:var(--blueL);color:var(--blue)}
+.b-accepted{background:#d1fae5;color:#065f46}
+.b-declined{background:var(--redL);color:var(--red)}
+.b-auto{background:#d1fae5;color:#065f46}
+.b-opt{background:#e0e7ff;color:#3730a3}
+.b-man{background:var(--redL);color:var(--red)}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.sc{background:#fff;border:1px solid var(--grayM);border-radius:var(--rL);padding:16px 18px}
+.sv{font-size:26px;font-weight:700}.sl{font-size:12px;color:var(--gray);margin-top:2px}
+/* PKG */
+.pkg{border:2px solid var(--grayM);border-radius:var(--rL);padding:14px 16px;margin-bottom:12px;transition:all .2s}
+.pkg.ess-on{border-color:var(--g);background:var(--gl)}
+.pkg.prem-on{border-color:var(--blue);background:var(--blueL)}
+.pkg.pp-on{border-color:var(--gold);background:var(--amberL)}
+.pkg-hdr{display:flex;justify-content:space-between;align-items:center}
+.pkg-price{font-size:20px;font-weight:700;color:var(--g)}
+.pkg-body{margin-top:12px;display:none}
+.pkg-hint{font-size:12px;color:#9ca3af;margin-top:8px}
+/* TOTALS */
+.tl{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid var(--grayL)}
+.tl:last-child{border:none}
+/* EXTRAS */
+.exrow{display:grid;grid-template-columns:2fr 80px 90px 36px;gap:8px;align-items:end;margin-bottom:8px}
+.cat-btn{font-size:12px;padding:5px 11px;border:1px solid var(--grayM);border-radius:99px;background:#fff;cursor:pointer;transition:all .15s;color:var(--grayD)}
+.cat-btn:hover{background:var(--gl);border-color:var(--g);color:var(--g)}
+/* SECTION BLOCK */
+.sblk{border:1px solid var(--grayM);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.sblk-t{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+/* PAGE HEADER */
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.pt{font-size:20px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="sb">
+  <div class="sb-logo"><h1>🪵 Elite Kitchens</h1><small>Quoting System</small></div>
+  <div class="sb-sec">Main</div>
+  <a id="nav-dashboard">📊 Dashboard</a>
+  <a id="nav-customers">👤 Customers</a>
+  <a id="nav-quotes">📄 All Quotes</a>
+  <div class="sb-sec">Actions</div>
+  <a id="nav-builder">➕ New Quote</a>
+  <a id="nav-settings">⚙️ Settings</a>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="scr" id="scr-dashboard">
+  <div class="ph"><div class="pt">Dashboard</div><button class="btn btn-g" id="dash-new-btn">➕ New Quote</button></div>
+  <div class="stats">
+    <div class="sc"><div class="sv" id="st-total">0</div><div class="sl">Total Quotes</div></div>
+    <div class="sc"><div class="sv" id="st-draft">0</div><div class="sl">Drafts</div></div>
+    <div class="sc"><div class="sv" id="st-sent">0</div><div class="sl">Sent</div></div>
+    <div class="sc"><div class="sv" id="st-accepted">0</div><div class="sl">Accepted</div></div>
+  </div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="ct" style="margin:0">Recent Quotes</div></div><div id="dash-list"></div></div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="scr" id="scr-customers">
+  <div class="ph"><div class="pt">Customers</div><button class="btn btn-g" id="cust-add-btn">➕ Add Customer</button></div>
+  <div class="card"><div id="cust-list"></div></div>
+</div>
+
+<!-- ADD CUSTOMER -->
+<div class="scr" id="scr-addcust">
+  <div class="ph"><div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="addcust-back-btn">← Back</button><div class="pt">Add Customer</div></div></div>
+  <div class="card" style="max-width:560px">
+    <div class="row2"><div class="fg"><label class="fl">Full Name *</label><input class="fc" id="ac-name" placeholder="Mary O'Brien"></div><div class="fg"><label class="fl">Phone</label><input class="fc" id="ac-phone" placeholder="089 xxx xxxx"></div></div>
+    <div class="row2"><div class="fg"><label class="fl">Email</label><input class="fc" id="ac-email" placeholder="mary@email.com"></div><div class="fg"><label class="fl">Address</label><input class="fc" id="ac-addr" placeholder="14 Oak Lane, Galway"></div></div>
+    <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-g" id="ac-save-btn">💾 Save Customer</button><button class="btn btn-o" id="ac-cancel-btn">Cancel</button></div>
+  </div>
+</div>
+
+<!-- QUOTES LIST -->
+<div class="scr" id="scr-quotes">
+  <div class="ph"><div class="pt">All Quotes</div><button class="btn btn-g" id="quotes-new-btn">➕ New Quote</button></div>
+  <div class="card"><div id="quotes-list"></div></div>
+</div>
+
+<!-- QUOTE BUILDER -->
+<div class="scr" id="scr-builder">
+  <div class="ph">
+    <div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="builder-back-btn">← Back</button><div class="pt" id="builder-title">New Quote</div></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+  <div>
+    <!-- Customer -->
+    <div class="card">
+      <div class="ct">Customer Details</div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Full Name *</label><input class="fc" id="q-name" placeholder="Mary O'Brien"></div>
+        <div class="fg"><label class="fl">Phone</label><input class="fc" id="q-phone" placeholder="089 xxx xxxx"></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Email</label><input class="fc" id="q-email" placeholder="mary@email.com"></div>
+        <div class="fg"><label class="fl">Address</label><input class="fc" id="q-addr" placeholder="14 Oak Lane, Galway"></div>
+      </div>
+    </div>
+    <!-- Doors -->
+    <div class="card">
+      <div class="ct">Number of Doors</div>
+      <div style="max-width:200px"><label class="fl">Total door count</label><input class="fc" type="number" id="q-doors" min="0" placeholder="e.g. 14"></div>
+    </div>
+    <!-- Packages -->
+    <div class="card">
+      <div class="ct">Packages</div>
+      <!-- Essential -->
+      <div class="pkg ess-on" id="pkg-ess">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px"><span class="badge b-auto">Always included</span><strong>Essential</strong></div>
+          <div class="pkg-price" id="live-ess">€0</div>
+        </div>
+        <div class="pkg-body" style="display:block">
+          <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-ess-ppd" value="300"></div>
+          <div style="font-size:12px;color:var(--gray);margin-top:8px">Vinyl wrap or melamine · Soft-close drawer boxes · Blum hinges · Installation</div>
+        </div>
+      </div>
+      <!-- Premium -->
+      <div class="pkg" id="pkg-prem">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-prem-on" style="width:16px;height:16px;accent-color:var(--blue)">
+            <span class="badge b-opt">Optional</span><strong>Premium</strong>
+          </div>
+          <div class="pkg-price" id="live-prem" style="color:var(--gray)">€0</div>
+        </div>
+        <div class="pkg-body" id="prem-body">
+          <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-prem-ppd" value="360"></div>
+          <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-prem-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Blum soft-close hinges&#10;Professional installation"></textarea></div>
+        </div>
+        <div class="pkg-hint" id="prem-hint">Tick to add a Premium option to this quote</div>
+      </div>
+      <!-- Premium Plus -->
+      <div class="pkg" id="pkg-pp">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-pp-on" style="width:16px;height:16px;accent-color:var(--gold)">
+            <span class="badge b-opt">Optional</span><strong>Premium Plus</strong>
+          </div>
+          <div class="pkg-price" id="live-pp" style="color:var(--gray)">€0</div>
+        </div>
+        <div class="pkg-body" id="pp-body">
+          <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-pp-ppd" value="360"></div>
+          <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-pp-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Pocket door system&#10;Oak cutlery trays&#10;Professional installation"></textarea></div>
+          <!-- Premium Plus own extras -->
+          <div style="margin-top:14px;border-top:1px solid var(--grayM);padding-top:14px">
+            <div class="ct" style="margin-bottom:10px">Premium Plus Extras</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px" id="pp-cat-btns"></div>
+            <div id="pp-extra-rows"></div>
+            <div id="pp-no-extras" style="color:#9ca3af;font-size:12px;padding:4px 0">No Premium Plus extras added yet.</div>
+          </div>
+        </div>
+        <div class="pkg-hint" id="pp-hint">Tick to add a Premium Plus option to this quote</div>
+      </div>
+    </div>
+    <!-- Worktops -->
+    <div class="card">
+      <div class="ct">Worktops</div>
+      <div class="sblk">
+        <div class="sblk-t">Laminate Worktop <span style="font-size:12px;color:var(--gray);font-weight:400">€<span id="lam-rate-lbl">120</span>/m</span></div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div><label class="fl">Length (metres)</label><input class="fc" type="number" step="0.1" id="q-lam" value="0" style="max-width:120px"></div>
+          <div style="font-size:15px;font-weight:700;color:var(--g);padding-top:18px" id="lam-total">€0</div>
+        </div>
+      </div>
+      <div class="sblk">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" id="q-stone-on" style="width:16px;height:16px;accent-color:var(--g)">
+          <div class="sblk-t" style="margin:0">Stone / Quartz Worktop <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
+        </div>
+        <div id="stone-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-stone" value="0" style="max-width:150px"></div>
+      </div>
+    </div>
+    <!-- Glass Doors -->
+    <div class="card">
+      <div class="ct">Glass Door Cabinets</div>
+      <div class="row2">
+        <div><label class="fl">Small glazed doors (€<span id="gs-lbl">500</span> each)</label><div style="display:flex;align-items:center;gap:10px"><input class="fc" type="number" min="0" id="q-gs" value="0" style="max-width:80px"><span style="font-weight:700;color:var(--g)" id="gs-total">€0</span></div></div>
+        <div><label class="fl">Large glazed larder doors (€<span id="gl-lbl">1000</span> each)</label><div style="display:flex;align-items:center;gap:10px"><input class="fc" type="number" min="0" id="q-gl" value="0" style="max-width:80px"><span style="font-weight:700;color:var(--g)" id="gl-total">€0</span></div></div>
+      </div>
+    </div>
+    <!-- Extras -->
+    <div class="card">
+      <div class="ct">Extras</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px" id="cat-btns"></div>
+      <div id="extra-rows"></div>
+      <div id="no-extras" style="color:#9ca3af;font-size:12px;padding:4px 0">No extras added yet — click an item above to add it.</div>
+    </div>
+    <!-- Status -->
+    <div class="card">
+      <div class="ct">Status &amp; Notes</div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fc" id="q-status"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Declined</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Internal Notes (not on PDF)</label><textarea class="fc" id="q-notes" rows="3" placeholder="Customer preferences, survey notes..."></textarea></div>
+    </div>
+  </div>
+  <!-- Summary sidebar -->
+  <div style="position:sticky;top:20px">
+    <div class="card">
+      <div class="ct">Internal Summary</div>
+      <div class="tl"><span style="color:var(--gray)">Essential kitchen</span><span id="s-ess">€0</span></div>
+      <div class="tl" id="s-prem-row" style="display:none"><span style="color:var(--gray)">Premium kitchen</span><span id="s-prem">€0</span></div>
+      <div class="tl" id="s-pp-row" style="display:none"><span style="color:var(--gray)">Premium Plus kitchen</span><span id="s-pp">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Extras</span><span id="s-ext">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Worktops</span><span id="s-wt">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Glass cabinets</span><span id="s-gl">€0</span></div>
+      <div style="font-size:11px;color:#9ca3af;margin:10px 0 6px">Customer sees (inc. 13.5% VAT):</div>
+      <div class="tl" style="font-weight:700"><span>Essential</span><span id="sf-ess" style="color:var(--g)">€0</span></div>
+      <div class="tl" id="sf-prem-row" style="display:none" style="font-weight:700"><span>Premium</span><span id="sf-prem" style="color:var(--blue)">€0</span></div>
+      <div class="tl" id="sf-pp-row" style="display:none" style="font-weight:700"><span>Premium Plus</span><span id="sf-pp" style="color:var(--gold)">€0</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scr" id="scr-settings">
+  <div class="ph"><div class="pt">Settings</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div>
+      <!-- Logo -->
+      <div class="card">
+        <div class="ct">Company Logo</div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <div id="logo-wrap" style="width:130px;height:65px;border:2px dashed var(--grayM);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--grayL);flex-shrink:0">
+            <img id="logo-img" style="max-width:126px;max-height:61px;object-fit:contain;display:none">
+            <span id="logo-ph" style="font-size:11px;color:var(--gray);text-align:center">No logo</span>
+          </div>
+          <div>
+            <label class="btn btn-o" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">📁 Choose Image<input type="file" id="logo-file" accept="image/*" style="display:none"></label>
+            <div style="font-size:11px;color:var(--gray);line-height:1.7">PNG or JPG recommended.<br>Appears on all PDF quotes.</div>
+            <button class="btn btn-r btn-sm" id="logo-remove-btn" style="margin-top:8px;display:none">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+      <!-- Prices -->
+      <div class="card">
+        <div class="ct">Package Prices (per door)</div>
+        <div class="row3">
+          <div class="fg"><label class="fl">Essential (€)</label><input class="fc" type="number" id="s-ess-ppd"></div>
+          <div class="fg"><label class="fl">Premium (€)</label><input class="fc" type="number" id="s-prem-ppd"></div>
+          <div class="fg"><label class="fl">Prem Plus (€)</label><input class="fc" type="number" id="s-pp-ppd"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Worktop &amp; Glass Prices</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Laminate worktop (€/m)</label><input class="fc" type="number" id="s-lam"></div>
+          <div></div>
+          <div class="fg"><label class="fl">Small glazed door (€)</label><input class="fc" type="number" id="s-gs"></div>
+          <div class="fg"><label class="fl">Large glazed larder (€)</label><input class="fc" type="number" id="s-gl"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ct">Extras Default Prices</div>
+        <div id="settings-extras"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-g" id="settings-save-btn">💾 Save Settings</button>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+function load(k){try{return JSON.parse(localStorage.getItem('ek3_'+k))}catch(e){return null}}
+function save(k,v){localStorage.setItem('ek3_'+k,JSON.stringify(v))}
+
+const DEF_EXTRAS=[
+  {key:'pocket', name:'Pocket door system',   unit:'per opening', price:0,   manual:true},
+  {key:'bifold', name:'Bi-fold door system',   unit:'per opening', price:300, manual:false},
+  {key:'cutlery',name:'Oak cutlery tray',      unit:'per drawer',  price:150, manual:false},
+  {key:'bin',    name:'Pull-out bin system',   unit:'per unit',    price:250, manual:false},
+  {key:'intbin', name:'Integrated pull-out bin', unit:'per unit',  price:250, manual:false},
+  {key:'magic',  name:'Magic corner / Le Mans',unit:'per unit',    price:300, manual:false},
+  {key:'larder', name:'Tall pull-out larder',  unit:'per unit',    price:500, manual:false},
+  {key:'base',   name:'150mm base pull-out',   unit:'per unit',    price:150, manual:false},
+  {key:'ledun',  name:'LED underpanel',         unit:'per metre',   price:300, manual:false},
+  {key:'ledla',  name:'LED inside larder',      unit:'per unit',    price:300, manual:false},
+  {key:'ledki',  name:'LED kickboard',          unit:'per metre',   price:300, manual:false},
+  {key:'sink',   name:'Composite sink',          unit:'included',    price:0,   manual:false, free:true},
+];
+const DEF_SETTINGS={ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:500,gl_price:1000,extras:DEF_EXTRAS};
+
+let customers = load('customers') || [];
+let quotes    = load('quotes')    || [];
+let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
+if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
+
+let editQid=null, editCid=null, exIdx=0;
+const VAT=13.5;
+
+function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST)}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+const SCREENS=['dashboard','customers','addcust','quotes','builder','settings'];
+function goTo(id){
+  SCREENS.forEach(s=>{
+    document.getElementById('scr-'+s).classList.toggle('on', s===id);
+    const n=document.getElementById('nav-'+s);
+    if(n) n.classList.toggle('on', s===id);
+  });
+  if(id==='dashboard') renderDash();
+  if(id==='customers') renderCusts();
+  if(id==='quotes')    renderQuotes();
+  if(id==='settings')  renderSettings();
+  if(id==='builder')   renderCatBtns();
+}
+
+// ─── SIDEBAR & BUTTON WIRING ─────────────────────────────────────────────────
+document.getElementById('nav-dashboard').onclick=()=>goTo('dashboard');
+document.getElementById('nav-customers').onclick=()=>goTo('customers');
+document.getElementById('nav-quotes').onclick=()=>goTo('quotes');
+document.getElementById('nav-settings').onclick=()=>goTo('settings');
+document.getElementById('nav-builder').onclick=()=>newQuote();
+document.getElementById('dash-new-btn').onclick=()=>newQuote();
+document.getElementById('quotes-new-btn').onclick=()=>newQuote();
+document.getElementById('cust-add-btn').onclick=()=>goTo('addcust');
+document.getElementById('addcust-back-btn').onclick=()=>goTo('customers');
+document.getElementById('ac-cancel-btn').onclick=()=>goTo('customers');
+document.getElementById('builder-back-btn').onclick=()=>goTo('quotes');
+document.getElementById('builder-save-btn').onclick=()=>saveQuote();
+document.getElementById('builder-pdf-btn').onclick=()=>genPDF(editQid);
+document.getElementById('settings-save-btn').onclick=()=>saveSettings();
+document.getElementById('ac-save-btn').onclick=()=>saveCustomer();
+document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
+document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
+
+// live recalc on input change in builder
+['q-doors','q-ess-ppd','q-prem-ppd','q-pp-ppd','q-lam','q-stone','q-gs','q-gl'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', recalc);
+});
+document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
+document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
+document.getElementById('q-stone-on').addEventListener('change', ()=>{
+  document.getElementById('stone-fields').style.display=document.getElementById('q-stone-on').checked?'block':'none';
+  recalc();
+});
+
+// ─── CUSTOMERS ───────────────────────────────────────────────────────────────
+function saveCustomer(){
+  const name=document.getElementById('ac-name').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  customers.push({id:Date.now(),name,phone:document.getElementById('ac-phone').value.trim(),email:document.getElementById('ac-email').value.trim(),addr:document.getElementById('ac-addr').value.trim()});
+  saveAll();
+  ['ac-name','ac-phone','ac-email','ac-addr'].forEach(id=>document.getElementById(id).value='');
+  goTo('customers');
+}
+function renderCusts(){
+  const el=document.getElementById('cust-list');
+  if(!customers.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No customers yet.</p>';return;}
+  el.innerHTML='<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
+    customers.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:var(--gray)">${c.phone||'—'}</td><td style="color:var(--gray)">${c.email||'—'}</td><td style="color:var(--gray)">${c.addr||'—'}</td><td><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button></td></tr>`).join('')+
+  '</tbody></table>';
+}
+
+// ─── QUOTE BUILDER ───────────────────────────────────────────────────────────
+function newQuote(custId){
+  editQid=null; editCid=custId||null;
+  document.getElementById('builder-title').textContent='New Quote';
+  document.getElementById('builder-pdf-btn').style.display='none';
+  // clear fields
+  ['q-name','q-phone','q-email','q-addr','q-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('q-doors').value='';
+  document.getElementById('q-ess-ppd').value=ST.ess_ppd;
+  document.getElementById('q-prem-ppd').value=ST.prem_ppd;
+  document.getElementById('q-pp-ppd').value=ST.pp_ppd;
+  document.getElementById('q-prem-on').checked=false;
+  document.getElementById('q-pp-on').checked=false;
+  if(document.getElementById('pp-extra-rows')) document.getElementById('pp-extra-rows').innerHTML='';
+  if(document.getElementById('pp-no-extras')) document.getElementById('pp-no-extras').style.display='block';
+  document.getElementById('q-prem-desc').value='';
+  document.getElementById('q-pp-desc').value='';
+  document.getElementById('q-lam').value='0';
+  document.getElementById('q-stone-on').checked=false;
+  document.getElementById('q-stone').value='0';
+  document.getElementById('stone-fields').style.display='none';
+  document.getElementById('q-gs').value='0';
+  document.getElementById('q-gl').value='0';
+  document.getElementById('q-status').value='Draft';
+  document.getElementById('extra-rows').innerHTML='';
+  document.getElementById('no-extras').style.display='block';
+  // pkg reset
+  document.getElementById('prem-body').style.display='none';
+  document.getElementById('prem-hint').style.display='block';
+  document.getElementById('pkg-prem').className='pkg';
+  document.getElementById('pp-body').style.display='none';
+  document.getElementById('pp-hint').style.display='block';
+  document.getElementById('pkg-pp').className='pkg';
+  document.getElementById('s-prem-row').style.display='none';
+  document.getElementById('s-pp-row').style.display='none';
+  document.getElementById('sf-prem-row').style.display='none';
+  document.getElementById('sf-pp-row').style.display='none';
+  // labels from settings
+  document.getElementById('lam-rate-lbl').textContent=ST.lam_rate;
+  document.getElementById('gs-lbl').textContent=ST.gs_price;
+  document.getElementById('gl-lbl').textContent=ST.gl_price;
+  // prefill customer if coming from customers list
+  if(custId){const c=customers.find(x=>x.id===custId)||{};document.getElementById('q-name').value=c.name||'';document.getElementById('q-phone').value=c.phone||'';document.getElementById('q-email').value=c.email||'';document.getElementById('q-addr').value=c.addr||'';}
+  recalc();
+  goTo('builder');
+}
+
+function togglePkg(pkg){
+  const on=document.getElementById('q-'+pkg+'-on').checked;
+  document.getElementById(pkg+'-body').style.display=on?'block':'none';
+  document.getElementById(pkg+'-hint').style.display=on?'none':'block';
+  const cls={prem:'prem-on',pp:'pp-on'};
+  document.getElementById('pkg-'+pkg).className='pkg'+(on?' '+cls[pkg]:'');
+  document.getElementById('s-'+pkg+'-row').style.display=on?'':'none';
+  document.getElementById('sf-'+pkg+'-row').style.display=on?'':'none';
+  recalc();
+}
+
+function renderCatBtns(){
+  const cont=document.getElementById('cat-btns');
+  cont.innerHTML='';
+  ST.extras.forEach((e,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn';
+    btn.innerHTML=e.name+(e.manual?' <span class="badge b-man">Manual</span>':' <span style="color:var(--gray);font-size:11px">(€'+e.price+')</span>');
+    btn.addEventListener('click',()=>addExtra(e.name,e.unit,e.manual?0:e.price,e.manual));
+    cont.appendChild(btn);
+  });
+  const custom=document.createElement('button');
+  custom.className='cat-btn';
+  custom.style.borderStyle='dashed';
+  custom.textContent='+ Custom item';
+  custom.addEventListener('click',()=>addExtra('','',0,true));
+  cont.appendChild(custom);
+  renderPPCatBtns();
+}
+
+// ─── PREMIUM PLUS OWN EXTRAS ─────────────────────────────────────────────────
+let ppxi=0;
+function renderPPCatBtns(){
+  const cont=document.getElementById('pp-cat-btns');
+  if(!cont) return;
+  cont.innerHTML='';
+  ST.extras.forEach((e,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn';
+    const isFree=e.free||false;
+    btn.innerHTML=e.name+(isFree?' <span class="badge b-auto">Free</span>':e.manual?' <span class="badge b-man">Manual</span>':' <span style="color:var(--gray);font-size:11px">(€'+e.price+')</span>');
+    btn.addEventListener('click',()=>addPPExtra(e.name,e.unit,isFree?0:e.manual?0:e.price,e.manual||false,isFree));
+    cont.appendChild(btn);
+  });
+  const custom=document.createElement('button');
+  custom.className='cat-btn';
+  custom.style.borderStyle='dashed';
+  custom.textContent='+ Custom item';
+  custom.addEventListener('click',()=>addPPExtra('','',0,true,false));
+  cont.appendChild(custom);
+}
+
+function addPPExtra(name,unit,price,manual,isFree){
+  document.getElementById('pp-no-extras').style.display='none';
+  const id='ppex-'+ppxi++;
+  const div=document.createElement('div');
+  div.className='exrow ppexrow';
+  div.id=id;
+  if(isFree){
+    div.innerHTML=`<div style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:6px;font-size:13px"><span>✓ ${name} <span class="badge b-auto" style="margin-left:6px">Free</span></span><button style="background:var(--redL);border:none;border-radius:6px;padding:4px 8px;color:var(--red);cursor:pointer;font-size:12px" onclick="rmPPExtra('${id}')">✕</button></div>`;
+  } else {
+    div.innerHTML=`<div><label class="fl">${name||'Description'} <span style="color:var(--gray);font-size:11px">${unit}</span></label><input class="fc ppex-name" type="text" value="${name}" placeholder="Description"></div><div><label class="fl">Qty</label><input class="fc ppex-qty" type="number" step="0.1" min="0" value="1"></div><div><label class="fl">€ Unit</label><input class="fc ppex-price" type="number" value="${manual?'':price}" placeholder="${manual?'Enter price':''}"></div><div style="padding-top:20px"><button style="background:var(--redL);border:none;border-radius:6px;padding:6px 8px;color:var(--red);cursor:pointer" onclick="rmPPExtra('${id}')">✕</button></div>`;
+    div.querySelectorAll('.ppex-qty,.ppex-price').forEach(el=>el.addEventListener('input',recalc));
+  }
+  div.dataset.free=isFree?'1':'0';
+  div.dataset.name=name;
+  document.getElementById('pp-extra-rows').appendChild(div);
+  recalc();
+}
+
+function rmPPExtra(id){
+  document.getElementById(id).remove();
+  if(!document.querySelectorAll('.ppexrow').length) document.getElementById('pp-no-extras').style.display='block';
+  recalc();
+}
+
+function getPPExtras(){
+  return [...document.querySelectorAll('.ppexrow')].map(r=>{
+    if(r.dataset.free==='1') return {name:r.dataset.name,qty:1,price:0,unit:'included',free:true};
+    const nameEl=r.querySelector('.ppex-name');
+    const qtyEl=r.querySelector('.ppex-qty');
+    const priceEl=r.querySelector('.ppex-price');
+    if(!nameEl) return null;
+    return {name:nameEl.value,qty:parseFloat(qtyEl?.value)||0,price:parseFloat(priceEl?.value)||0,unit:'',free:false};
+  }).filter(e=>e&&e.name&&(e.free||e.qty>0));
+}
+
+let xi=0;
+function addExtra(name,unit,price,manual){
+  document.getElementById('no-extras').style.display='none';
+  const id='ex-'+xi++;
+  const div=document.createElement('div');
+  div.className='exrow';
+  div.id=id;
+  div.innerHTML=`<div><label class="fl">${name||'Description'} <span style="color:var(--gray);font-size:11px">${unit}</span></label><input class="fc ex-name" type="text" value="${name}" placeholder="Description"></div><div><label class="fl">Qty</label><input class="fc ex-qty" type="number" step="0.1" min="0" value="1"></div><div><label class="fl">€ Unit</label><input class="fc ex-price" type="number" value="${manual?'':price}" placeholder="${manual?'Enter price':''}"></div><div style="padding-top:20px"><button style="background:var(--redL);border:none;border-radius:6px;padding:6px 8px;color:var(--red);cursor:pointer" onclick="rmExtra('${id}')">✕</button></div>`;
+  div.querySelectorAll('.ex-qty,.ex-price').forEach(el=>el.addEventListener('input',recalc));
+  document.getElementById('extra-rows').appendChild(div);
+  recalc();
+}
+function rmExtra(id){document.getElementById(id).remove();if(!document.querySelectorAll('.exrow').length)document.getElementById('no-extras').style.display='block';recalc();}
+
+function getExtras(){
+  return [...document.querySelectorAll('.exrow')].map(r=>({
+    name:r.querySelector('.ex-name').value,
+    qty:parseFloat(r.querySelector('.ex-qty').value)||0,
+    price:parseFloat(r.querySelector('.ex-price').value)||0,
+    unit:r.querySelector('.fl span')?.textContent||''
+  })).filter(e=>e.name&&e.qty>0);
+}
+
+function fmt(n){return '€'+Math.round(n).toLocaleString('en-IE')}
+function fmtd(n){return '€'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function incvat(n){return n+n*VAT/100}
+
+function recalc(){
+  const nd=parseFloat(document.getElementById('q-doors').value)||0;
+  const essPpd=parseFloat(document.getElementById('q-ess-ppd').value)||0;
+  const premPpd=parseFloat(document.getElementById('q-prem-ppd').value)||0;
+  const ppPpd=parseFloat(document.getElementById('q-pp-ppd').value)||0;
+  const premOn=document.getElementById('q-prem-on').checked;
+  const ppOn=document.getElementById('q-pp-on').checked;
+  const essK=nd*essPpd, premK=nd*premPpd, ppK=nd*ppPpd;
+  const lamM=parseFloat(document.getElementById('q-lam').value)||0;
+  const lamT=lamM*ST.lam_rate;
+  document.getElementById('lam-total').textContent=fmt(lamT);
+  const stoneOn=document.getElementById('q-stone-on').checked;
+  const stoneP=stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0;
+  const wtT=lamT+stoneP;
+  const gsQ=parseInt(document.getElementById('q-gs').value)||0;
+  const glQ=parseInt(document.getElementById('q-gl').value)||0;
+  const gsT=gsQ*ST.gs_price, glT=glQ*ST.gl_price, glassT=gsT+glT;
+  document.getElementById('gs-total').textContent=fmt(gsT);
+  document.getElementById('gl-total').textContent=fmt(glT);
+  const exts=getExtras();
+  const extT=exts.reduce((s,e)=>s+e.qty*e.price,0);
+  const ppExts=getPPExtras();
+  const ppExtT=ppExts.reduce((s,e)=>s+e.qty*e.price,0);
+  const shared=extT+wtT+glassT;
+  document.getElementById('live-ess').textContent=fmt(essK);
+  document.getElementById('s-ess').textContent=fmt(essK);
+  document.getElementById('sf-ess').textContent=fmtd(incvat(essK+shared));
+  document.getElementById('s-ext').textContent=fmt(extT);
+  document.getElementById('s-wt').textContent=fmt(wtT);
+  document.getElementById('s-gl').textContent=fmt(glassT);
+  if(premOn){document.getElementById('live-prem').textContent=fmt(premK);document.getElementById('s-prem').textContent=fmt(premK);document.getElementById('sf-prem').textContent=fmtd(incvat(premK+shared));}
+  if(ppOn){document.getElementById('live-pp').textContent=fmt(ppK+ppExtT);document.getElementById('s-pp').textContent=fmt(ppK);document.getElementById('sf-pp').textContent=fmtd(incvat(ppK+shared+ppExtT));}
+}
+
+// ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
+function saveQuote(){
+  const name=document.getElementById('q-name').value.trim();
+  if(!name){alert('Please enter a customer name.');return;}
+  // upsert customer
+  let cid=editCid;
+  const phone=document.getElementById('q-phone').value.trim();
+  const email=document.getElementById('q-email').value.trim();
+  const addr=document.getElementById('q-addr').value.trim();
+  if(cid){
+    const i=customers.findIndex(x=>x.id===cid);
+    if(i>=0) customers[i]={...customers[i],name,phone,email,addr};
+  } else {
+    const ex=customers.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(ex){cid=ex.id;const i=customers.findIndex(x=>x.id===cid);customers[i]={...customers[i],name,phone,email,addr};}
+    else{cid=Date.now();customers.push({id:cid,name,phone,email,addr});}
+  }
+  editCid=cid;
+  const premOn=document.getElementById('q-prem-on').checked;
+  const ppOn=document.getElementById('q-pp-on').checked;
+  const lamM=parseFloat(document.getElementById('q-lam').value)||0;
+  const stoneOn=document.getElementById('q-stone-on').checked;
+  const q={
+    id:editQid||(Date.now()+1),
+    cid,
+    doors:parseInt(document.getElementById('q-doors').value)||0,
+    status:document.getElementById('q-status').value,
+    notes:document.getElementById('q-notes').value,
+    ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300},
+    prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,desc:document.getElementById('q-prem-desc').value},
+    pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras()},
+    wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0},
+    glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
+    extras:getExtras(),
+    created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString()
+  };
+  if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
+  else quotes.unshift(q);
+  editQid=q.id;
+  saveAll();
+  document.getElementById('builder-title').textContent='Quote #'+String(q.id).slice(-4).padStart(4,'0');
+  document.getElementById('builder-pdf-btn').style.display='';
+  alert('✅ Quote saved!');
+}
+
+// ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
+function editQuote(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const c=customers.find(x=>x.id===q.cid)||{};
+  editQid=qid; editCid=q.cid;
+  document.getElementById('builder-title').textContent='Quote #'+String(qid).slice(-4).padStart(4,'0');
+  document.getElementById('builder-pdf-btn').style.display='';
+  document.getElementById('q-name').value=c.name||'';
+  document.getElementById('q-phone').value=c.phone||'';
+  document.getElementById('q-email').value=c.email||'';
+  document.getElementById('q-addr').value=c.addr||'';
+  document.getElementById('q-doors').value=q.doors;
+  document.getElementById('q-ess-ppd').value=q.ess.ppd;
+  document.getElementById('q-prem-ppd').value=q.prem.ppd;
+  document.getElementById('q-pp-ppd').value=q.pp.ppd;
+  document.getElementById('q-prem-desc').value=q.prem.desc||'';
+  document.getElementById('q-pp-desc').value=q.pp.desc||'';
+  document.getElementById('q-prem-on').checked=q.prem.on;
+  document.getElementById('q-pp-on').checked=q.pp.on;
+  if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
+  if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
+  document.getElementById('q-lam').value=q.wt.lamM||0;
+  document.getElementById('q-stone-on').checked=q.wt.stoneOn||false;
+  document.getElementById('stone-fields').style.display=q.wt.stoneOn?'block':'none';
+  document.getElementById('q-stone').value=q.wt.stoneP||0;
+  document.getElementById('q-gs').value=q.glass.sq||0;
+  document.getElementById('q-gl').value=q.glass.lq||0;
+  document.getElementById('q-status').value=q.status||'Draft';
+  document.getElementById('q-notes').value=q.notes||'';
+  document.getElementById('extra-rows').innerHTML='';
+  document.getElementById('no-extras').style.display=q.extras.length?'none':'block';
+  (q.extras||[]).forEach(e=>{
+    addExtra(e.name,e.unit,e.price,false);
+    const rows=document.querySelectorAll('.exrow');
+    const last=rows[rows.length-1];
+    last.querySelector('.ex-qty').value=e.qty;
+    last.querySelector('.ex-price').value=e.price;
+  });
+  document.getElementById('lam-rate-lbl').textContent=ST.lam_rate;
+  document.getElementById('gs-lbl').textContent=ST.gs_price;
+  document.getElementById('gl-lbl').textContent=ST.gl_price;
+  // Restore PP extras
+  if(document.getElementById('pp-extra-rows')){
+    document.getElementById('pp-extra-rows').innerHTML='';
+    document.getElementById('pp-no-extras').style.display='block';
+    (q.pp?.extras||[]).forEach(e=>{
+      addPPExtra(e.name,e.unit,e.price,false,e.free||false);
+      if(!e.free){
+        const rows=document.querySelectorAll('.ppexrow');
+        const last=rows[rows.length-1];
+        if(last){if(last.querySelector('.ppex-qty'))last.querySelector('.ppex-qty').value=e.qty;if(last.querySelector('.ppex-price'))last.querySelector('.ppex-price').value=e.price;}
+      }
+    });
+  }
+  recalc();
+  goTo('builder');
+}
+
+function delQuote(qid){
+  if(!confirm('Delete this quote?')) return;
+  quotes=quotes.filter(q=>q.id!==qid);
+  saveAll(); renderQuotes();
+}
+
+// ─── QUOTES LIST ─────────────────────────────────────────────────────────────
+function renderQuotes(){
+  const el=document.getElementById('quotes-list');
+  if(!quotes.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet.</p>';return;}
+  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+    quotes.map(q=>{
+      const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
+      const pkgs=(q.ess?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
+      return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+    }).join('')+'</tbody></table>';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDash(){
+  document.getElementById('st-total').textContent=quotes.length;
+  document.getElementById('st-draft').textContent=quotes.filter(q=>q.status==='Draft').length;
+  document.getElementById('st-sent').textContent=quotes.filter(q=>q.status==='Sent').length;
+  document.getElementById('st-accepted').textContent=quotes.filter(q=>q.status==='Accepted').length;
+  const el=document.getElementById('dash-list');
+  const recent=quotes.slice(0,8);
+  if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
+  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
+  '</tbody></table>';
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function renderSettings(){
+  document.getElementById('s-ess-ppd').value=ST.ess_ppd;
+  document.getElementById('s-prem-ppd').value=ST.prem_ppd;
+  document.getElementById('s-pp-ppd').value=ST.pp_ppd;
+  document.getElementById('s-lam').value=ST.lam_rate;
+  document.getElementById('s-gs').value=ST.gs_price;
+  document.getElementById('s-gl').value=ST.gl_price;
+  const el=document.getElementById('settings-extras');
+  el.innerHTML=ST.extras.map((e,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--grayL)"><span>${e.name} <span style="color:var(--gray);font-size:11px">${e.unit}</span></span>${e.manual?'<span class="badge b-man">Manual</span>':`<input class="fc" type="number" value="${e.price}" data-i="${i}" style="width:90px;text-align:right">`}</div>`).join('');
+  el.querySelectorAll('input[data-i]').forEach(inp=>inp.addEventListener('change',()=>{ST.extras[inp.dataset.i].price=parseFloat(inp.value)||0;}));
+  const logo=load('logo');
+  if(logo) showLogo(logo);
+}
+function saveSettings(){
+  ST.ess_ppd=parseFloat(document.getElementById('s-ess-ppd').value)||300;
+  ST.prem_ppd=parseFloat(document.getElementById('s-prem-ppd').value)||360;
+  ST.pp_ppd=parseFloat(document.getElementById('s-pp-ppd').value)||360;
+  ST.lam_rate=parseFloat(document.getElementById('s-lam').value)||120;
+  ST.gs_price=parseFloat(document.getElementById('s-gs').value)||500;
+  ST.gl_price=parseFloat(document.getElementById('s-gl').value)||1000;
+  saveAll(); alert('✅ Settings saved!');
+}
+
+// ─── LOGO ────────────────────────────────────────────────────────────────────
+function uploadLogo(input){
+  const file=input.files[0]; if(!file) return;
+  if(file.size>2*1024*1024){alert('Image too large — please use an image under 2MB.');return;}
+  const r=new FileReader();
+  r.onload=e=>{save('logo',e.target.result);showLogo(e.target.result);};
+  r.readAsDataURL(file);
+}
+function showLogo(data){
+  document.getElementById('logo-img').src=data;
+  document.getElementById('logo-img').style.display='block';
+  document.getElementById('logo-ph').style.display='none';
+  document.getElementById('logo-remove-btn').style.display='inline-flex';
+}
+function removeLogo(){
+  if(!confirm('Remove logo?')) return;
+  save('logo','');
+  document.getElementById('logo-img').style.display='none';
+  document.getElementById('logo-ph').style.display='block';
+  document.getElementById('logo-remove-btn').style.display='none';
+  document.getElementById('logo-file').value='';
+}
+
+// ─── PDF ─────────────────────────────────────────────────────────────────────
+function genPDF(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
+  const c=customers.find(x=>x.id===q.cid)||{};
+  const logo=load('logo')||'';
+  const lamT=(q.wt.lamM||0)*ST.lam_rate;
+  const stoneT=q.wt.stoneOn?(q.wt.stoneP||0):0;
+  const wtT=lamT+stoneT;
+  const gsT=(q.glass.sq||0)*ST.gs_price;
+  const glT=(q.glass.lq||0)*ST.gl_price;
+  const glassT=gsT+glT;
+  const extT=(q.extras||[]).reduce((s,e)=>s+e.qty*e.price,0);
+  const shared=extT+wtT+glassT;
+  const today=new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const qnum='#'+String(q.id).slice(-4).padStart(4,'0');
+
+  function pkgCard(label,col,bg,kitchen,desc,pkgExtras){
+    const pExt=(pkgExtras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
+    const excV=kitchen+shared+pExt, vatA=excV*VAT/100, incV=excV+vatA;
+    const lines=(desc||'').split('\n').filter(l=>l.trim());
+    const freeItems=(pkgExtras||[]).filter(e=>e.free);
+    const paidItems=(pkgExtras||[]).filter(e=>!e.free&&e.name);
+    return `<div style="flex:1;border:2px solid ${col};border-radius:10px;padding:14px;background:${bg}">
+      <div style="font-weight:700;color:${col};font-size:13px;margin-bottom:6px">${label}</div>
+      <div style="font-size:22px;font-weight:700;margin-bottom:2px">€${Math.round(incV).toLocaleString('en-IE')}</div>
+      <div style="font-size:11px;color:#6b7280;margin-bottom:10px">inc. VAT (13.5%)</div>
+      <div style="font-size:11px;font-weight:700;margin-bottom:5px;color:#374151">What's included:</div>
+      ${lines.map(l=>`<div style="font-size:11px;color:#374151;padding:2px 0">✓ ${l}</div>`).join('')}
+      ${freeItems.map(e=>`<div style="font-size:11px;color:#065f46;padding:2px 0;font-weight:600">✓ ${e.name} — <em>Free</em></div>`).join('')}
+      ${paidItems.map(e=>`<div style="font-size:11px;color:#374151;padding:2px 0">✓ ${e.name}</div>`).join('')}
+    </div>`;
+  }
+  const essDesc='Vinyl wrap or melamine doors\nStandard soft-close drawer boxes\nBlum soft-close hinges\nSoft-close drawer runners\nProfessional installation';
+  const essK=q.doors*(q.ess.ppd||300);
+  let pkgsHtml=pkgCard('Essential','#111827','#f3f4f6',essK,essDesc,null);
+  const premDescFallback='Lacquered or solid wood doors\nBlum Merivobox drawer boxes\nBlum soft-close hinges\nSoft-close drawer runners\nProfessional installation';
+  const ppDescFallback='Lacquered or solid wood doors\nBlum Merivobox drawer boxes\nBlum soft-close hinges\nSoft-close drawer runners\nPremium add-on systems included\nProfessional installation';
+  if(q.prem?.on) pkgsHtml+=pkgCard('Premium','#1e3a8a','#dbeafe',q.doors*(q.prem.ppd||360),q.prem.desc||premDescFallback,null);
+  const ppExtrasList=q.pp?.extras||[];
+  const ppExtTotal=ppExtrasList.reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
+  if(q.pp?.on)   pkgsHtml+=pkgCard('Premium Plus','#d97706','#fef3c7',q.doors*(q.pp.ppd||360),q.pp.desc||ppDescFallback,ppExtrasList);
+
+  let addRows='';
+  if(q.wt.lamM>0) addRows+=`<tr><td style="padding:6px 8px">Laminate worktop (${q.wt.lamM}m)</td><td style="padding:6px 8px;text-align:right">€${Math.round(lamT).toLocaleString('en-IE')}</td></tr>`;
+  if(q.wt.stoneOn&&stoneT>0) addRows+=`<tr style="background:#f9fafb"><td style="padding:6px 8px">Stone / quartz worktop</td><td style="padding:6px 8px;text-align:right">€${Math.round(stoneT).toLocaleString('en-IE')}</td></tr>`;
+  const gp=[];if(q.glass.sq>0)gp.push(q.glass.sq+' small');if(q.glass.lq>0)gp.push(q.glass.lq+' large');
+  if(gp.length) addRows+=`<tr><td style="padding:6px 8px">Glazed cabinets (${gp.join(', ')})</td><td style="padding:6px 8px;text-align:right">€${Math.round(glassT).toLocaleString('en-IE')}</td></tr>`;
+
+  const extrasHtml=(q.extras||[]).length?`<div style="margin-top:18px"><div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #f3f4f6">Included Extras</div><div style="display:flex;flex-wrap:wrap;gap:7px">${(q.extras||[]).map(e=>`<span style="background:#f3f4f6;border-radius:99px;padding:3px 10px;font-size:11px">✓ ${e.name}</span>`).join('')}</div></div>`:'';
+
+  const activePkgs=[{l:'Essential',k:essK,col:'#111827'}];
+  if(q.prem?.on) activePkgs.push({l:'Premium',k:q.doors*(q.prem.ppd||360),col:'#1e3a8a'});
+  if(q.pp?.on)   activePkgs.push({l:'Premium Plus',k:q.doors*(q.pp.ppd||360),col:'#d97706'});
+  const totRows=activePkgs.map((p,i)=>{const ex=p.k+shared,vat=ex*VAT/100;return `<tr style="background:${i%2?'#f9fafb':'#fff'}"><td style="padding:7px 10px;font-weight:600;color:${p.col}">${p.l}</td><td style="padding:7px 10px;text-align:right">€${ex.toFixed(2)}</td><td style="padding:7px 10px;text-align:right">€${vat.toFixed(2)}</td><td style="padding:7px 10px;text-align:right;font-weight:700">€${(ex+vat).toFixed(2)}</td></tr>`;}).join('');
+
+  const logoHtml=logo?`<img src="${logo}" style="max-height:55px;max-width:180px;object-fit:contain">`:`<div style="font-size:22px;font-weight:700;color:#111827">Elite Kitchens</div>`;
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Elite Kitchens ${qnum}</title><style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:0;padding:14mm;background:#fff}@media print{body{padding:8mm}.no-print{display:none}}</style></head><body>
+  <div class="no-print" style="background:#111827;color:#fff;padding:12px 16px;margin:-14mm -14mm 14mm;display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700">Elite Kitchens — Quote Preview</span><button onclick="window.print()" style="background:#fff;color:#111827;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Print / Save as PDF</button></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">${logoHtml}<div style="text-align:right"><div style="font-size:16px;font-weight:700">Quote ${qnum}</div><div style="color:#6b7280;font-size:11px">${today}</div><div style="color:#6b7280;font-size:11px">Valid 30 days</div></div></div>
+  <div style="color:#6b7280;font-size:10px;margin-bottom:14px">089 464 1917 · info@elitekitchens.ie · VAT: K32XH72</div>
+  <div style="background:#f3f4f6;border-radius:8px;padding:10px 14px;margin-bottom:16px"><div style="font-weight:700">${c.name||''}</div><div style="color:#374151;font-size:11px">${[c.addr,c.phone,c.email].filter(Boolean).join(' · ')}</div></div>
+  <div style="font-size:13px;font-weight:700;margin-bottom:10px">Your Kitchen Options</div>
+  <div style="display:flex;gap:12px;margin-bottom:18px">${pkgsHtml}</div>
+  ${addRows?`<div style="font-size:13px;font-weight:700;margin-bottom:8px">Additional Items</div><table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px"><thead><tr style="background:#111827;color:#fff"><th style="padding:7px 10px;text-align:left">Item</th><th style="padding:7px 10px;text-align:right">Total</th></tr></thead><tbody>${addRows}</tbody></table>`:''}
+  ${extrasHtml}
+  <div style="font-size:13px;font-weight:700;margin:18px 0 8px">Price Summary</div>
+  <table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#111827;color:#fff"><th style="padding:7px 10px;text-align:left">Package</th><th style="padding:7px 10px;text-align:right">Exc. VAT</th><th style="padding:7px 10px;text-align:right">VAT (13.5%)</th><th style="padding:7px 10px;text-align:right">Total inc. VAT</th></tr></thead><tbody>${totRows}</tbody></table>
+  <div style="margin-top:22px;border-top:1px solid #e5e7eb;padding-top:8px;color:#9ca3af;font-size:10px;text-align:center">This quote is valid for 30 days. All prices subject to survey. Elite Kitchens · 089 464 1917 · info@elitekitchens.ie</div>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+goTo('dashboard');
+</script>
+</body>
+</html>
