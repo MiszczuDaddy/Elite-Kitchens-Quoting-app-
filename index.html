@@ -114,10 +114,9 @@ tr:last-child td{border-bottom:none}
   </div>
 
   <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Quotes Pipeline</div>
-  <div class="stats" style="margin-bottom:20px">
+  <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
     <div class="sc"><div class="sv" id="st-total">0</div><div class="sl">Total Quotes</div></div>
     <div class="sc"><div class="sv" id="st-draft">0</div><div class="sl">Drafts</div></div>
-    <div class="sc"><div class="sv" id="st-sent">0</div><div class="sl">Sent</div></div>
     <div class="sc"><div class="sv" id="st-accepted">0</div><div class="sl">Accepted</div></div>
   </div>
 
@@ -839,7 +838,6 @@ function renderDash(){
   // Pipeline stats
   document.getElementById('st-total').textContent=quotes.length;
   document.getElementById('st-draft').textContent=quotes.filter(q=>q.status==='Draft').length;
-  document.getElementById('st-sent').textContent=quotes.filter(q=>q.status==='Sent').length;
   document.getElementById('st-accepted').textContent=quotes.filter(q=>q.status==='Accepted').length;
 
   // Invoice stats
@@ -1211,6 +1209,11 @@ function saveInvoiceRecord(qid, pkgKey, invNum, total){
     invoices[existing]=invRecord;
   } else {
     invoices.unshift(invRecord);
+  }
+  // Auto-mark the quote as Accepted
+  const qi=quotes.findIndex(x=>x.id===qid);
+  if(qi>=0 && quotes[qi].status!=='Accepted'){
+    quotes[qi].status='Accepted';
   }
   saveAll();
 }
