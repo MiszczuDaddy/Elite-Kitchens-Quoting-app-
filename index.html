@@ -77,11 +77,16 @@ tr:last-child td{border-bottom:none}
 .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
 .pt{font-size:20px;font-weight:700}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <div class="sb">
   <div class="sb-logo"><h1>🪵 Elite Kitchens</h1><small>Quoting System</small></div>
+  <div id="drive-status" style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.12)">
+    <button id="drive-btn" onclick="driveConnect()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;text-align:left">☁️ Connect Google Drive</button>
+    <div id="drive-info" style="display:none;font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;text-align:center"></div>
+  </div>
   <div class="sb-sec">Main</div>
   <a id="nav-dashboard">📊 Dashboard</a>
   <a id="nav-customers">👤 Customers</a>
@@ -1452,6 +1457,132 @@ function toggleAccountant(id){
   inv.sentToAccountant=!inv.sentToAccountant;
   saveAll();
   renderInvoices();
+}
+
+
+// ─── GOOGLE DRIVE SYNC ────────────────────────────────────────────────────────
+const DRIVE_CLIENT_ID = '261333765285-uj90g3jb7qhqugerbdu96i9fvhhvecok.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+const DRIVE_FILE_NAME = 'elite-kitchens-data.json';
+let driveToken = null;
+let driveFileId = null;
+let driveSyncing = false;
+
+function driveConnect(){
+  if(driveToken){ driveSyncNow(); return; }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope: DRIVE_SCOPE,
+    callback: (resp) => {
+      if(resp.error){ driveSetStatus('❌ Connection failed','#f87171'); return; }
+      driveToken = resp.access_token;
+      driveSetStatus('✅ Connected — loading data...','#6ee7b7');
+      driveLoad();
+    }
+  });
+  client.requestAccessToken();
+}
+
+function driveSetStatus(msg, color){
+  const btn = document.getElementById('drive-btn');
+  const info = document.getElementById('drive-info');
+  if(driveToken){
+    btn.textContent = '☁️ Drive Connected';
+    btn.style.background = 'rgba(16,185,129,.2)';
+    btn.style.borderColor = '#10b981';
+    btn.onclick = driveSyncNow;
+  }
+  info.style.display = 'block';
+  info.style.color = color||'rgba(255,255,255,.5)';
+  info.textContent = msg;
+}
+
+async function driveLoad(){
+  try{
+    // Find existing file
+    const searchResp = await fetch(
+      'https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%22'+DRIVE_FILE_NAME+'%22&fields=files(id,name)',
+      {headers: {Authorization: 'Bearer '+driveToken}}
+    );
+    const searchData = await searchResp.json();
+    if(searchData.files && searchData.files.length > 0){
+      driveFileId = searchData.files[0].id;
+      // Load the data
+      const fileResp = await fetch(
+        'https://www.googleapis.com/drive/v3/files/'+driveFileId+'?alt=media',
+        {headers: {Authorization: 'Bearer '+driveToken}}
+      );
+      const data = await fileResp.json();
+      // Merge Drive data into app (Drive wins)
+      if(data.customers) customers = data.customers;
+      if(data.quotes)    quotes    = data.quotes;
+      if(data.invoices)  invoices  = data.invoices;
+      if(data.settings)  ST        = Object.assign({} , ST, data.settings);
+      // Refresh current screen
+      const activeScr = document.querySelector('.scr.on');
+      if(activeScr) {
+        const id = activeScr.id.replace('scr-','');
+        goTo(id);
+      }
+      driveSetStatus('☁️ Synced — '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+    } else {
+      // No file yet — create one with current data
+      await driveSave();
+      driveSetStatus('☁️ Drive ready — data saved','rgba(255,255,255,.5)');
+    }
+  } catch(e){
+    driveSetStatus('⚠️ Sync error: '+e.message,'#f87171');
+  }
+}
+
+async function driveSave(){
+  if(!driveToken) return;
+  if(driveSyncing) return;
+  driveSyncing = true;
+  try{
+    const data = JSON.stringify({customers,quotes,invoices,settings:ST});
+    const blob = new Blob([data], {type:'application/json'});
+    let url, method;
+    if(driveFileId){
+      url = 'https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=media';
+      method = 'PATCH';
+    } else {
+      // Create new file in appDataFolder
+      const meta = JSON.stringify({name:DRIVE_FILE_NAME,parents:['appDataFolder']});
+      const metaResp = await fetch('https://www.googleapis.com/drive/v3/files?fields=id',{
+        method:'POST',
+        headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'},
+        body:meta
+      });
+      const metaData = await metaResp.json();
+      driveFileId = metaData.id;
+      url = 'https://www.googleapis.com/upload/drive/v3/files/'+driveFileId+'?uploadType=media';
+      method = 'PATCH';
+    }
+    await fetch(url, {
+      method,
+      headers:{Authorization:'Bearer '+driveToken,'Content-Type':'application/json'},
+      body:data
+    });
+    driveSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+  } catch(e){
+    driveSetStatus('⚠️ Save error','#f87171');
+  } finally{
+    driveSyncing = false;
+  }
+}
+
+function driveSyncNow(){
+  if(!driveToken){ driveConnect(); return; }
+  driveSetStatus('⏳ Syncing...','rgba(255,255,255,.5)');
+  driveLoad();
+}
+
+// Patch saveAll to also push to Drive
+const _origSaveAll = saveAll;
+function saveAll(){
+  _origSaveAll();
+  driveSave();
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
