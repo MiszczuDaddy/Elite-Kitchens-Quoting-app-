@@ -1468,14 +1468,19 @@ let driveToken = null;
 let driveFileId = null;
 let driveSyncing = false;
 
-function driveConnect(){
+function driveConnect(silent){
   if(driveToken){ driveSyncNow(); return; }
   const client = google.accounts.oauth2.initTokenClient({
     client_id: DRIVE_CLIENT_ID,
     scope: DRIVE_SCOPE,
+    prompt: silent?'none':'',
     callback: (resp) => {
-      if(resp.error){ driveSetStatus('❌ Connection failed','#f87171'); return; }
+      if(resp.error){
+        if(!silent) driveSetStatus('❌ Connection failed','#f87171');
+        return;
+      }
       driveToken = resp.access_token;
+      localStorage.setItem('ek_drive_connected','1');
       driveSetStatus('✅ Connected — loading data...','#6ee7b7');
       driveLoad();
     }
@@ -1587,6 +1592,13 @@ function saveAll(){
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 goTo('dashboard');
+// Auto-connect Drive if previously connected
+window.addEventListener('load', () => {
+  if(localStorage.getItem('ek_drive_connected')==='1'){
+    driveSetStatus('⏳ Reconnecting...','rgba(255,255,255,.5)');
+    setTimeout(()=>driveConnect(true), 1500); // wait for GIS to load
+  }
+});
 </script>
 </body>
 </html>
