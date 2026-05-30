@@ -139,7 +139,7 @@ tr:last-child td{border-bottom:none}
 <div class="scr" id="scr-builder">
   <div class="ph">
     <div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="builder-back-btn">← Back</button><div class="pt" id="builder-title">New Quote</div></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button><button class="btn btn-o" id="builder-email-btn" style="display:none">📧 Email Quote</button></div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
   <div>
@@ -417,6 +417,7 @@ document.getElementById('builder-back-btn').onclick=()=>goTo('quotes');
 document.getElementById('builder-save-btn').onclick=()=>saveQuote();
 document.getElementById('builder-pdf-btn').onclick=()=>genPDF(editQid);
 document.getElementById('builder-inv-btn').onclick=()=>selectInvoicePkg(editQid);
+document.getElementById('builder-email-btn').onclick=()=>emailQuote(editQid);
 document.getElementById('settings-save-btn').onclick=()=>saveSettings();
 document.getElementById('ac-save-btn').onclick=()=>saveCustomer();
 document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
@@ -456,6 +457,7 @@ function newQuote(custId){
   document.getElementById('builder-title').textContent='New Quote';
   document.getElementById('builder-pdf-btn').style.display='none';
   document.getElementById('builder-inv-btn').style.display='none';
+  document.getElementById('builder-email-btn').style.display='none';
   // clear fields
   ['q-name','q-phone','q-email','q-addr','q-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('q-doors').value='';
@@ -699,6 +701,7 @@ function saveQuote(){
   document.getElementById('builder-title').textContent='Quote #'+String(q.id).slice(-4).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
+  document.getElementById('builder-email-btn').style.display='';
   alert('✅ Quote saved!');
 }
 
@@ -710,6 +713,7 @@ function editQuote(qid){
   document.getElementById('builder-title').textContent='Quote #'+String(qid).slice(-4).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
+  document.getElementById('builder-email-btn').style.display='';
   document.getElementById('q-name').value=c.name||'';
   document.getElementById('q-phone').value=c.phone||'';
   document.getElementById('q-email').value=c.email||'';
@@ -779,7 +783,7 @@ function renderQuotes(){
     quotes.map(q=>{
       const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
       const pkgs=(q.ess?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
-      return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table>';
 }
 
@@ -1566,6 +1570,46 @@ const _origSaveAll = saveAll;
 function saveAll(){
   _origSaveAll();
   fbSave();
+}
+
+
+// ─── EMAIL QUOTE ──────────────────────────────────────────────────────────────
+function emailQuote(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const c=customers.find(x=>x.id===q.cid)||{};
+  if(!c.email){alert('No email address saved for this customer. Please add one in the quote.');return;}
+
+  const firstName=(c.name||'').split(' ')[0]||'there';
+  const qNum='#'+String(q.id).slice(-4).padStart(4,'0');
+
+  // Work out active packages for subject
+  const pkgs=['Essential'];
+  if(q.prem?.on) pkgs.push('Premium');
+  if(q.pp?.on) pkgs.push('Premium Plus');
+
+  const subject=`Elite Kitchens — Kitchen Quote ${qNum}`;
+
+  const body=`Hi ${firstName},
+
+Thank you for getting in touch with Elite Kitchens. Please find attached your kitchen quote ${qNum}.
+
+I've put together ${pkgs.length>1?pkgs.length+' options':'a proposal'} based on our conversation — all details are outlined in the attached PDF.
+
+The quote is valid for 30 days. If you have any questions or would like to make any changes, please don't hesitate to get in touch.
+
+Looking forward to hearing from you.
+
+Kind regards,
+Thomas
+Elite Kitchens
+089 464 1917 | info@elitekitchens.ie`;
+
+  const gmailUrl='https://mail.google.com/mail/?view=cm'
+    +'&to='+encodeURIComponent(c.email)
+    +'&su='+encodeURIComponent(subject)
+    +'&body='+encodeURIComponent(body);
+
+  window.open(gmailUrl,'_blank');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
