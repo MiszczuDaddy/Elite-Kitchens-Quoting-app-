@@ -403,16 +403,17 @@ const DEF_EXTRAS=[
 ];
 const DEF_SETTINGS={ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:500,gl_price:1000,extras:DEF_EXTRAS};
 
-let customers = load('customers') || [];
-let quotes    = load('quotes')    || [];
-let invoices  = load('invoices')  || [];
+let customers    = load('customers')    || [];
+let quotes       = load('quotes')       || [];
+let invoices     = load('invoices')     || [];
+let quoteCounter = load('quoteCounter') || quotes.length;
 let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
 if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
 
 let editQid=null, editCid=null, exIdx=0;
 const VAT=13.5;
 
-function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices)}
+function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter)}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
@@ -732,10 +733,10 @@ function saveQuote(){
     created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString()
   };
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
-  else quotes.unshift(q);
+  else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
   saveAll();
-  document.getElementById('builder-title').textContent='Quote #'+String(q.id).slice(-4).padStart(4,'0');
+  document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
@@ -747,7 +748,7 @@ function editQuote(qid){
   const q=quotes.find(x=>x.id===qid); if(!q) return;
   const c=customers.find(x=>x.id===q.cid)||{};
   editQid=qid; editCid=q.cid;
-  document.getElementById('builder-title').textContent='Quote #'+String(qid).slice(-4).padStart(4,'0');
+  document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
@@ -829,7 +830,7 @@ function renderQuotes(){
     list.map(q=>{
       const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
       const pkgs=(q.ess?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
-      return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table>';
 }
 
@@ -886,7 +887,7 @@ function renderDash(){
   const recent=quotes.slice(0,8);
   if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
   el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
-    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.id).slice(-4).padStart(4,'0')}</strong></td><td>${c.name}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
+    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
   '</tbody></table>';
 }
 
@@ -1314,7 +1315,7 @@ function genInvoice(qid, pkgKey){
   const balance=total*0.70;
 
   // ── Invoice meta ──────────────────────────────────────────────────────────
-  const invNum='INV-'+String(q.id).slice(-4).padStart(4,'0');
+  const invNum='INV-'+String(q.num||q.id).padStart(4,'0');
   const today=new Date();
   const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
   const due=new Date(today); due.setDate(due.getDate()+30);
@@ -1674,7 +1675,7 @@ function emailQuote(qid){
   if(!c.email){alert('No email address saved for this customer. Please add one in the quote.');return;}
 
   const firstName=(c.name||'').split(' ')[0]||'there';
-  const qNum='#'+String(q.id).slice(-4).padStart(4,'0');
+  const qNum='#'+String(q.num||q.id).padStart(4,'0');
 
   // Work out active packages for subject
   const pkgs=['Essential'];
