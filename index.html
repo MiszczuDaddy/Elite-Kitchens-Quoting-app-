@@ -808,7 +808,7 @@ function editQuote(qid){
 }
 
 async function delQuote(qid){
-  if(!confirm('Delete this quote?')) return;
+  // confirm removed — blocked by browser on GitHub Pages
   quotes=quotes.filter(q=>q.id!==qid);
   save('quotes',quotes);
   renderQuotes();
