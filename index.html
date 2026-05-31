@@ -406,7 +406,7 @@ const DEF_SETTINGS={ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:50
 let customers    = load('customers')    || [];
 let quotes       = load('quotes')       || [];
 let invoices     = load('invoices')     || [];
-let quoteCounter = load('quoteCounter') || quotes.length;
+let quoteCounter = load('quoteCounter') || Math.max(0,...(quotes.map(q=>q.num||0)));
 let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
 if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
 
@@ -815,7 +815,7 @@ async function delQuote(qid){
   if(fbUser){
     try{
       await fbDb.collection('users').doc(fbUser.uid).set(
-        {customers,quotes,invoices,settings:ST,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        {customers,quotes,invoices,settings:ST,quoteCounter,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
     }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
   }
@@ -1629,10 +1629,12 @@ async function fbLoad(){
     const doc = await fbDb.collection('users').doc(fbUser.uid).get();
     if(doc.exists){
       const data = doc.data();
-      if(data.customers) customers = data.customers;
-      if(data.quotes)    quotes    = data.quotes;
-      if(data.invoices)  invoices  = data.invoices;
-      if(data.settings)  ST        = Object.assign({}, ST, data.settings);
+      if(data.customers)     customers    = data.customers;
+      if(data.quotes)        quotes       = data.quotes;
+      if(data.invoices)      invoices     = data.invoices;
+      if(data.settings)      ST           = Object.assign({}, ST, data.settings);
+      if(data.quoteCounter)  quoteCounter = data.quoteCounter;
+      else quoteCounter = Math.max(0,...(quotes.map(q=>q.num||0)));
       // Save to localStorage as backup
       save('customers',customers); save('quotes',quotes);
       save('invoices',invoices);   save('settings',ST);
@@ -1656,7 +1658,7 @@ async function fbSave(){
   fbSaving = true;
   try{
     await fbDb.collection('users').doc(fbUser.uid).set({
-      customers, quotes, invoices, settings: ST,
+      customers, quotes, invoices, settings: ST, quoteCounter,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     fbSetStatus('☁️ Saved ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
