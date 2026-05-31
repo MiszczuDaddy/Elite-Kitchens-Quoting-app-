@@ -697,7 +697,7 @@ function recalc(){
 }
 
 // ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
-function saveQuote(){
+async function saveQuote(){
   const name=document.getElementById('q-name').value.trim();
   if(!name){alert('Please enter a customer name.');return;}
   // upsert customer
@@ -736,12 +736,14 @@ function saveQuote(){
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
-  saveAll();
+  save('customers',customers);save('quotes',quotes);save('invoices',invoices);save('settings',ST);save('quoteCounter',quoteCounter);
   document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
-  showToast('✅ Quote saved!');
+  showToast('⏳ Saving...');
+  await fbSave();
+  showToast('✅ Quote saved to cloud!');
 }
 
 // ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
