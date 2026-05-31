@@ -697,7 +697,7 @@ function recalc(){
 }
 
 // ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
-async function saveQuote(){
+function saveQuote(){
   const name=document.getElementById('q-name').value.trim();
   if(!name){alert('Please enter a customer name.');return;}
   // upsert customer
@@ -736,14 +736,12 @@ async function saveQuote(){
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
-  save('customers',customers);save('quotes',quotes);save('invoices',invoices);save('settings',ST);save('quoteCounter',quoteCounter);
+  saveAll();
   document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
-  showToast('⏳ Saving...');
-  await fbSave();
-  showToast('✅ Quote saved to cloud!');
+  showToast('✅ Quote saved!');
 }
 
 // ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
@@ -1657,8 +1655,7 @@ async function fbLoad(){
 }
 
 async function fbSave(){
-  if(!fbUser || fbSaving) return;
-  fbSaving = true;
+  if(!fbUser) return;
   try{
     await fbDb.collection('users').doc(fbUser.uid).set({
       customers, quotes, invoices, settings: ST, quoteCounter,
@@ -1668,8 +1665,6 @@ async function fbSave(){
   } catch(e){
     fbSetStatus('⚠️ Save error','#f87171');
     console.error(e);
-  } finally{
-    fbSaving = false;
   }
 }
 
