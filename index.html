@@ -807,10 +807,18 @@ function editQuote(qid){
   goTo('builder');
 }
 
-function delQuote(qid){
+async function delQuote(qid){
   if(!confirm('Delete this quote?')) return;
   quotes=quotes.filter(q=>q.id!==qid);
-  saveAll(); renderQuotes();
+  save('quotes',quotes);
+  renderQuotes();
+  if(fbUser){
+    try{
+      await fbDb.collection('users').doc(fbUser.uid).set(
+        {customers,quotes,invoices,settings:ST,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+    }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
+  }
 }
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
