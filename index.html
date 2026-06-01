@@ -187,8 +187,11 @@ tr:last-child td{border-bottom:none}
     <!-- Doors -->
     <div class="card">
       <div class="ct">Number of Doors</div>
-      <div style="max-width:200px"><label class="fl">Total door count</label><input class="fc" type="number" id="q-doors" min="0" placeholder="e.g. 14"></div>
-      <div style="max-width:200px;margin-top:10px"><label class="fl">Number of drawers</label><input class="fc" type="number" id="q-drawers" min="0" placeholder="e.g. 8"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px">
+        <div><label class="fl">Number of doors</label><input class="fc" type="number" id="q-doors" min="0" placeholder="e.g. 14"></div>
+        <div><label class="fl">Number of top boxes</label><input class="fc" type="number" id="q-topboxes" min="0" placeholder="e.g. 6"></div>
+        <div><label class="fl">Number of drawers</label><input class="fc" type="number" id="q-drawers" min="0" placeholder="e.g. 8"></div>
+      </div>
     </div>
     <!-- Packages -->
     <div class="card">
@@ -201,6 +204,10 @@ tr:last-child td{border-bottom:none}
         </div>
         <div class="pkg-body" style="display:block">
           <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-ess-ppd" value="300"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-ess-ppd" value="300"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-ess-tppd" value="200"></div>
+          </div>
           <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-ess-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
           <div style="font-size:12px;color:var(--gray);margin-top:8px">Vinyl wrap or melamine · Blum hinges · Installation</div>
         </div>
@@ -215,7 +222,10 @@ tr:last-child td{border-bottom:none}
           <div class="pkg-price" id="live-prem" style="color:var(--gray)">€0</div>
         </div>
         <div class="pkg-body" id="prem-body">
-          <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-prem-ppd" value="360"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-prem-ppd" value="360"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-prem-tppd" value="200"></div>
+          </div>
           <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-prem-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
           <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-prem-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Blum soft-close hinges&#10;Professional installation"></textarea></div>
         </div>
@@ -231,7 +241,10 @@ tr:last-child td{border-bottom:none}
           <div class="pkg-price" id="live-pp" style="color:var(--gray)">€0</div>
         </div>
         <div class="pkg-body" id="pp-body">
-          <div style="max-width:180px;margin-top:8px"><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-pp-ppd" value="360"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-pp-ppd" value="360"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-pp-tppd" value="200"></div>
+          </div>
           <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-pp-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
           <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-pp-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Pocket door system&#10;Oak cutlery trays&#10;Professional installation"></textarea></div>
           <!-- Premium Plus own extras -->
@@ -455,7 +468,7 @@ document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
 document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
 
 // live recalc on input change in builder
-['q-doors','q-drawers','q-ess-ppd','q-prem-ppd','q-pp-ppd','q-lam','q-stone','q-gs','q-gl'].forEach(id=>{
+['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-lam','q-stone','q-gs','q-gl'].forEach(id=>{
   document.getElementById(id).addEventListener('input', recalc);
 });
 document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
@@ -501,6 +514,10 @@ function newQuote(custId){
   ['q-name','q-phone','q-email','q-addr','q-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('q-doors').value='';
   document.getElementById('q-drawers').value='';
+  document.getElementById('q-topboxes').value='';
+  document.getElementById('q-ess-tppd').value='200';
+  document.getElementById('q-prem-tppd').value='200';
+  document.getElementById('q-pp-tppd').value='200';
   document.getElementById('q-ess-drawer').value='none';
   document.getElementById('q-prem-drawer').value='none';
   document.getElementById('q-pp-drawer').value='none';
@@ -665,11 +682,17 @@ function recalc(){
   const premOn=document.getElementById('q-prem-on').checked;
   const ppOn=document.getElementById('q-pp-on').checked;
   const dCount=parseInt(document.getElementById('q-drawers').value)||0;
+  const ntb=parseInt(document.getElementById('q-topboxes').value)||0;
   const DPRICES={none:0,cemux:60,blum:100};
   const essDrawerT=dCount*(DPRICES[document.getElementById('q-ess-drawer').value]||0);
   const premDrawerT=premOn?dCount*(DPRICES[document.getElementById('q-prem-drawer').value]||0):0;
   const ppDrawerT=ppOn?dCount*(DPRICES[document.getElementById('q-pp-drawer').value]||0):0;
-  const essK=nd*essPpd+essDrawerT, premK=nd*premPpd+premDrawerT, ppK=nd*ppPpd+ppDrawerT;
+  const essTbPpd=parseFloat(document.getElementById('q-ess-tppd').value)||0;
+  const premTbPpd=parseFloat(document.getElementById('q-prem-tppd').value)||0;
+  const ppTbPpd=parseFloat(document.getElementById('q-pp-tppd').value)||0;
+  const essK=nd*essPpd+ntb*essTbPpd+essDrawerT;
+  const premK=nd*premPpd+ntb*premTbPpd+premDrawerT;
+  const ppK=nd*ppPpd+ntb*ppTbPpd+ppDrawerT;
   const lamM=parseFloat(document.getElementById('q-lam').value)||0;
   const lamT=lamM*ST.lam_rate;
   document.getElementById('lam-total').textContent=fmt(lamT);
@@ -723,11 +746,12 @@ function saveQuote(){
     cid,
     doors:parseInt(document.getElementById('q-doors').value)||0,
     drawers:parseInt(document.getElementById('q-drawers').value)||0,
+    topboxes:parseInt(document.getElementById('q-topboxes').value)||0,
     status:document.getElementById('q-status').value,
     notes:document.getElementById('q-notes').value,
-    ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,drawer:document.getElementById('q-ess-drawer').value||'none'},
-    prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
-    pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
+    ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
+    prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,tppd:parseFloat(document.getElementById('q-prem-tppd').value)||200,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
+    pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,tppd:parseFloat(document.getElementById('q-pp-tppd').value)||200,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
     wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0},
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
@@ -759,6 +783,10 @@ function editQuote(qid){
   document.getElementById('q-addr').value=c.addr||'';
   document.getElementById('q-doors').value=q.doors;
   document.getElementById('q-drawers').value=q.drawers||0;
+  document.getElementById('q-topboxes').value=q.topboxes||0;
+  document.getElementById('q-ess-tppd').value=q.ess?.tppd||200;
+  document.getElementById('q-prem-tppd').value=q.prem?.tppd||200;
+  document.getElementById('q-pp-tppd').value=q.pp?.tppd||200;
   document.getElementById('q-ess-drawer').value=q.ess?.drawer||'none';
   document.getElementById('q-prem-drawer').value=q.prem?.drawer||'none';
   document.getElementById('q-pp-drawer').value=q.pp?.drawer||'none';
@@ -974,7 +1002,7 @@ function genPDF(qid){
 
   // ── Per-package totals ────────────────────────────────────────────────────
   const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
-  const essK=q.doors*(q.ess.ppd||300)+essDrawerT;
+  const essK=q.doors*(q.ess.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
 
   const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
   const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
@@ -986,6 +1014,7 @@ function genPDF(qid){
   }
 
   // ── Active packages ───────────────────────────────────────────────────────
+  const ntb=q.topboxes||0;
   const essDesc='Vinyl wrap or melamine doors\nBlum soft-close hinges\nInstallation';
   const premDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nProfessional installation';
   const ppDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nPremium add-on systems\nProfessional installation';
@@ -999,14 +1028,14 @@ function genPDF(qid){
   }];
   if(q.prem?.on) activePkgs.push({
     name:'Premium',
-    k:q.doors*(q.prem.ppd||360)+premDrawerT,
+    k:q.doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,
     desc:q.prem.desc||premDescFallback,
     drawer:q.prem?.drawer||'none',
     ppExt:0
   });
   if(q.pp?.on) activePkgs.push({
     name:'Premium Plus',
-    k:q.doors*(q.pp.ppd||360)+ppDrawerT,
+    k:q.doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT,
     desc:q.pp.desc||ppDescFallback,
     drawer:q.pp?.drawer||'none',
     ppExt:ppExtTotal
@@ -1277,9 +1306,9 @@ function genInvoice(qid, pkgKey){
 
   // ── Chosen package ────────────────────────────────────────────────────────
   const pkgMap={
-    ess:{label:'Essential',ppd:q.ess.ppd||300,desc:'Kitchen Cabinetry — Essential',drawer:q.ess?.drawer||'none'},
-    prem:{label:'Premium',ppd:q.prem?.ppd||360,desc:'Kitchen Cabinetry — Premium',drawer:q.prem?.drawer||'none'},
-    pp:{label:'Premium Plus',ppd:q.pp?.ppd||360,desc:'Kitchen Cabinetry — Premium Plus',drawer:q.pp?.drawer||'none'}
+    ess:{label:'Essential',ppd:q.ess.ppd||300,tppd:q.ess?.tppd||200,desc:'Kitchen Cabinetry — Essential',drawer:q.ess?.drawer||'none'},
+    prem:{label:'Premium',ppd:q.prem?.ppd||360,tppd:q.prem?.tppd||200,desc:'Kitchen Cabinetry — Premium',drawer:q.prem?.drawer||'none'},
+    pp:{label:'Premium Plus',ppd:q.pp?.ppd||360,tppd:q.pp?.tppd||200,desc:'Kitchen Cabinetry — Premium Plus',drawer:q.pp?.drawer||'none'}
   };
   const pkg=pkgMap[pkgKey]||pkgMap.ess;
   const ppExtTotal=pkgKey==='pp'?(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0):0;
@@ -1288,7 +1317,8 @@ function genInvoice(qid, pkgKey){
   const items=[];
 
   // Kitchen — single line covering cabinetry, drawers, extras, glass (customer sees one price)
-  const cabNet=(Number(q.doors)||0)*(Number(pkg.ppd)||300);
+  const ntbInv=q.topboxes||0;
+  const cabNet=(Number(q.doors)||0)*(Number(pkg.ppd)||300)+(ntbInv*(Number(pkg.tppd)||200));
   const drawerNet=dCount*((pkg.drawer&&pkg.drawer!=='none')?DPRICES[pkg.drawer]||0:0);
   const ppExtNet=pkgKey==='pp'?(q.pp?.extras||[]).filter(e=>!e.free).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0):0;
   const gsQ=q.glass.sq||0, glQ=q.glass.lq||0;
