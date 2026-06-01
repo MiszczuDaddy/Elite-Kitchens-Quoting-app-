@@ -798,12 +798,12 @@ function editQuote(qid){
   document.getElementById('q-pp-on').checked=q.pp.on;
   if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
   if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
-  document.getElementById('q-lam').value=q.wt.lamM||0;
+  document.getElementById('q-lam').value=q.wt?.lamM||0;
   document.getElementById('q-stone-on').checked=q.wt.stoneOn||false;
   document.getElementById('stone-fields').style.display=q.wt.stoneOn?'block':'none';
   document.getElementById('q-stone').value=q.wt.stoneP||0;
-  document.getElementById('q-gs').value=q.glass.sq||0;
-  document.getElementById('q-gl').value=q.glass.lq||0;
+  document.getElementById('q-gs').value=q.glass?.sq||0;
+  document.getElementById('q-gl').value=q.glass?.lq||0;
   document.getElementById('q-status').value=q.status||'Draft';
   document.getElementById('q-notes').value=q.notes||'';
   document.getElementById('extra-rows').innerHTML='';
@@ -981,11 +981,11 @@ function genPDF(qid){
   const logo=load('logo')||'';
 
   // ── Calculations ──────────────────────────────────────────────────────────
-  const lamT=(q.wt.lamM||0)*ST.lam_rate;
-  const stoneT=q.wt.stoneOn?(q.wt.stoneP||0):0;
+  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
+  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
   const wtT=lamT+stoneT;
-  const gsT=(q.glass.sq||0)*ST.gs_price;
-  const glT=(q.glass.lq||0)*ST.gl_price;
+  const gsT=(q.glass?.sq||0)*ST.gs_price;
+  const glT=(q.glass?.lq||0)*ST.gl_price;
   const glassT=gsT+glT;
   const extT=(q.extras||[]).reduce((s,e)=>s+e.qty*e.price,0);
   const shared=extT+wtT+glassT;
@@ -1002,7 +1002,7 @@ function genPDF(qid){
 
   // ── Per-package totals ────────────────────────────────────────────────────
   const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
-  const essK=q.doors*(q.ess.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+  const essK=q.doors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
 
   const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
   const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
@@ -1320,7 +1320,7 @@ function genInvoice(qid, pkgKey){
   const cabNet=(Number(q.doors)||0)*(Number(pkg.ppd)||300)+(ntbInv*(Number(pkg.tppd)||200));
   const drawerNet=dCount*((pkg.drawer&&pkg.drawer!=='none')?DPRICES[pkg.drawer]||0:0);
   const ppExtNet=pkgKey==='pp'?(q.pp?.extras||[]).filter(e=>!e.free).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0):0;
-  const gsQ=q.glass.sq||0, glQ=q.glass.lq||0;
+  const gsQ=q.glass?.sq||0, glQ=q.glass?.lq||0;
   const glassNet=gsQ*ST.gs_price+glQ*ST.gl_price;
   const extrasNet=(q.extras||[]).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0);
   const kitchenTotal=cabNet+drawerNet+ppExtNet+glassNet+extrasNet;
@@ -1328,7 +1328,7 @@ function genInvoice(qid, pkgKey){
   const includedItems=[];
   if(dCount>0&&pkg.drawer&&pkg.drawer!=='none') includedItems.push(`${DLABELS[pkg.drawer]} drawer boxes (${dCount} units)`);
   if(pkgKey==='pp')(q.pp?.extras||[]).filter(e=>e.name&&(e.free||e.qty>0)).forEach(e=>includedItems.push(e.name));
-  const igsQ=q.glass.sq||0, iglQ=q.glass.lq||0;
+  const igsQ=q.glass?.sq||0, iglQ=q.glass?.lq||0;
   if(igsQ>0) includedItems.push(`Glazed door cabinet${igsQ>1?'s':''} — small (${igsQ})`);
   if(iglQ>0) includedItems.push(`Glazed larder door${iglQ>1?'s':''} — large (${iglQ})`);
   (q.extras||[]).filter(e=>e.name).forEach(e=>includedItems.push(e.name));
@@ -1340,9 +1340,9 @@ function genInvoice(qid, pkgKey){
   items.push({desc:'Kitchen Supply & Installation — '+pkg.label+includedHtml,qty:1,rate:kitchenTotal,amt:kitchenTotal});
 
   // Worktops — kept separate as they are a distinct product
-  const lamT=(q.wt.lamM||0)*ST.lam_rate;
+  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
   if(lamT>0) items.push({desc:`Laminate Worktop (${q.wt.lamM}m)`,qty:q.wt.lamM,rate:ST.lam_rate,amt:lamT});
-  const stoneT=q.wt.stoneOn?(q.wt.stoneP||0):0;
+  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
   if(stoneT>0) items.push({desc:'Stone / Quartz Worktop',qty:1,rate:stoneT,amt:stoneT});
 
   // ── Totals ─────────────────────────────────────────────────────────────────
