@@ -993,6 +993,7 @@ function genPDF(qid){
   const DPRICES={none:0,cemux:60,blum:100};
   const DLABELS={none:'',cemux:'Cemux Soft-Close',blum:'Blum Merivobox'};
   const dCount=q.drawers||0;
+  const ntb=q.topboxes||0;
 
   // ── Date & reference ──────────────────────────────────────────────────────
   const dateStr=new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
@@ -1013,7 +1014,6 @@ function genPDF(qid){
   }
 
   // ── Active packages ───────────────────────────────────────────────────────
-  const ntb=q.topboxes||0;
   const essDesc='Vinyl wrap or melamine doors\nBlum soft-close hinges\nInstallation';
   const premDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nProfessional installation';
   const ppDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nPremium add-on systems\nProfessional installation';
