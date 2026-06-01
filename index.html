@@ -468,7 +468,7 @@ document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
 
 // live recalc on input change in builder
 ['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-lam','q-stone','q-gs','q-gl'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', recalc);
+  const el=document.getElementById(id); if(el) el.addEventListener('input', recalc);
 });
 document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
 document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
@@ -686,9 +686,9 @@ function recalc(){
   const essDrawerT=dCount*(DPRICES[document.getElementById('q-ess-drawer').value]||0);
   const premDrawerT=premOn?dCount*(DPRICES[document.getElementById('q-prem-drawer').value]||0):0;
   const ppDrawerT=ppOn?dCount*(DPRICES[document.getElementById('q-pp-drawer').value]||0):0;
-  const essTbPpd=parseFloat(document.getElementById('q-ess-tppd').value)||0;
-  const premTbPpd=parseFloat(document.getElementById('q-prem-tppd').value)||0;
-  const ppTbPpd=parseFloat(document.getElementById('q-pp-tppd').value)||0;
+  const essTbPpd=parseFloat(document.getElementById('q-ess-tppd')?.value)||0;
+  const premTbPpd=parseFloat(document.getElementById('q-prem-tppd')?.value)||0;
+  const ppTbPpd=parseFloat(document.getElementById('q-pp-tppd')?.value)||0;
   const essK=nd*essPpd+ntb*essTbPpd+essDrawerT;
   const premK=nd*premPpd+ntb*premTbPpd+premDrawerT;
   const ppK=nd*ppPpd+ntb*ppTbPpd+ppDrawerT;
