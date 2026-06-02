@@ -720,8 +720,9 @@ function recalc(){
 
 // ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
 function saveQuote(){
+  try{
   const name=document.getElementById('q-name').value.trim();
-  if(!name){alert('Please enter a customer name.');return;}
+  if(!name){showToast('Please enter a customer name.','#991b1b');return;}
   // upsert customer
   let cid=editCid;
   const phone=document.getElementById('q-phone').value.trim();
@@ -781,6 +782,10 @@ function saveQuote(){
     });
   } else {
     showToast('✅ Saved locally (sign in to sync)');
+  }
+  } catch(err){
+    showToast('❌ Error: '+err.message,'#991b1b');
+    console.error('saveQuote error:',err);
   }
 }
 
