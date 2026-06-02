@@ -316,6 +316,12 @@ tr:last-child td{border-bottom:none}
           <select class="fc" id="q-status"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Declined</option></select>
         </div>
       </div>
+      <div style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-show-exvat" style="width:16px;height:16px;accent-color:var(--g)">
+          Show ex-VAT price on PDF quote
+        </label>
+      </div>
       <div class="fg"><label class="fl">Internal Notes (not on PDF)</label><textarea class="fc" id="q-notes" rows="3" placeholder="Customer preferences, survey notes..."></textarea></div>
     </div>
   </div>
@@ -532,6 +538,7 @@ function newQuote(custId){
   document.getElementById('q-doors').value='';
   document.getElementById('q-drawers').value='';
   document.getElementById('q-incl-sink').checked=false;
+  document.getElementById('q-show-exvat').checked=false;
   document.getElementById('q-incl-extractor').checked=false;
   document.getElementById('q-incl-removal').checked=false;
   document.getElementById('q-topboxes').value='';
@@ -777,6 +784,7 @@ function saveQuote(){
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
+    showExVat:document.getElementById('q-show-exvat').checked,
     created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString()
   };
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
@@ -827,6 +835,7 @@ function editQuote(qid){
   document.getElementById('q-doors').value=q.doors;
   document.getElementById('q-drawers').value=q.drawers||0;
   document.getElementById('q-incl-sink').checked=q.incl?.sink||false;
+  document.getElementById('q-show-exvat').checked=q.showExVat||false;
   document.getElementById('q-incl-extractor').checked=q.incl?.extractor||false;
   document.getElementById('q-incl-removal').checked=q.incl?.removal||false;
   document.getElementById('q-topboxes').value=q.topboxes||0;
@@ -1139,8 +1148,14 @@ function genPDF(qid){
   if(wtT>0)             bodyRows+=stdRow('Worktops',nextShade());
   if(glassT>0)          bodyRows+=stdRow('Glass Door Cabinets',nextShade());
 
+  const showExVat=q.showExVat||false;
   let totalRow=`<tr style="background:#1e2832;color:#fff"><td style="padding:11px 14px;font-size:12px;font-weight:700">TOTAL (inc. VAT)</td>`;
-  activePkgs.forEach(p=>{ totalRow+=`<td style="padding:11px 14px;text-align:center;font-size:13px;font-weight:700">€${totalIncVAT(p.k,p.ppExt).toLocaleString('en-IE')}</td>`; });
+  activePkgs.forEach(p=>{
+    const incVat=totalIncVAT(p.k,p.ppExt);
+    const exVat=Math.round((p.k+(p.ppExt||0)+shared));
+    const exVatLine=showExVat?`<div style="font-size:10px;font-weight:400;opacity:.75;margin-top:2px">€${exVat.toLocaleString('en-IE')} ex. VAT</div>`:'';
+    totalRow+=`<td style="padding:11px 14px;text-align:center;font-size:13px;font-weight:700">€${incVat.toLocaleString('en-IE')}${exVatLine}</td>`;
+  });
   totalRow+=`</tr>`;
 
   const pricingTable=`<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:12px">
