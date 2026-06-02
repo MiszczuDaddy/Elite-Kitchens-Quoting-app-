@@ -275,6 +275,24 @@ tr:last-child td{border-bottom:none}
         <div id="stone-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-stone" value="0" style="max-width:150px"></div>
       </div>
     </div>
+    <!-- Inclusions -->
+    <div class="card">
+      <div class="ct">Standard Inclusions</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-sink" style="width:16px;height:16px;accent-color:var(--g)">
+          Sink included
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-extractor" style="width:16px;height:16px;accent-color:var(--g)">
+          Extractor included
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-removal" style="width:16px;height:16px;accent-color:var(--g)">
+          Removal of existing kitchen
+        </label>
+      </div>
+    </div>
     <!-- Glass Doors -->
     <div class="card">
       <div class="ct">Glass Door Cabinets</div>
@@ -513,6 +531,9 @@ function newQuote(custId){
   ['q-name','q-phone','q-email','q-addr','q-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('q-doors').value='';
   document.getElementById('q-drawers').value='';
+  document.getElementById('q-incl-sink').checked=false;
+  document.getElementById('q-incl-extractor').checked=false;
+  document.getElementById('q-incl-removal').checked=false;
   document.getElementById('q-topboxes').value='';
   document.getElementById('q-ess-tppd').value='200';
   document.getElementById('q-prem-tppd').value='200';
@@ -755,6 +776,7 @@ function saveQuote(){
     wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0},
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
+    incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
     created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString()
   };
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
@@ -804,6 +826,9 @@ function editQuote(qid){
   document.getElementById('q-addr').value=c.addr||'';
   document.getElementById('q-doors').value=q.doors;
   document.getElementById('q-drawers').value=q.drawers||0;
+  document.getElementById('q-incl-sink').checked=q.incl?.sink||false;
+  document.getElementById('q-incl-extractor').checked=q.incl?.extractor||false;
+  document.getElementById('q-incl-removal').checked=q.incl?.removal||false;
   document.getElementById('q-topboxes').value=q.topboxes||0;
   document.getElementById('q-ess-tppd').value=q.ess?.tppd||200;
   document.getElementById('q-prem-tppd').value=q.prem?.tppd||200;
@@ -1105,11 +1130,14 @@ function genPDF(qid){
   }
 
   let bodyRows=doorRow+drawerRow;
-  bodyRows+=stdRow('Kitchen Cabinetry (supply &amp; fit)',anyDrawers?'#fff':'#f9f9f9');
-  bodyRows+=stdRow('Sink &amp; Extractor',anyDrawers?'#f9f9f9':'#fff');
-  bodyRows+=stdRow('Removal of Existing Kitchen',anyDrawers?'#fff':'#f9f9f9');
-  if(wtT>0)    bodyRows+=stdRow('Worktops',anyDrawers?'#f9f9f9':'#fff');
-  if(glassT>0) bodyRows+=stdRow('Glass Door Cabinets',anyDrawers?'#fff':'#f9f9f9');
+  let rowIdx=0;
+  function nextShade(){return rowIdx++%2===0?'#fff':'#f9f9f9';}
+  bodyRows+=stdRow('Kitchen Cabinetry (supply &amp; fit)',nextShade());
+  if(q.incl?.sink)      bodyRows+=stdRow('Sink',nextShade());
+  if(q.incl?.extractor) bodyRows+=stdRow('Extractor',nextShade());
+  if(q.incl?.removal)   bodyRows+=stdRow('Removal of Existing Kitchen',nextShade());
+  if(wtT>0)             bodyRows+=stdRow('Worktops',nextShade());
+  if(glassT>0)          bodyRows+=stdRow('Glass Door Cabinets',nextShade());
 
   let totalRow=`<tr style="background:#1e2832;color:#fff"><td style="padding:11px 14px;font-size:12px;font-weight:700">TOTAL (inc. VAT)</td>`;
   activePkgs.forEach(p=>{ totalRow+=`<td style="padding:11px 14px;text-align:center;font-size:13px;font-weight:700">€${totalIncVAT(p.k,p.ppExt).toLocaleString('en-IE')}</td>`; });
@@ -1209,9 +1237,10 @@ ${includesSection}
   <td style="width:50%;padding:12px 16px;vertical-align:top;border-right:1px solid #ddd">
     <div style="font-weight:700;margin-bottom:10px">This quotation includes:</div>
     <div style="color:#2e7d32;margin-bottom:6px">v Supply &amp; installation of all cabinetry</div>
-    <div style="color:#2e7d32;margin-bottom:6px">v Sink &amp; extractor</div>
+    ${q.incl?.sink?'<div style="color:#2e7d32;margin-bottom:6px">v Sink</div>':''}
+    ${q.incl?.extractor?'<div style="color:#2e7d32;margin-bottom:6px">v Extractor</div>':''}
     <div style="color:#2e7d32;margin-bottom:6px">v VAT</div>
-    <div style="color:#2e7d32;margin-bottom:6px">v Removal &amp; disposal of existing kitchen</div>
+    ${q.incl?.removal?'<div style="color:#2e7d32;margin-bottom:6px">v Removal &amp; disposal of existing kitchen</div>':''}
     <div style="color:#2e7d32">v 6-month snagging period after completion</div>
   </td>
   <td style="width:50%;padding:12px 16px;vertical-align:top">
