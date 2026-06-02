@@ -426,7 +426,7 @@ if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
 let editQid=null, editCid=null, exIdx=0;
 const VAT=13.5;
 
-function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter)}
+function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);fbSave();}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
@@ -764,7 +764,24 @@ function saveQuote(){
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
-  showToast('✅ Quote saved!');
+  // Save to localStorage immediately
+  save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);
+  showToast('⏳ Saving...');
+  // Save to Firebase and confirm
+  if(fbUser){
+    fbDb.collection('users').doc(fbUser.uid).set({
+      customers,quotes,invoices,settings:ST,quoteCounter,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    }).then(()=>{
+      showToast('✅ Quote saved to cloud!','#065f46');
+      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+    }).catch(e=>{
+      showToast('⚠️ Cloud save failed — data saved locally','#991b1b');
+      console.error(e);
+    });
+  } else {
+    showToast('✅ Saved locally (sign in to sync)');
+  }
 }
 
 // ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
@@ -1697,12 +1714,7 @@ async function fbSave(){
   }
 }
 
-// Patch saveAll to also push to Firebase
-const _origSaveAll = saveAll;
-function saveAll(){
-  _origSaveAll();
-  fbSave();
-}
+// Firebase save is called explicitly from saveQuote and saveAll
 
 
 // ─── EMAIL QUOTE ──────────────────────────────────────────────────────────────
