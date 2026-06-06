@@ -422,8 +422,8 @@ tr:last-child td{border-bottom:none}
     <div style="font-weight:700;font-size:16px;margin-bottom:6px">Delete Quote?</div>
     <div style="color:#6b7280;font-size:13px;margin-bottom:20px">This cannot be undone.</div>
     <div style="display:flex;gap:10px;justify-content:center">
-      <button id="confirm-yes" style="background:#991b1b;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Yes, Delete</button>
-      <button id="confirm-no" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Cancel</button>
+      <button onclick="confirmYes()" style="background:#991b1b;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Yes, Delete</button>
+      <button onclick="confirmNo()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Cancel</button>
     </div>
   </div>
 </div>
@@ -1642,16 +1642,18 @@ let _confirmCallback=null;
 function showConfirm(cb){
   _confirmCallback=cb;
   const m=document.getElementById('confirm-modal');
-  m.style.display='flex';
+  if(m) m.style.display='flex';
 }
-document.getElementById('confirm-yes').onclick=()=>{
-  document.getElementById('confirm-modal').style.display='none';
+function confirmYes(){
+  const m=document.getElementById('confirm-modal');
+  if(m) m.style.display='none';
   if(_confirmCallback) _confirmCallback();
-};
-document.getElementById('confirm-no').onclick=()=>{
-  document.getElementById('confirm-modal').style.display='none';
+}
+function confirmNo(){
+  const m=document.getElementById('confirm-modal');
+  if(m) m.style.display='none';
   _confirmCallback=null;
-};
+}
 
 // ─── INVOICES ─────────────────────────────────────────────────────────────────
 function renderInvoices(){
