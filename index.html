@@ -416,6 +416,17 @@ tr:last-child td{border-bottom:none}
   <div class="card"><div id="inv-list"></div></div>
 </div>
 
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:22px;margin-bottom:8px">🗑️</div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Delete Quote?</div>
+    <div style="color:#6b7280;font-size:13px;margin-bottom:20px">This cannot be undone.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button id="confirm-yes" style="background:#991b1b;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Yes, Delete</button>
+      <button id="confirm-no" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Cancel</button>
+    </div>
+  </div>
+</div>
 </div><!-- /main -->
 <div id="toast" style="display:none;position:fixed;bottom:28px;right:28px;background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s"></div>
 
@@ -893,7 +904,7 @@ function editQuote(qid){
 }
 
 async function delQuote(qid){
-  // confirm removed — blocked by browser on GitHub Pages
+  showConfirm(async()=>{
   quotes=quotes.filter(q=>q.id!==qid);
   save('quotes',quotes);
   renderQuotes();
@@ -904,6 +915,7 @@ async function delQuote(qid){
       fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
     }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
   }
+  });
 }
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
@@ -1624,6 +1636,22 @@ function doSave(){
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
 
+
+// ─── CONFIRM MODAL ───────────────────────────────────────────────────────────
+let _confirmCallback=null;
+function showConfirm(cb){
+  _confirmCallback=cb;
+  const m=document.getElementById('confirm-modal');
+  m.style.display='flex';
+}
+document.getElementById('confirm-yes').onclick=()=>{
+  document.getElementById('confirm-modal').style.display='none';
+  if(_confirmCallback) _confirmCallback();
+};
+document.getElementById('confirm-no').onclick=()=>{
+  document.getElementById('confirm-modal').style.display='none';
+  _confirmCallback=null;
+};
 
 // ─── INVOICES ─────────────────────────────────────────────────────────────────
 function renderInvoices(){
