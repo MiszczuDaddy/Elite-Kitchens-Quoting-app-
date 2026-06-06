@@ -785,7 +785,8 @@ function saveQuote(){
     extras:getExtras(),
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
     showExVat:document.getElementById('q-show-exvat').checked,
-    created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString()
+    created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString(),
+    num:editQid?(quotes.find(x=>x.id===editQid)||{}).num:undefined
   };
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
