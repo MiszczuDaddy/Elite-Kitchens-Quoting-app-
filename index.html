@@ -1113,40 +1113,40 @@ function genPDF(qid){
 
   // ── Logo ──────────────────────────────────────────────────────────────────
   const logoHtml=logo
-    ?`<img src="${logo}" style="max-height:72px;max-width:210px;object-fit:contain">`
-    :`<div style="font-size:26px;font-weight:900;color:#111;letter-spacing:-1px">ELITE KITCHENS</div>`;
+    ?`<img src="${logo}" style="max-height:55px;max-width:180px;object-fit:contain">`
+    :`<div style="font-size:22px;font-weight:900;color:#111;letter-spacing:-1px">ELITE KITCHENS</div>`;
 
   // ── Pricing table helpers ─────────────────────────────────────────────────
   function firstDescLine(desc){
     return (desc||'').split('\n').map(s=>s.trim()).filter(Boolean)[0]||'—';
   }
   function incCell(shade){
-    return `<td style="padding:10px 14px;text-align:center;font-size:12px;font-weight:700;color:#2e7d32;background:${shade}">Included</td>`;
+    return `<td style="padding:6px 10px;text-align:center;font-size:11px;font-weight:700;color:#2e7d32;background:${shade}">Included</td>`;
   }
 
-  let theadRow=`<tr style="background:#1e2832;color:#fff"><th style="padding:11px 14px;text-align:left;font-size:13px;font-weight:700;width:40%"></th>`;
-  activePkgs.forEach((p,i)=>{ theadRow+=`<th style="padding:11px 14px;text-align:center;font-size:13px;font-weight:700">${optLabels[i]}</th>`; });
+  let theadRow=`<tr style="background:#1e2832;color:#fff"><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;width:40%"></th>`;
+  activePkgs.forEach((p,i)=>{ theadRow+=`<th style="padding:7px 10px;text-align:center;font-size:11px;font-weight:700">${optLabels[i]}</th>`; });
   theadRow+=`</tr>`;
 
   // Door style row
-  let doorRow=`<tr><td style="padding:10px 14px;font-size:12px">Door Style</td>`;
-  activePkgs.forEach(p=>{ doorRow+=`<td style="padding:10px 14px;text-align:center;font-size:12px">${firstDescLine(p.desc)}</td>`; });
+  let doorRow=`<tr><td style="padding:6px 10px;font-size:11px">Door Style</td>`;
+  activePkgs.forEach(p=>{ doorRow+=`<td style="padding:6px 10px;text-align:center;font-size:11px">${firstDescLine(p.desc)}</td>`; });
   doorRow+=`</tr>`;
 
   // Drawer boxes row (only if any package has drawers)
   const anyDrawers=activePkgs.some(p=>p.drawer&&p.drawer!=='none')||dCount>0;
   let drawerRow='';
   if(anyDrawers){
-    drawerRow=`<tr style="background:#f9f9f9"><td style="padding:10px 14px;font-size:12px">Drawer Boxes${dCount>0?' ('+dCount+')':''}</td>`;
+    drawerRow=`<tr style="background:#f9f9f9"><td style="padding:6px 10px;font-size:11px">Drawer Boxes${dCount>0?' ('+dCount+')':''}</td>`;
     activePkgs.forEach(p=>{
       const lbl=DLABELS[p.drawer]||(p.drawer==='none'?'Standard':'—');
-      drawerRow+=`<td style="padding:10px 14px;text-align:center;font-size:12px">${lbl}</td>`;
+      drawerRow+=`<td style="padding:6px 10px;text-align:center;font-size:11px">${lbl}</td>`;
     });
     drawerRow+=`</tr>`;
   }
 
   function stdRow(label,shade){
-    let r=`<tr style="background:${shade}"><td style="padding:10px 14px;font-size:12px">${label}</td>`;
+    let r=`<tr style="background:${shade}"><td style="padding:6px 10px;font-size:11px">${label}</td>`;
     activePkgs.forEach(()=>{ r+=incCell(shade); });
     return r+`</tr>`;
   }
@@ -1162,12 +1162,12 @@ function genPDF(qid){
   if(glassT>0)          bodyRows+=stdRow('Glass Door Cabinets',nextShade());
 
   const showExVat=q.showExVat||false;
-  let totalRow=`<tr style="background:#1e2832;color:#fff"><td style="padding:11px 14px;font-size:12px;font-weight:700">TOTAL (inc. VAT)</td>`;
+  let totalRow=`<tr style="background:#1e2832;color:#fff"><td style="padding:7px 10px;font-size:11px;font-weight:700">TOTAL (inc. VAT)</td>`;
   activePkgs.forEach(p=>{
     const incVat=totalIncVAT(p.k,p.ppExt);
     const exVat=Math.round((p.k+(p.ppExt||0)+shared));
-    const exVatLine=showExVat?`<div style="font-size:10px;font-weight:400;opacity:.75;margin-top:2px">€${exVat.toLocaleString('en-IE')} ex. VAT</div>`:'';
-    totalRow+=`<td style="padding:11px 14px;text-align:center;font-size:13px;font-weight:700">€${incVat.toLocaleString('en-IE')}${exVatLine}</td>`;
+    const exVatLine=showExVat?`<div style="font-size:9px;font-weight:400;opacity:.75;margin-top:2px">€${exVat.toLocaleString('en-IE')} ex. VAT</div>`:'';
+    totalRow+=`<td style="padding:7px 10px;text-align:center;font-size:12px;font-weight:700">€${incVat.toLocaleString('en-IE')}${exVatLine}</td>`;
   });
   totalRow+=`</tr>`;
 
@@ -1186,7 +1186,7 @@ function genPDF(qid){
     dCount>0?`${dCount} drawer box${dCount>1?'es':''} — see options below`:'Soft-close drawers throughout',
     'Handles from our standard range'
   ];
-  const cabHtml=cabBullets.map(b=>`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:7px"><span style="color:#2e7d32;font-size:15px;line-height:1.2;font-weight:700">•</span><span style="font-size:12px">${b}</span></div>`).join('');
+  const cabHtml=cabBullets.map(b=>`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px">${b}</span></div>`).join('');
 
   // ── "This Kitchen Includes" extras ────────────────────────────────────────
   const extrasItems=(q.extras||[]).filter(e=>e.name).map(e=>e.name);
@@ -1198,9 +1198,9 @@ function genPDF(qid){
   const allIncludes=[...extrasItems,...ppFreeItems];
 
   const includesSection=allIncludes.length?`
-    <hr style="border:none;border-top:1px solid #ddd;margin:18px 0">
-    <div style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">This Kitchen Includes</div>
-    ${allIncludes.map(it=>`<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:7px"><span style="color:#2e7d32;font-size:15px;line-height:1.2;font-weight:700">•</span><span style="font-size:12px">${it}</span></div>`).join('')}
+    <hr style="border:none;border-top:1px solid #ddd;margin:10px 0">
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">This Kitchen Includes</div>
+    ${allIncludes.map(it=>`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px">${it}</span></div>`).join('')}
   `:'';
 
   // ── Full HTML ─────────────────────────────────────────────────────────────
@@ -1212,10 +1212,10 @@ function genPDF(qid){
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:0}
-  body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#111;background:#fff;padding:20mm 20mm}
-  @media print{body{padding:14mm 16mm}.no-print{display:none!important}}
-  hr.div{border:none;border-top:1px solid #ddd;margin:18px 0}
-  .sec{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+  body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;background:#fff;padding:14mm 15mm}
+  @media print{body{padding:10mm 13mm}.no-print{display:none!important}}
+  hr.div{border:none;border-top:1px solid #ddd;margin:10px 0}
+  .sec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -1246,9 +1246,9 @@ function dlPDF(){
 }
 <\/script>
 
-<table style="width:100%;margin-bottom:14px"><tr>
+<table style="width:100%;margin-bottom:8px"><tr>
   <td style="vertical-align:top">${logoHtml}</td>
-  <td style="text-align:right;vertical-align:top;font-size:12px;line-height:1.9;color:#333">
+  <td style="text-align:right;vertical-align:top;font-size:11px;line-height:1.7;color:#333">
     <div>(t) 089 464 1917</div>
     <div>(e) info@elitekitchens.ie</div>
     <div>(w) www.elitekitchens.ie</div>
@@ -1257,23 +1257,23 @@ function dlPDF(){
 </tr></table>
 <hr class="div">
 
-<table style="width:100%;margin-bottom:16px"><tr>
-  <td style="font-size:12px">${dateStr}</td>
-  <td style="text-align:right;font-size:12px;font-weight:700">Reference: ${ref}</td>
+<table style="width:100%;margin-bottom:8px"><tr>
+  <td style="font-size:11px">${dateStr}</td>
+  <td style="text-align:right;font-size:11px;font-weight:700">Reference: ${ref}</td>
 </tr></table>
 
-<div style="font-weight:700;margin-bottom:10px">${c.name||''}</div>
-<div style="margin-bottom:12px">Dear ${firstName},</div>
-<div style="font-size:12px;line-height:1.75;color:#111">Thank you for giving Elite Kitchens the opportunity to quote for your new kitchen. Please find below a summary of the proposed specifications and associated costs. A detailed design will be provided upon confirmation of your order and receipt of deposit. If you have any questions or would like to make any changes, please don't hesitate to get in touch.</div>
+<div style="font-weight:700;margin-bottom:6px">${c.name||''}</div>
+<div style="margin-bottom:6px">Dear ${firstName},</div>
+<div style="font-size:11px;line-height:1.6;color:#111">Thank you for giving Elite Kitchens the opportunity to quote for your new kitchen. Please find below a summary of the proposed specifications and associated costs. A detailed design will be provided upon confirmation of your order and receipt of deposit. If you have any questions or would like to make any changes, please don't hesitate to get in touch.</div>
 
 <hr class="div">
 
 <div class="sec">Kitchen Specification</div>
 
-<div style="font-size:13px;font-weight:700;margin-bottom:10px">Cabinetry</div>
+<div style="font-size:11px;font-weight:700;margin-bottom:6px">Cabinetry</div>
 ${cabHtml}
 
-<div style="font-size:13px;font-weight:700;margin:16px 0 10px">Pricing Options</div>
+<div style="font-size:11px;font-weight:700;margin:8px 0 6px">Pricing Options</div>
 ${pricingTable}
 
 ${includesSection}
@@ -1281,42 +1281,42 @@ ${includesSection}
 <hr class="div">
 
 <div class="sec">Important Information</div>
-<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:12px;margin-bottom:10px">
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:11px;margin-bottom:6px">
 <tr>
-  <td style="width:50%;padding:12px 16px;vertical-align:top;border-right:1px solid #ddd">
-    <div style="font-weight:700;margin-bottom:10px">This quotation includes:</div>
-    <div style="color:#2e7d32;margin-bottom:6px">v Supply &amp; installation of all cabinetry</div>
-    ${q.incl?.sink?'<div style="color:#2e7d32;margin-bottom:6px">v Sink</div>':''}
-    ${q.incl?.extractor?'<div style="color:#2e7d32;margin-bottom:6px">v Extractor</div>':''}
-    <div style="color:#2e7d32;margin-bottom:6px">v VAT</div>
-    ${q.incl?.removal?'<div style="color:#2e7d32;margin-bottom:6px">v Removal &amp; disposal of existing kitchen</div>':''}
+  <td style="width:50%;padding:8px 10px;vertical-align:top;border-right:1px solid #ddd">
+    <div style="font-weight:700;margin-bottom:6px">This quotation includes:</div>
+    <div style="color:#2e7d32;margin-bottom:4px">v Supply &amp; installation of all cabinetry</div>
+    ${q.incl?.sink?'<div style="color:#2e7d32;margin-bottom:4px">v Sink</div>':''}
+    ${q.incl?.extractor?'<div style="color:#2e7d32;margin-bottom:4px">v Extractor</div>':''}
+    <div style="color:#2e7d32;margin-bottom:4px">v VAT</div>
+    ${q.incl?.removal?'<div style="color:#2e7d32;margin-bottom:4px">v Removal &amp; disposal of existing kitchen</div>':''}
     <div style="color:#2e7d32">v 6-month snagging period after completion</div>
   </td>
-  <td style="width:50%;padding:12px 16px;vertical-align:top">
-    <div style="font-weight:700;margin-bottom:10px">This quotation excludes:</div>
-    <div style="color:#c62828;margin-bottom:6px">x Appliances</div>
-    <div style="color:#c62828;margin-bottom:6px">x Plumbing &amp; electrical work</div>
+  <td style="width:50%;padding:8px 10px;vertical-align:top">
+    <div style="font-weight:700;margin-bottom:6px">This quotation excludes:</div>
+    <div style="color:#c62828;margin-bottom:4px">x Appliances</div>
+    <div style="color:#c62828;margin-bottom:4px">x Plumbing &amp; electrical work</div>
     <div style="color:#c62828">x Tiling &amp; flooring</div>
   </td>
 </tr>
 </table>
-<div style="font-size:12px">This quotation is valid for <strong>30 days</strong> from the date of issue.</div>
+<div style="font-size:11px">This quotation is valid for <strong>30 days</strong> from the date of issue.</div>
 
 <hr class="div">
 
 <div class="sec">Payment Terms</div>
-<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="color:#2e7d32;font-size:15px;line-height:1.2;font-weight:700">•</span><span style="font-size:12px"><strong>Booking deposit: 30%</strong> of total — secures your fitting date and locks in your price</span></div>
-<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="color:#2e7d32;font-size:15px;line-height:1.2;font-weight:700">•</span><span style="font-size:12px"><strong>Balance: 70%</strong> — due upon satisfactory completion of the project</span></div>
-<div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="color:#2e7d32;font-size:15px;line-height:1.2;font-weight:700">•</span><span style="font-size:12px">Any extras agreed during fitting will be charged on completion</span></div>
+<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px"><strong>Booking deposit: 30%</strong> of total — secures your fitting date and locks in your price</span></div>
+<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px"><strong>Balance: 70%</strong> — due upon satisfactory completion of the project</span></div>
+<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px">Any extras agreed during fitting will be charged on completion</span></div>
 
 <hr class="div">
 
-<div style="font-size:12px;line-height:1.75;margin-bottom:18px">We hope this quotation meets your expectations and we look forward to the possibility of working with you. If you have any questions or would like to discuss anything further, please feel free to get in touch.</div>
+<div style="font-size:11px;line-height:1.6;margin-bottom:10px">We hope this quotation meets your expectations and we look forward to the possibility of working with you. If you have any questions or would like to discuss anything further, please feel free to get in touch.</div>
 
-<div style="font-size:12px;margin-bottom:14px">Kind regards,</div>
-<div style="font-size:13px;margin-bottom:2px"><strong>Thomas</strong></div>
-<div style="color:#2e7d32;font-size:12px;margin-bottom:2px">Elite Kitchens</div>
-<div style="color:#555;font-size:12px">089 464 1917 | info@elitekitchens.ie</div>
+<div style="font-size:11px;margin-bottom:6px">Kind regards,</div>
+<div style="font-size:12px;margin-bottom:2px"><strong>Thomas</strong></div>
+<div style="color:#2e7d32;font-size:11px;margin-bottom:2px">Elite Kitchens</div>
+<div style="color:#555;font-size:11px">089 464 1917 | info@elitekitchens.ie</div>
 
 </body>
 </html>`;
