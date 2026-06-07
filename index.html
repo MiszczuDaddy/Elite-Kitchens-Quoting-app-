@@ -457,6 +457,9 @@ let invoices     = load('invoices')     || [];
 let quoteCounter = load('quoteCounter') || Math.max(0,...(quotes.map(q=>q.num||0)));
 let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
 if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
+// Carry an existing locally-saved logo into ST so it gets pushed to the cloud
+// on the next sync (older saves stored the logo only in localStorage).
+if(!ST.logo){ const localLogo=load('logo'); if(localLogo) ST.logo=localLogo; }
 
 let editQid=null, editCid=null, exIdx=0;
 const VAT=13.5;
@@ -1025,7 +1028,7 @@ function uploadLogo(input){
   const file=input.files[0]; if(!file) return;
   if(file.size>2*1024*1024){alert('Image too large — please use an image under 2MB.');return;}
   const r=new FileReader();
-  r.onload=e=>{save('logo',e.target.result);showLogo(e.target.result);};
+  r.onload=e=>{save('logo',e.target.result);ST.logo=e.target.result;showLogo(e.target.result);saveAll();};
   r.readAsDataURL(file);
 }
 function showLogo(data){
@@ -1037,6 +1040,8 @@ function showLogo(data){
 function removeLogo(){
   if(!confirm('Remove logo?')) return;
   save('logo','');
+  ST.logo='';
+  saveAll();
   document.getElementById('logo-img').style.display='none';
   document.getElementById('logo-ph').style.display='block';
   document.getElementById('logo-remove-btn').style.display='none';
@@ -1831,6 +1836,9 @@ async function fbLoad(){
       if(data.settings)      ST           = Object.assign({}, ST, data.settings);
       if(data.quoteCounter)  quoteCounter = data.quoteCounter;
       else quoteCounter = Math.max(0,...(quotes.map(q=>q.num||0)));
+      // Logo travels inside settings (ST.logo) so it syncs across browsers/devices.
+      // Mirror it into localStorage so the existing load('logo') calls keep working.
+      if(ST.logo) save('logo', ST.logo);
       // Save to localStorage as backup
       save('customers',customers); save('quotes',quotes);
       save('invoices',invoices);   save('settings',ST);
