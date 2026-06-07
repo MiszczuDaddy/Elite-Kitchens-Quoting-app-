@@ -1438,12 +1438,21 @@ function genInvoice(qid, pkgKey){
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
   if(stoneT>0) items.push({desc:'Stone / Quartz Worktop',qty:1,rate:stoneT,amt:stoneT});
 
-  // ── Totals ─────────────────────────────────────────────────────────────────
-  const subtotal=items.reduce((s,i)=>s+i.amt,0);
-  const vatAmt=subtotal*VAT/100;
-  const rawTotal=subtotal+vatAmt;
+  // ── Totals (with VAT-correct rounding) ────────────────────────────────────
+  // We round the gross TOTAL down to the nearest euro, then work backwards to
+  // a "Rounding" line item on the NET subtotal — so VAT is correctly charged
+  // on the discounted (taxable) amount, exactly as Revenue requires. This is
+  // the same method used on the Metric Kitchens / MK Doors invoice template.
+  const rawSubtotal=items.reduce((s,i)=>s+i.amt,0);
+  const rawTotal=rawSubtotal*(1+VAT/100);
   const total=Math.floor(rawTotal);
-  const roundingDiscount=rawTotal-total;
+  const newSubtotal=total/(1+VAT/100);
+  const roundingNet=rawSubtotal-newSubtotal;
+  if(roundingNet>0.004){
+    items.push({desc:'Rounding',qty:1,rate:-roundingNet,amt:-roundingNet});
+  }
+  const subtotal=items.reduce((s,i)=>s+i.amt,0);
+  const vatAmt=total-subtotal;
   const deposit=total*0.30;
   const balance=total*0.70;
 
@@ -1454,7 +1463,8 @@ function genInvoice(qid, pkgKey){
   const due=new Date(today); due.setDate(due.getDate()+30);
   const dueStr=due.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
 
-  function fmt(n){return '€'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+  function fmt(n){return '€'+Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+  function fmtSigned(n){return n<0?'('+fmt(n)+')':fmt(n)}
 
   const logoHtml=logo
     ?`<img src="${logo}" style="max-height:70px;max-width:200px;object-fit:contain">`
@@ -1464,8 +1474,8 @@ function genInvoice(qid, pkgKey){
     <tr style="background:${i%2?'#f9fafb':'#fff'}">
       <td style="padding:10px 14px;font-size:12px">${it.desc}</td>
       <td style="padding:10px 14px;font-size:12px;text-align:center">${it.qty}</td>
-      <td style="padding:10px 14px;font-size:12px;text-align:right">${fmt(it.rate)}</td>
-      <td style="padding:10px 14px;font-size:12px;text-align:right;font-weight:600">${fmt(it.amt)}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:right">${fmtSigned(it.rate)}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:right;font-weight:600">${fmtSigned(it.amt)}</td>
     </tr>`).join('');
 
   const html=`<!DOCTYPE html>
@@ -1597,11 +1607,6 @@ function doSave(){
     <td style="padding:6px 14px;font-size:12px;color:#6b7280;text-align:right">VAT (13.5%)</td>
     <td style="padding:6px 14px;font-size:12px;text-align:right">${fmt(vatAmt)}</td>
   </tr>
-  ${roundingDiscount>0.004?`<tr>
-    <td></td>
-    <td style="padding:6px 14px;font-size:12px;color:#6b7280;text-align:right">Rounding Discount</td>
-    <td style="padding:6px 14px;font-size:12px;text-align:right;color:#2e7d32">-${fmt(roundingDiscount)}</td>
-  </tr>`:''}
   <tr style="background:#111827;color:#fff">
     <td style="padding:12px 14px"></td>
     <td style="padding:12px 14px;font-size:14px;font-weight:700;text-align:right">TOTAL</td>
@@ -1909,10 +1914,3 @@ function showToast(msg, color){
   clearTimeout(window._toastTimer);
   window._toastTimer=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.style.display='none',300);},2500);
 }
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-goTo('dashboard');
-
-</script>
-</body>
-</html>
