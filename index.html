@@ -1441,7 +1441,9 @@ function genInvoice(qid, pkgKey){
   // ── Totals ─────────────────────────────────────────────────────────────────
   const subtotal=items.reduce((s,i)=>s+i.amt,0);
   const vatAmt=subtotal*VAT/100;
-  const total=subtotal+vatAmt;
+  const rawTotal=subtotal+vatAmt;
+  const total=Math.floor(rawTotal);
+  const roundingDiscount=rawTotal-total;
   const deposit=total*0.30;
   const balance=total*0.70;
 
@@ -1595,6 +1597,11 @@ function doSave(){
     <td style="padding:6px 14px;font-size:12px;color:#6b7280;text-align:right">VAT (13.5%)</td>
     <td style="padding:6px 14px;font-size:12px;text-align:right">${fmt(vatAmt)}</td>
   </tr>
+  ${roundingDiscount>0.004?`<tr>
+    <td></td>
+    <td style="padding:6px 14px;font-size:12px;color:#6b7280;text-align:right">Rounding Discount</td>
+    <td style="padding:6px 14px;font-size:12px;text-align:right;color:#2e7d32">-${fmt(roundingDiscount)}</td>
+  </tr>`:''}
   <tr style="background:#111827;color:#fff">
     <td style="padding:12px 14px"></td>
     <td style="padding:12px 14px;font-size:14px;font-weight:700;text-align:right">TOTAL</td>
@@ -1616,6 +1623,31 @@ function doSave(){
       <td style="padding:10px 14px">Balance (70%) — due on completion</td>
       <td style="padding:10px 14px;text-align:right">${fmt(balance)}</td>
     </tr>
+  </table>
+</div>
+
+<!-- BANK DETAILS -->
+<div style="margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px">Bank Account Details</div>
+  <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px">
+    <tr style="background:#f9fafb">
+      <td style="padding:8px 14px;font-weight:700;width:25%">BIC</td>
+      <td style="padding:8px 14px">AIBKIE2D</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 14px;font-weight:700">IBAN</td>
+      <td style="padding:8px 14px">IE94 AIBK 9320 1950 3570 63</td>
+    </tr>
+  </table>
+</div>
+
+<!-- PLEASE NOTE -->
+<div style="margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px">Please Note — Not Included in This Price</div>
+  <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px;width:100%">
+    <tr style="background:#f9fafb"><td style="padding:8px 14px;color:#c62828">✗ Appliances</td></tr>
+    <tr><td style="padding:8px 14px;color:#c62828">✗ Plumbing &amp; electrical work</td></tr>
+    <tr style="background:#f9fafb"><td style="padding:8px 14px;color:#c62828">✗ Tiling &amp; flooring</td></tr>
   </table>
 </div>
 
@@ -1884,4 +1916,3 @@ goTo('dashboard');
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
