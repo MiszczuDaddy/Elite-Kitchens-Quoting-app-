@@ -257,6 +257,17 @@ tr:last-child td{border-bottom:none}
         <div class="pkg-hint" id="pp-hint">Tick to add a Premium Plus option to this quote</div>
       </div>
     </div>
+    <!-- Worktops -->
+    <div class="card">
+      <div class="ct">Worktops</div>
+      <div class="sblk">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" id="q-wt-on" style="width:16px;height:16px;accent-color:var(--g)">
+          <div class="sblk-t" style="margin:0">Worktop <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
+        </div>
+        <div id="wt-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-wt" value="0" style="max-width:150px"></div>
+      </div>
+    </div>
     <!-- Inclusions -->
     <div class="card">
       <div class="ct">Standard Inclusions</div>
@@ -487,11 +498,15 @@ document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
 document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
 
 // live recalc on input change in builder
-['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-gs','q-gl'].forEach(id=>{
+['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-gs','q-gl','q-wt'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('input', recalc);
 });
 document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
 document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
+document.getElementById('q-wt-on').addEventListener('change', ()=>{
+  document.getElementById('wt-fields').style.display=document.getElementById('q-wt-on').checked?'block':'none';
+  recalc();
+});
 
 // ─── CUSTOMERS ───────────────────────────────────────────────────────────────
 function saveCustomer(){
@@ -582,6 +597,9 @@ function newQuote(custId){
   if(document.getElementById('pp-no-extras')) document.getElementById('pp-no-extras').style.display='block';
   document.getElementById('q-prem-desc').value='';
   document.getElementById('q-pp-desc').value='';
+  document.getElementById('q-wt-on').checked=false;
+  document.getElementById('q-wt').value='0';
+  document.getElementById('wt-fields').style.display='none';
   document.getElementById('q-gs').value='0';
   document.getElementById('q-gl').value='0';
   document.getElementById('q-status').value='Draft';
@@ -740,7 +758,8 @@ function recalc(){
   const essK=nd*essPpd+ntb*essTbPpd+essDrawerT;
   const premK=nd*premPpd+ntb*premTbPpd+premDrawerT;
   const ppK=nd*ppPpd+ntb*ppTbPpd+ppDrawerT;
-  const wtT=0;
+  const wtOn=document.getElementById('q-wt-on').checked;
+  const wtT=wtOn?(parseFloat(document.getElementById('q-wt').value)||0):0;
   const gsQ=parseInt(document.getElementById('q-gs').value)||0;
   const glQ=parseInt(document.getElementById('q-gl').value)||0;
   const gsT=gsQ*ST.gs_price, glT=glQ*ST.gl_price, glassT=gsT+glT;
@@ -793,7 +812,7 @@ function saveQuote(){
     ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
     prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,tppd:parseFloat(document.getElementById('q-prem-tppd').value)||200,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
     pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,tppd:parseFloat(document.getElementById('q-pp-tppd').value)||200,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
-    wt:{},
+    wt:{wtOn:document.getElementById('q-wt-on').checked,wtP:document.getElementById('q-wt-on').checked?(parseFloat(document.getElementById('q-wt').value)||0):0},
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
@@ -868,6 +887,9 @@ function editQuote(qid){
   document.getElementById('q-pp-on').checked=q.pp.on;
   if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
   if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
+  document.getElementById('q-wt-on').checked=q.wt?.wtOn||false;
+  document.getElementById('wt-fields').style.display=q.wt?.wtOn?'block':'none';
+  document.getElementById('q-wt').value=q.wt?.wtP||0;
   document.getElementById('q-gs').value=q.glass?.sq||0;
   document.getElementById('q-gl').value=q.glass?.lq||0;
   document.getElementById('q-status').value=q.status||'Draft';
@@ -924,7 +946,8 @@ function quoteAmount(q){
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
-  const shared=gsT+glT+extT;
+  const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
+  const shared=gsT+glT+extT+wtT;
 
   const DPRICES={none:0,cemux:60,blum:100};
   const dCount=q.drawers||0;
@@ -1074,7 +1097,7 @@ function genPDF(qid){
   const logo=load('logo')||'';
 
   // ── Calculations ──────────────────────────────────────────────────────────
-  const wtT=0;
+  const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const glassT=gsT+glT;
@@ -1215,6 +1238,7 @@ function genPDF(qid){
   const ppFreeItems=(q.pp?.extras||[]).filter(e=>e.free&&e.name).map(e=>e.name);
   if(q.glass.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
   if(q.glass.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
+  if(wtT>0) extrasItems.push('Worktop');
   const allIncludes=[...extrasItems,...ppFreeItems];
 
   const includesSection=allIncludes.length?`
@@ -1436,9 +1460,11 @@ function genInvoice(qid, pkgKey){
   const gsQ=q.glass?.sq||0, glQ=q.glass?.lq||0;
   const glassNet=gsQ*ST.gs_price+glQ*ST.gl_price;
   const extrasNet=(q.extras||[]).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0);
-  const kitchenTotal=cabNet+drawerNet+ppExtNet+glassNet+extrasNet;
+  const wtNet=q.wt?.wtOn?(q.wt?.wtP||0):0;
+  const kitchenTotal=cabNet+drawerNet+ppExtNet+glassNet+extrasNet+wtNet;
   // Build included items list (shown on invoice, no prices)
   const includedItems=[];
+  if(wtNet>0) includedItems.push('Worktop');
   if(dCount>0&&pkg.drawer&&pkg.drawer!=='none') includedItems.push(`${DLABELS[pkg.drawer]} drawer boxes (${dCount} units)`);
   if(pkgKey==='pp')(q.pp?.extras||[]).filter(e=>e.name&&(e.free||e.qty>0)).forEach(e=>includedItems.push(e.name));
   const igsQ=q.glass?.sq||0, iglQ=q.glass?.lq||0;
@@ -1940,4 +1966,4 @@ goTo('dashboard');
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
