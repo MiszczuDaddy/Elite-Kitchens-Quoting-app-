@@ -144,7 +144,7 @@ tr:last-child td{border-bottom:none}
 
 <!-- ADD CUSTOMER -->
 <div class="scr" id="scr-addcust">
-  <div class="ph"><div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="addcust-back-btn">← Back</button><div class="pt">Add Customer</div></div></div>
+  <div class="ph"><div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="addcust-back-btn">← Back</button><div class="pt" id="addcust-title">Add Customer</div></div></div>
   <div class="card" style="max-width:560px">
     <div class="row2"><div class="fg"><label class="fl">Full Name *</label><input class="fc" id="ac-name" placeholder="Mary O'Brien"></div><div class="fg"><label class="fl">Phone</label><input class="fc" id="ac-phone" placeholder="089 xxx xxxx"></div></div>
     <div class="row2"><div class="fg"><label class="fl">Email</label><input class="fc" id="ac-email" placeholder="mary@email.com"></div><div class="fg"><label class="fl">Address</label><input class="fc" id="ac-addr" placeholder="14 Oak Lane, Galway"></div></div>
@@ -461,7 +461,7 @@ if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
 // on the next sync (older saves stored the logo only in localStorage).
 if(!ST.logo){ const localLogo=load('logo'); if(localLogo) ST.logo=localLogo; }
 
-let editQid=null, editCid=null, exIdx=0;
+let editQid=null, editCid=null, exIdx=0, editingCustId=null;
 const VAT=13.5;
 
 function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);fbSave();}
@@ -491,9 +491,9 @@ document.getElementById('nav-settings').onclick=()=>goTo('settings');
 document.getElementById('nav-builder').onclick=()=>newQuote();
 document.getElementById('dash-new-btn').onclick=()=>newQuote();
 document.getElementById('quotes-new-btn').onclick=()=>newQuote();
-document.getElementById('cust-add-btn').onclick=()=>goTo('addcust');
+document.getElementById('cust-add-btn').onclick=()=>{editingCustId=null;document.getElementById('addcust-title').textContent='Add Customer';['ac-name','ac-phone','ac-email','ac-addr'].forEach(id=>document.getElementById(id).value='');goTo('addcust');};
 document.getElementById('addcust-back-btn').onclick=()=>goTo('customers');
-document.getElementById('ac-cancel-btn').onclick=()=>goTo('customers');
+document.getElementById('ac-cancel-btn').onclick=()=>{editingCustId=null;goTo('customers');};
 document.getElementById('builder-back-btn').onclick=()=>goTo('quotes');
 document.getElementById('builder-save-btn').onclick=()=>saveQuote();
 document.getElementById('builder-pdf-btn').onclick=()=>genPDF(editQid);
@@ -519,10 +519,43 @@ document.getElementById('q-stone-on').addEventListener('change', ()=>{
 function saveCustomer(){
   const name=document.getElementById('ac-name').value.trim();
   if(!name){alert('Please enter a name.');return;}
-  customers.push({id:Date.now(),name,phone:document.getElementById('ac-phone').value.trim(),email:document.getElementById('ac-email').value.trim(),addr:document.getElementById('ac-addr').value.trim()});
+  const phone=document.getElementById('ac-phone').value.trim();
+  const email=document.getElementById('ac-email').value.trim();
+  const addr=document.getElementById('ac-addr').value.trim();
+  if(editingCustId){
+    const c=customers.find(x=>x.id===editingCustId);
+    if(c){ c.name=name; c.phone=phone; c.email=email; c.addr=addr; }
+    editingCustId=null;
+  } else {
+    customers.push({id:Date.now(),name,phone,email,addr});
+  }
   saveAll();
   ['ac-name','ac-phone','ac-email','ac-addr'].forEach(id=>document.getElementById(id).value='');
   goTo('customers');
+}
+function editCustomer(cid){
+  const c=customers.find(x=>x.id===cid); if(!c) return;
+  editingCustId=cid;
+  document.getElementById('addcust-title').textContent='Edit Customer';
+  document.getElementById('ac-name').value=c.name||'';
+  document.getElementById('ac-phone').value=c.phone||'';
+  document.getElementById('ac-email').value=c.email||'';
+  document.getElementById('ac-addr').value=c.addr||'';
+  goTo('addcust');
+}
+async function delCustomer(cid){
+  showConfirm(async()=>{
+    customers=customers.filter(c=>c.id!==cid);
+    save('customers',customers);
+    renderCusts();
+    if(fbUser){
+      try{
+        await fbDb.collection('users').doc(fbUser.uid).set(
+          {customers,quotes,invoices,settings:ST,quoteCounter,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+      }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
+    }
+  });
 }
 function renderCusts(){
   const el=document.getElementById('cust-list');
@@ -536,7 +569,7 @@ function renderCusts(){
   );
   if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(c_search?'No customers match your search.':'No customers yet.')+'</p>';return;}
   el.innerHTML='<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
-    list.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:var(--gray)">${c.phone||'—'}</td><td style="color:var(--gray)">${c.email||'—'}</td><td style="color:var(--gray)">${c.addr||'—'}</td><td><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button></td></tr>`).join('')+
+    list.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:var(--gray)">${c.phone||'—'}</td><td style="color:var(--gray)">${c.email||'—'}</td><td style="color:var(--gray)">${c.addr||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button><button class="btn btn-o btn-sm" onclick="editCustomer(${c.id})">✏️ Edit</button><button class="btn btn-o btn-sm" onclick="delCustomer(${c.id})">🗑️</button></td></tr>`).join('')+
   '</tbody></table>';
 }
 
