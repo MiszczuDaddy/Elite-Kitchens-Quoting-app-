@@ -274,6 +274,13 @@ tr:last-child td{border-bottom:none}
         </div>
         <div id="stone-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-stone" value="0" style="max-width:150px"></div>
       </div>
+      <div class="sblk">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" id="q-wts-on" style="width:16px;height:16px;accent-color:var(--g)">
+          <div class="sblk-t" style="margin:0">Worktop &amp; Splashback <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
+        </div>
+        <div id="wts-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-wts" value="0" style="max-width:150px"></div>
+      </div>
     </div>
     <!-- Inclusions -->
     <div class="card">
@@ -514,6 +521,11 @@ document.getElementById('q-stone-on').addEventListener('change', ()=>{
   document.getElementById('stone-fields').style.display=document.getElementById('q-stone-on').checked?'block':'none';
   recalc();
 });
+document.getElementById('q-wts-on').addEventListener('change', ()=>{
+  document.getElementById('wts-fields').style.display=document.getElementById('q-wts-on').checked?'block':'none';
+  recalc();
+});
+document.getElementById('q-wts').addEventListener('input', recalc);
 
 // ─── CUSTOMERS ───────────────────────────────────────────────────────────────
 function saveCustomer(){
@@ -608,6 +620,9 @@ function newQuote(custId){
   document.getElementById('q-stone-on').checked=false;
   document.getElementById('q-stone').value='0';
   document.getElementById('stone-fields').style.display='none';
+  document.getElementById('q-wts-on').checked=false;
+  document.getElementById('q-wts').value='0';
+  document.getElementById('wts-fields').style.display='none';
   document.getElementById('q-gs').value='0';
   document.getElementById('q-gl').value='0';
   document.getElementById('q-status').value='Draft';
@@ -772,7 +787,9 @@ function recalc(){
   document.getElementById('lam-total').textContent=fmt(lamT);
   const stoneOn=document.getElementById('q-stone-on').checked;
   const stoneP=stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0;
-  const wtT=lamT+stoneP;
+  const wtsOn=document.getElementById('q-wts-on').checked;
+  const wtsP=wtsOn?(parseFloat(document.getElementById('q-wts').value)||0):0;
+  const wtT=lamT+stoneP+wtsP;
   const gsQ=parseInt(document.getElementById('q-gs').value)||0;
   const glQ=parseInt(document.getElementById('q-gl').value)||0;
   const gsT=gsQ*ST.gs_price, glT=glQ*ST.gl_price, glassT=gsT+glT;
@@ -827,7 +844,7 @@ function saveQuote(){
     ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
     prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,tppd:parseFloat(document.getElementById('q-prem-tppd').value)||200,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
     pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,tppd:parseFloat(document.getElementById('q-pp-tppd').value)||200,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
-    wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0},
+    wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0,wtsOn:document.getElementById('q-wts-on').checked,wtsP:document.getElementById('q-wts-on').checked?(parseFloat(document.getElementById('q-wts').value)||0):0},
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
@@ -906,6 +923,9 @@ function editQuote(qid){
   document.getElementById('q-stone-on').checked=q.wt.stoneOn||false;
   document.getElementById('stone-fields').style.display=q.wt.stoneOn?'block':'none';
   document.getElementById('q-stone').value=q.wt.stoneP||0;
+  document.getElementById('q-wts-on').checked=q.wt.wtsOn||false;
+  document.getElementById('wts-fields').style.display=q.wt.wtsOn?'block':'none';
+  document.getElementById('q-wts').value=q.wt.wtsP||0;
   document.getElementById('q-gs').value=q.glass?.sq||0;
   document.getElementById('q-gl').value=q.glass?.lq||0;
   document.getElementById('q-status').value=q.status||'Draft';
@@ -962,10 +982,11 @@ async function delQuote(qid){
 function quoteAmount(q){
   const lamT=(q.wt?.lamM||0)*ST.lam_rate;
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
+  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
-  const shared=lamT+stoneT+gsT+glT+extT;
+  const shared=lamT+stoneT+wtsT+gsT+glT+extT;
 
   const DPRICES={none:0,cemux:60,blum:100};
   const dCount=q.drawers||0;
@@ -1117,7 +1138,8 @@ function genPDF(qid){
   // ── Calculations ──────────────────────────────────────────────────────────
   const lamT=(q.wt?.lamM||0)*ST.lam_rate;
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
-  const wtT=lamT+stoneT;
+  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
+  const wtT=lamT+stoneT+wtsT;
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const glassT=gsT+glT;
@@ -1256,8 +1278,9 @@ function genPDF(qid){
   // ── "This Kitchen Includes" extras ────────────────────────────────────────
   const extrasItems=(q.extras||[]).filter(e=>e.name).map(e=>e.name);
   const ppFreeItems=(q.pp?.extras||[]).filter(e=>e.free&&e.name).map(e=>e.name);
-  if(q.wt.lamM>0)            extrasItems.push(`Laminate worktop (${q.wt.lamM}m)`);
+  if(q.wt.lamM>0)            extrasItems.push('Laminate worktop');
   if(q.wt.stoneOn&&stoneT>0) extrasItems.push('Stone/quartz worktop');
+  if(q.wt.wtsOn&&wtsT>0)     extrasItems.push('Worktop &amp; splashback');
   if(q.glass.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
   if(q.glass.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
   const allIncludes=[...extrasItems,...ppFreeItems];
@@ -1502,6 +1525,8 @@ function genInvoice(qid, pkgKey){
   if(lamT>0) items.push({desc:`Laminate Worktop (${q.wt.lamM}m)`,qty:q.wt.lamM,rate:ST.lam_rate,amt:lamT});
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
   if(stoneT>0) items.push({desc:'Stone / Quartz Worktop',qty:1,rate:stoneT,amt:stoneT});
+  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
+  if(wtsT>0) items.push({desc:'Worktop & Splashback',qty:1,rate:wtsT,amt:wtsT});
 
   // ── Totals (with VAT-correct rounding) ────────────────────────────────────
   // We round the gross TOTAL down to the nearest euro, then work backwards to
