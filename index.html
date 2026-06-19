@@ -922,8 +922,9 @@ async function delQuote(qid){
 }
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
-// Quoted amount shown in the list — Essential package total, inc. 13.5% VAT
-// (mirrors the dashboard's "This Month Quoted" calc so figures stay consistent).
+// Quoted amount shown in the list — Essential package total, inc. 13.5% VAT.
+// Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
+// + shared (worktops/glass/extras), rounded the same way as the PDF.
 function quoteAmount(q){
   const lamT=(q.wt?.lamM||0)*ST.lam_rate;
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
@@ -931,8 +932,14 @@ function quoteAmount(q){
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
   const shared=lamT+stoneT+gsT+glT+extT;
-  const essK=(q.doors||0)*(q.ess?.ppd||300);
-  return (essK+shared)*1.135;
+
+  const DPRICES={none:0,cemux:60,blum:100};
+  const dCount=q.drawers||0;
+  const ntb=q.topboxes||0;
+  const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
+  const essK=(q.doors||0)*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+
+  return Math.round((essK+shared)*(1+VAT/100));
 }
 function renderQuotes(){
   const el=document.getElementById('quotes-list');
