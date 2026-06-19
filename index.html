@@ -922,9 +922,10 @@ async function delQuote(qid){
 }
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
-// Quoted amount shown in the list — Essential package total, inc. 13.5% VAT.
+// Quoted amount shown in the list — the HIGHEST active package total, inc. VAT
+// (Essential is always active; Premium / Premium Plus included if enabled).
 // Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
-// + shared (worktops/glass/extras), rounded the same way as the PDF.
+// + ppExtras (Premium Plus) + shared (worktops/glass/extras).
 function quoteAmount(q){
   const lamT=(q.wt?.lamM||0)*ST.lam_rate;
   const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
@@ -936,10 +937,25 @@ function quoteAmount(q){
   const DPRICES={none:0,cemux:60,blum:100};
   const dCount=q.drawers||0;
   const ntb=q.topboxes||0;
-  const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
-  const essK=(q.doors||0)*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+  const doors=q.doors||0;
 
-  return Math.round((essK+shared)*(1+VAT/100));
+  const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
+  const essK=doors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+
+  let packages=[essK];
+
+  if(q.prem?.on){
+    const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
+    packages.push(doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT);
+  }
+  if(q.pp?.on){
+    const ppDrawerT=dCount*(DPRICES[q.pp?.drawer||'none']||0);
+    const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:(Number(e.qty)||0)*(Number(e.price)||0)),0);
+    packages.push(doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT+ppExtTotal);
+  }
+
+  const highestK=Math.max(...packages);
+  return Math.round((highestK+shared)*(1+VAT/100));
 }
 function renderQuotes(){
   const el=document.getElementById('quotes-list');
