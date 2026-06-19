@@ -922,6 +922,18 @@ async function delQuote(qid){
 }
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
+// Quoted amount shown in the list — Essential package total, inc. 13.5% VAT
+// (mirrors the dashboard's "This Month Quoted" calc so figures stay consistent).
+function quoteAmount(q){
+  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
+  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
+  const gsT=(q.glass?.sq||0)*ST.gs_price;
+  const glT=(q.glass?.lq||0)*ST.gl_price;
+  const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
+  const shared=lamT+stoneT+gsT+glT+extT;
+  const essK=(q.doors||0)*(q.ess?.ppd||300);
+  return (essK+shared)*1.135;
+}
 function renderQuotes(){
   const el=document.getElementById('quotes-list');
   const q_search=(document.getElementById('quotes-search')?.value||'').toLowerCase().trim();
@@ -934,11 +946,12 @@ function renderQuotes(){
            String(q.id).slice(-4).includes(q_search);
   });
   if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(q_search?'No quotes match your search.':'No quotes yet.')+'</p>';return;}
-  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
     list.map(q=>{
       const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
       const pkgs=(q.ess?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
-      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      const amt='€'+Math.round(quoteAmount(q)).toLocaleString('en-IE');
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status||'Draft'}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table>';
 }
 
@@ -962,16 +975,7 @@ function renderDash(){
   const monthQuoted=quotes.filter(q=>{
     const d=new Date(q.created||0);
     return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;
-  }).reduce((s,q)=>{
-    const lamT=(q.wt?.lamM||0)*ST.lam_rate;
-    const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
-    const gsT=(q.glass?.sq||0)*ST.gs_price;
-    const glT=(q.glass?.lq||0)*ST.gl_price;
-    const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
-    const shared=lamT+stoneT+gsT+glT+extT;
-    const essK=(q.doors||0)*(q.ess?.ppd||300);
-    return s+(essK+shared)*1.135;
-  },0);
+  }).reduce((s,q)=>s+quoteAmount(q),0);
 
   // This month invoiced
   const monthInvoiced=invoices.filter(x=>{
