@@ -257,31 +257,6 @@ tr:last-child td{border-bottom:none}
         <div class="pkg-hint" id="pp-hint">Tick to add a Premium Plus option to this quote</div>
       </div>
     </div>
-    <!-- Worktops -->
-    <div class="card">
-      <div class="ct">Worktops</div>
-      <div class="sblk">
-        <div class="sblk-t">Laminate Worktop <span style="font-size:12px;color:var(--gray);font-weight:400">€<span id="lam-rate-lbl">120</span>/m</span></div>
-        <div style="display:flex;gap:12px;align-items:center">
-          <div><label class="fl">Length (metres)</label><input class="fc" type="number" step="0.1" id="q-lam" value="0" style="max-width:120px"></div>
-          <div style="font-size:15px;font-weight:700;color:var(--g);padding-top:18px" id="lam-total">€0</div>
-        </div>
-      </div>
-      <div class="sblk">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <input type="checkbox" id="q-stone-on" style="width:16px;height:16px;accent-color:var(--g)">
-          <div class="sblk-t" style="margin:0">Stone / Quartz Worktop <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
-        </div>
-        <div id="stone-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-stone" value="0" style="max-width:150px"></div>
-      </div>
-      <div class="sblk">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <input type="checkbox" id="q-wts-on" style="width:16px;height:16px;accent-color:var(--g)">
-          <div class="sblk-t" style="margin:0">Worktop &amp; Splashback <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
-        </div>
-        <div id="wts-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" id="q-wts" value="0" style="max-width:150px"></div>
-      </div>
-    </div>
     <!-- Inclusions -->
     <div class="card">
       <div class="ct">Standard Inclusions</div>
@@ -512,20 +487,11 @@ document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
 document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
 
 // live recalc on input change in builder
-['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-lam','q-stone','q-gs','q-gl'].forEach(id=>{
+['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-gs','q-gl'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('input', recalc);
 });
 document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
 document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
-document.getElementById('q-stone-on').addEventListener('change', ()=>{
-  document.getElementById('stone-fields').style.display=document.getElementById('q-stone-on').checked?'block':'none';
-  recalc();
-});
-document.getElementById('q-wts-on').addEventListener('change', ()=>{
-  document.getElementById('wts-fields').style.display=document.getElementById('q-wts-on').checked?'block':'none';
-  recalc();
-});
-document.getElementById('q-wts').addEventListener('input', recalc);
 
 // ─── CUSTOMERS ───────────────────────────────────────────────────────────────
 function saveCustomer(){
@@ -616,13 +582,6 @@ function newQuote(custId){
   if(document.getElementById('pp-no-extras')) document.getElementById('pp-no-extras').style.display='block';
   document.getElementById('q-prem-desc').value='';
   document.getElementById('q-pp-desc').value='';
-  document.getElementById('q-lam').value='0';
-  document.getElementById('q-stone-on').checked=false;
-  document.getElementById('q-stone').value='0';
-  document.getElementById('stone-fields').style.display='none';
-  document.getElementById('q-wts-on').checked=false;
-  document.getElementById('q-wts').value='0';
-  document.getElementById('wts-fields').style.display='none';
   document.getElementById('q-gs').value='0';
   document.getElementById('q-gl').value='0';
   document.getElementById('q-status').value='Draft';
@@ -640,7 +599,6 @@ function newQuote(custId){
   document.getElementById('sf-prem-row').style.display='none';
   document.getElementById('sf-pp-row').style.display='none';
   // labels from settings
-  document.getElementById('lam-rate-lbl').textContent=ST.lam_rate;
   document.getElementById('gs-lbl').textContent=ST.gs_price;
   document.getElementById('gl-lbl').textContent=ST.gl_price;
   // prefill customer if coming from customers list
@@ -782,14 +740,7 @@ function recalc(){
   const essK=nd*essPpd+ntb*essTbPpd+essDrawerT;
   const premK=nd*premPpd+ntb*premTbPpd+premDrawerT;
   const ppK=nd*ppPpd+ntb*ppTbPpd+ppDrawerT;
-  const lamM=parseFloat(document.getElementById('q-lam').value)||0;
-  const lamT=lamM*ST.lam_rate;
-  document.getElementById('lam-total').textContent=fmt(lamT);
-  const stoneOn=document.getElementById('q-stone-on').checked;
-  const stoneP=stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0;
-  const wtsOn=document.getElementById('q-wts-on').checked;
-  const wtsP=wtsOn?(parseFloat(document.getElementById('q-wts').value)||0):0;
-  const wtT=lamT+stoneP+wtsP;
+  const wtT=0;
   const gsQ=parseInt(document.getElementById('q-gs').value)||0;
   const glQ=parseInt(document.getElementById('q-gl').value)||0;
   const gsT=gsQ*ST.gs_price, glT=glQ*ST.gl_price, glassT=gsT+glT;
@@ -831,8 +782,6 @@ function saveQuote(){
   editCid=cid;
   const premOn=document.getElementById('q-prem-on').checked;
   const ppOn=document.getElementById('q-pp-on').checked;
-  const lamM=parseFloat(document.getElementById('q-lam').value)||0;
-  const stoneOn=document.getElementById('q-stone-on').checked;
   const q={
     id:editQid||(Date.now()+1),
     cid,
@@ -844,7 +793,7 @@ function saveQuote(){
     ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
     prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,tppd:parseFloat(document.getElementById('q-prem-tppd').value)||200,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
     pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,tppd:parseFloat(document.getElementById('q-pp-tppd').value)||200,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
-    wt:{lamM,stoneOn,stoneP:stoneOn?(parseFloat(document.getElementById('q-stone').value)||0):0,wtsOn:document.getElementById('q-wts-on').checked,wtsP:document.getElementById('q-wts-on').checked?(parseFloat(document.getElementById('q-wts').value)||0):0},
+    wt:{},
     glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
     extras:getExtras(),
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked},
@@ -919,13 +868,6 @@ function editQuote(qid){
   document.getElementById('q-pp-on').checked=q.pp.on;
   if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
   if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
-  document.getElementById('q-lam').value=q.wt?.lamM||0;
-  document.getElementById('q-stone-on').checked=q.wt.stoneOn||false;
-  document.getElementById('stone-fields').style.display=q.wt.stoneOn?'block':'none';
-  document.getElementById('q-stone').value=q.wt.stoneP||0;
-  document.getElementById('q-wts-on').checked=q.wt.wtsOn||false;
-  document.getElementById('wts-fields').style.display=q.wt.wtsOn?'block':'none';
-  document.getElementById('q-wts').value=q.wt.wtsP||0;
   document.getElementById('q-gs').value=q.glass?.sq||0;
   document.getElementById('q-gl').value=q.glass?.lq||0;
   document.getElementById('q-status').value=q.status||'Draft';
@@ -939,7 +881,6 @@ function editQuote(qid){
     last.querySelector('.ex-qty').value=e.qty;
     last.querySelector('.ex-price').value=e.price;
   });
-  document.getElementById('lam-rate-lbl').textContent=ST.lam_rate;
   document.getElementById('gs-lbl').textContent=ST.gs_price;
   document.getElementById('gl-lbl').textContent=ST.gl_price;
   // Restore PP extras
@@ -980,13 +921,10 @@ async function delQuote(qid){
 // Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
 // + ppExtras (Premium Plus) + shared (worktops/glass/extras).
 function quoteAmount(q){
-  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
-  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
-  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
-  const shared=lamT+stoneT+wtsT+gsT+glT+extT;
+  const shared=gsT+glT+extT;
 
   const DPRICES={none:0,cemux:60,blum:100};
   const dCount=q.drawers||0;
@@ -1136,10 +1074,7 @@ function genPDF(qid){
   const logo=load('logo')||'';
 
   // ── Calculations ──────────────────────────────────────────────────────────
-  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
-  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
-  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
-  const wtT=lamT+stoneT+wtsT;
+  const wtT=0;
   const gsT=(q.glass?.sq||0)*ST.gs_price;
   const glT=(q.glass?.lq||0)*ST.gl_price;
   const glassT=gsT+glT;
@@ -1278,9 +1213,6 @@ function genPDF(qid){
   // ── "This Kitchen Includes" extras ────────────────────────────────────────
   const extrasItems=(q.extras||[]).filter(e=>e.name).map(e=>e.name);
   const ppFreeItems=(q.pp?.extras||[]).filter(e=>e.free&&e.name).map(e=>e.name);
-  if(q.wt.lamM>0)            extrasItems.push('Laminate worktop');
-  if(q.wt.stoneOn&&stoneT>0) extrasItems.push('Stone/quartz worktop');
-  if(q.wt.wtsOn&&wtsT>0)     extrasItems.push('Worktop &amp; splashback');
   if(q.glass.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
   if(q.glass.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
   const allIncludes=[...extrasItems,...ppFreeItems];
@@ -1520,13 +1452,7 @@ function genInvoice(qid, pkgKey){
 
   items.push({desc:'Kitchen Supply & Installation — '+pkg.label+includedHtml,qty:1,rate:kitchenTotal,amt:kitchenTotal});
 
-  // Worktops — kept separate as they are a distinct product
-  const lamT=(q.wt?.lamM||0)*ST.lam_rate;
-  if(lamT>0) items.push({desc:`Laminate Worktop (${q.wt.lamM}m)`,qty:q.wt.lamM,rate:ST.lam_rate,amt:lamT});
-  const stoneT=q.wt?.stoneOn?(q.wt?.stoneP||0):0;
-  if(stoneT>0) items.push({desc:'Stone / Quartz Worktop',qty:1,rate:stoneT,amt:stoneT});
-  const wtsT=q.wt?.wtsOn?(q.wt?.wtsP||0):0;
-  if(wtsT>0) items.push({desc:'Worktop & Splashback',qty:1,rate:wtsT,amt:wtsT});
+
 
   // ── Totals (with VAT-correct rounding) ────────────────────────────────────
   // We round the gross TOTAL down to the nearest euro, then work backwards to
@@ -2014,3 +1940,4 @@ goTo('dashboard');
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
