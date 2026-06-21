@@ -200,10 +200,13 @@ tr:last-child td{border-bottom:none}
       <!-- Essential -->
       <div class="pkg ess-on" id="pkg-ess">
         <div class="pkg-hdr">
-          <div style="display:flex;align-items:center;gap:8px"><span class="badge b-auto">Always included</span><strong>Essential</strong></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-ess-on" checked style="width:16px;height:16px;accent-color:var(--g)">
+            <span class="badge b-opt">Optional</span><strong>Essential</strong>
+          </div>
           <div class="pkg-price" id="live-ess">€0</div>
         </div>
-        <div class="pkg-body" style="display:block">
+        <div class="pkg-body" id="ess-body" style="display:block">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
             <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-ess-ppd" value="300"></div>
             <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-ess-tppd" value="200"></div>
@@ -211,6 +214,7 @@ tr:last-child td{border-bottom:none}
           <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-ess-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
           <div style="font-size:12px;color:var(--gray);margin-top:8px">Vinyl wrap or melamine · Blum hinges · Installation</div>
         </div>
+        <div class="pkg-hint" id="ess-hint" style="display:none">Tick to add an Essential option to this quote</div>
       </div>
       <!-- Premium -->
       <div class="pkg" id="pkg-prem">
@@ -323,16 +327,16 @@ tr:last-child td{border-bottom:none}
   <div style="position:sticky;top:20px">
     <div class="card">
       <div class="ct">Internal Summary</div>
-      <div class="tl"><span style="color:var(--gray)">Essential kitchen</span><span id="s-ess">€0</span></div>
+      <div class="tl" id="s-ess-row"><span style="color:var(--gray)">Essential kitchen</span><span id="s-ess">€0</span></div>
       <div class="tl" id="s-prem-row" style="display:none"><span style="color:var(--gray)">Premium kitchen</span><span id="s-prem">€0</span></div>
       <div class="tl" id="s-pp-row" style="display:none"><span style="color:var(--gray)">Premium Plus kitchen</span><span id="s-pp">€0</span></div>
       <div class="tl"><span style="color:var(--gray)">Extras</span><span id="s-ext">€0</span></div>
       <div class="tl"><span style="color:var(--gray)">Worktops</span><span id="s-wt">€0</span></div>
       <div class="tl"><span style="color:var(--gray)">Glass cabinets</span><span id="s-gl">€0</span></div>
       <div style="font-size:11px;color:#9ca3af;margin:10px 0 6px">Customer sees (inc. 13.5% VAT):</div>
-      <div class="tl" style="font-weight:700"><span>Essential</span><span id="sf-ess" style="color:var(--g)">€0</span></div>
-      <div class="tl" id="sf-prem-row" style="display:none" style="font-weight:700"><span>Premium</span><span id="sf-prem" style="color:var(--blue)">€0</span></div>
-      <div class="tl" id="sf-pp-row" style="display:none" style="font-weight:700"><span>Premium Plus</span><span id="sf-pp" style="color:var(--gold)">€0</span></div>
+      <div class="tl" id="sf-ess-row" style="font-weight:700"><span>Essential</span><span id="sf-ess" style="color:var(--g)">€0</span></div>
+      <div class="tl" id="sf-prem-row" style="display:none;font-weight:700"><span>Premium</span><span id="sf-prem" style="color:var(--blue)">€0</span></div>
+      <div class="tl" id="sf-pp-row" style="display:none;font-weight:700"><span>Premium Plus</span><span id="sf-pp" style="color:var(--gold)">€0</span></div>
     </div>
   </div>
   </div>
@@ -502,6 +506,7 @@ document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
 ['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-gs','q-gl','q-wt'].forEach(id=>{
   const el=document.getElementById(id); if(el) el.addEventListener('input', recalc);
 });
+document.getElementById('q-ess-on').addEventListener('change', ()=>togglePkg('ess'));
 document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
 document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
 document.getElementById('q-wt-on').addEventListener('change', ()=>{
@@ -607,6 +612,12 @@ function newQuote(custId){
   document.getElementById('extra-rows').innerHTML='';
   document.getElementById('no-extras').style.display='block';
   // pkg reset
+  document.getElementById('q-ess-on').checked=true;
+  document.getElementById('ess-body').style.display='block';
+  document.getElementById('ess-hint').style.display='none';
+  document.getElementById('pkg-ess').className='pkg ess-on';
+  document.getElementById('s-ess-row').style.display='';
+  document.getElementById('sf-ess-row').style.display='';
   document.getElementById('prem-body').style.display='none';
   document.getElementById('prem-hint').style.display='block';
   document.getElementById('pkg-prem').className='pkg';
@@ -630,7 +641,7 @@ function togglePkg(pkg){
   const on=document.getElementById('q-'+pkg+'-on').checked;
   document.getElementById(pkg+'-body').style.display=on?'block':'none';
   document.getElementById(pkg+'-hint').style.display=on?'none':'block';
-  const cls={prem:'prem-on',pp:'pp-on'};
+  const cls={ess:'ess-on',prem:'prem-on',pp:'pp-on'};
   document.getElementById('pkg-'+pkg).className='pkg'+(on?' '+cls[pkg]:'');
   document.getElementById('s-'+pkg+'-row').style.display=on?'':'none';
   document.getElementById('sf-'+pkg+'-row').style.display=on?'':'none';
@@ -745,6 +756,7 @@ function recalc(){
   const essPpd=parseFloat(document.getElementById('q-ess-ppd').value)||0;
   const premPpd=parseFloat(document.getElementById('q-prem-ppd').value)||0;
   const ppPpd=parseFloat(document.getElementById('q-pp-ppd').value)||0;
+  const essOn=document.getElementById('q-ess-on').checked;
   const premOn=document.getElementById('q-prem-on').checked;
   const ppOn=document.getElementById('q-pp-on').checked;
   const dCount=parseInt(document.getElementById('q-drawers').value)||0;
@@ -771,9 +783,7 @@ function recalc(){
   const ppExts=getPPExtras();
   const ppExtT=ppExts.reduce((s,e)=>s+e.qty*e.price,0);
   const shared=extT+wtT+glassT;
-  document.getElementById('live-ess').textContent=fmt(essK);
-  document.getElementById('s-ess').textContent=fmt(essK);
-  document.getElementById('sf-ess').textContent=fmtd(incvat(essK+shared));
+  if(essOn){document.getElementById('live-ess').textContent=fmt(essK);document.getElementById('s-ess').textContent=fmt(essK);document.getElementById('sf-ess').textContent=fmtd(incvat(essK+shared));}
   document.getElementById('s-ext').textContent=fmt(extT);
   document.getElementById('s-wt').textContent=fmt(wtT);
   document.getElementById('s-gl').textContent=fmt(glassT);
@@ -810,7 +820,7 @@ function saveQuote(){
     topboxes:parseInt(document.getElementById('q-topboxes').value)||0,
     status:document.getElementById('q-status').value,
     notes:document.getElementById('q-notes').value,
-    ess:{ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
+    ess:{on:document.getElementById('q-ess-on').checked,ppd:parseFloat(document.getElementById('q-ess-ppd').value)||300,tppd:parseFloat(document.getElementById('q-ess-tppd').value)||200,drawer:document.getElementById('q-ess-drawer').value||'none'},
     prem:{on:premOn,ppd:parseFloat(document.getElementById('q-prem-ppd').value)||360,tppd:parseFloat(document.getElementById('q-prem-tppd').value)||200,desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
     pp:{on:ppOn,ppd:parseFloat(document.getElementById('q-pp-ppd').value)||360,tppd:parseFloat(document.getElementById('q-pp-tppd').value)||200,desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
     wt:{wtOn:document.getElementById('q-wt-on').checked,wtP:document.getElementById('q-wt-on').checked?(parseFloat(document.getElementById('q-wt').value)||0):0},
@@ -884,8 +894,10 @@ function editQuote(qid){
   document.getElementById('q-pp-ppd').value=q.pp.ppd;
   document.getElementById('q-prem-desc').value=q.prem.desc||'';
   document.getElementById('q-pp-desc').value=q.pp.desc||'';
+  document.getElementById('q-ess-on').checked=q.ess?.on!==false;
   document.getElementById('q-prem-on').checked=q.prem.on;
   document.getElementById('q-pp-on').checked=q.pp.on;
+  if(q.ess?.on!==false) togglePkg('ess'); else{document.getElementById('ess-body').style.display='none';document.getElementById('ess-hint').style.display='block';document.getElementById('pkg-ess').className='pkg';document.getElementById('s-ess-row').style.display='none';document.getElementById('sf-ess-row').style.display='none';}
   if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
   if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
   document.getElementById('q-wt-on').checked=q.wt?.wtOn||false;
@@ -940,7 +952,7 @@ async function delQuote(qid){
 
 // ─── QUOTES LIST ─────────────────────────────────────────────────────────────
 // Quoted amount shown in the list — the HIGHEST active package total, inc. VAT
-// (Essential is always active; Premium / Premium Plus included if enabled).
+// (Essential / Premium / Premium Plus each included only if enabled).
 // Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
 // + ppExtras (Premium Plus) + shared (worktops/glass/extras).
 function quoteAmount(q){
@@ -957,8 +969,9 @@ function quoteAmount(q){
 
   const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
   const essK=doors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+  const essOn=q.ess?.on!==false;
 
-  let packages=[essK];
+  let packages=essOn?[essK]:[];
 
   if(q.prem?.on){
     const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
@@ -970,7 +983,7 @@ function quoteAmount(q){
     packages.push(doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT+ppExtTotal);
   }
 
-  const highestK=Math.max(...packages);
+  const highestK=packages.length?Math.max(...packages):essK;
   return Math.round((highestK+shared)*(1+VAT/100));
 }
 function renderQuotes(){
@@ -988,7 +1001,7 @@ function renderQuotes(){
   el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
     list.map(q=>{
       const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
-      const pkgs=(q.ess?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
+      const pkgs=(q.ess?.on!==false?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
       const amt='€'+Math.round(quoteAmount(q)).toLocaleString('en-IE');
       const stCur=q.status||'Draft';
       const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
@@ -1136,13 +1149,14 @@ function genPDF(qid){
   const premDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nProfessional installation';
   const ppDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nPremium add-on systems\nProfessional installation';
 
-  const activePkgs=[{
+  const activePkgs=[];
+  if(q.ess?.on!==false) activePkgs.push({
     name:'Essential',
     k:essK,
     desc:essDesc,
     drawer:q.ess?.drawer||'none',
     ppExt:0
-  }];
+  });
   if(q.prem?.on) activePkgs.push({
     name:'Premium',
     k:q.doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,
@@ -1157,6 +1171,7 @@ function genPDF(qid){
     drawer:q.pp?.drawer||'none',
     ppExt:ppExtTotal
   });
+  if(!activePkgs.length){alert('Please select at least one package (Essential, Premium, or Premium Plus) before generating a PDF.');return;}
 
   const optLabels=['Option A','Option B','Option C'];
 
@@ -1402,11 +1417,13 @@ function saveInvoiceRecord(qid, pkgKey, invNum, total){
 // ─── INVOICE ──────────────────────────────────────────────────────────────────
 function selectInvoicePkg(qid){
   const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
-  const active=[{key:'ess',label:'Essential'}];
+  const active=[];
+  if(q.ess?.on!==false) active.push({key:'ess',label:'Essential'});
   if(q.prem?.on) active.push({key:'prem',label:'Premium'});
   if(q.pp?.on)   active.push({key:'pp',  label:'Premium Plus'});
 
-  if(active.length===1){genInvoice(qid,'ess');return;}
+  if(!active.length){alert('Please select at least one package before generating an invoice.');return;}
+  if(active.length===1){genInvoice(qid,active[0].key);return;}
 
   // Multi-package: open selection window
   const optHtml=active.map(p=>`
@@ -1977,4 +1994,4 @@ goTo('dashboard');
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
