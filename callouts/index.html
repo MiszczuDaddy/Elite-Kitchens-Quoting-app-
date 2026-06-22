@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14110f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Elite Kitchens">
+<title>Elite Kitchens — Callouts</title>
+<style>
+  :root{
+    --ink:#14110f; --paper:#f7f4ee; --line:#e3ddd1;
+    --brass:#9a6b2f; --brass-soft:#c79a5b;
+    --grain:#6f655a; --won:#3c6e47; --lost:#a4453a;
+    --new:#7a6f5f; --booked:#b07d2c; --visited:#5a6b7a; --quoted:#8a5a8a;
+    --card:#fffdf8;
+    /* area colours for the calendar */
+    --a-dublin:#3f6f9e; --a-meath:#3c6e47; --a-kildare:#9a6b2f; --a-louth:#8a5a8a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Iowan Old Style',Georgia,'Times New Roman',serif;background:var(--paper);color:var(--ink);padding:env(safe-area-inset-top) 0 0;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px;margin:0 auto;padding:0 16px 110px}
+  header{padding:20px 0 14px;border-bottom:1.5px solid var(--ink);margin-bottom:4px}
+  .brand{font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--brass);font-family:-apple-system,system-ui,sans-serif;font-weight:600}
+  h1{font-size:30px;font-weight:600;letter-spacing:-.01em;margin-top:2px;line-height:1}
+  .sub{font-size:13px;color:var(--grain);margin-top:6px;font-family:-apple-system,system-ui,sans-serif}
+
+  .pulse{display:flex;gap:10px;margin:14px 0 6px;flex-wrap:wrap}
+  .stat{flex:1;min-width:120px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .stat .n{font-size:23px;font-weight:600;letter-spacing:-.02em}
+  .stat .l{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--grain);font-family:-apple-system,system-ui,sans-serif;margin-top:2px}
+  .stat.act{border-color:var(--brass);background:linear-gradient(180deg,#fff8ec,var(--card))}
+  .stat.act .n{color:var(--brass)}
+
+  .today{margin:14px 0;padding:13px 15px;background:var(--card);border-radius:0 10px 10px 0;border:1px solid var(--line);border-left:3px solid var(--brass)}
+  .today h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);font-family:-apple-system,system-ui,sans-serif;margin-bottom:8px}
+  .todo{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:15px;border-top:1px dashed var(--line)}
+  .todo:first-of-type{border-top:none}
+  .todo .who{font-weight:600}
+  .todo .why{color:var(--grain);font-size:13px;font-family:-apple-system,system-ui,sans-serif}
+  .todo .go{margin-left:auto;font-size:12px;color:var(--brass);font-family:-apple-system,system-ui,sans-serif;border:1px solid var(--brass-soft);padding:4px 9px;border-radius:14px;cursor:pointer;background:none;white-space:nowrap}
+  .clear{color:var(--grain);font-size:14px;font-style:italic}
+
+  .bar{display:flex;gap:7px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+  .bar::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;font-family:-apple-system,system-ui,sans-serif;font-size:13px;padding:6px 13px;border:1px solid var(--line);border-radius:18px;background:var(--card);cursor:pointer;color:var(--grain)}
+  .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  .lead{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:11px;position:relative;overflow:hidden}
+  .lead::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--stage-c,var(--new))}
+  .lead.due{box-shadow:0 0 0 1.5px var(--brass-soft)}
+  .lhead{display:flex;align-items:baseline;gap:8px}
+  .lname{font-size:19px;font-weight:600}
+  .lval{margin-left:auto;font-size:15px;font-weight:600;color:var(--brass);font-family:-apple-system,system-ui,sans-serif}
+  .meta{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:5px;font-size:13px;color:var(--grain);font-family:-apple-system,system-ui,sans-serif}
+  .when{display:inline-flex;align-items:center;gap:5px;font-family:-apple-system,system-ui,sans-serif;font-size:13px;color:var(--ink);background:#efe9dc;padding:3px 9px;border-radius:7px;margin-top:9px;font-weight:500}
+  .stagepill{display:inline-block;font-family:-apple-system,system-ui,sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:12px;color:#fff;background:var(--stage-c,var(--new));margin-top:9px;margin-left:6px}
+  .lnote{margin-top:9px;font-size:14px;color:#4a443c;font-style:italic;line-height:1.4}
+  .flag{display:inline-block;font-family:-apple-system,system-ui,sans-serif;font-size:11px;color:var(--brass);margin-top:8px}
+  .lactions{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+  .act-btn{font-family:-apple-system,system-ui,sans-serif;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--paper);cursor:pointer;color:var(--ink);font-weight:500}
+  .act-btn.prime{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .act-btn.win{background:var(--won);color:#fff;border-color:var(--won)}
+  .act-btn.lose{color:var(--lost);border-color:#e0c4c0}
+  .act-btn.cal{background:#efe9dc;border-color:var(--brass-soft);color:var(--brass)}
+  .act-btn.mini{padding:6px 10px;font-size:12px}
+  .empty{text-align:center;padding:46px 20px;color:var(--grain)}
+  .empty .big{font-size:18px;color:var(--ink);margin-bottom:6px}
+
+  /* ---------- calendar (dark, matches phone) ---------- */
+  #calPage{display:none}
+  .cal-shell{background:#0e0d0c;border-radius:16px;padding:14px 8px 18px;margin-top:14px;color:#f4f1ea}
+  .cal-top{display:flex;align-items:center;justify-content:center;gap:18px;padding:6px 0 14px;position:relative}
+  .cal-top .mname{font-family:-apple-system,system-ui,sans-serif;font-size:20px;font-weight:600;letter-spacing:.16em;text-transform:uppercase}
+  .cal-nav{position:absolute;font-family:-apple-system,system-ui,sans-serif;background:none;border:none;color:#9a948a;font-size:24px;cursor:pointer;padding:0 12px}
+  .cal-nav.prev{left:0}.cal-nav.next{right:0}
+  .dow{display:grid;grid-template-columns:repeat(7,1fr);font-family:-apple-system,system-ui,sans-serif;font-size:12px;color:#8c867c;padding:0 2px 6px}
+  .dow div{text-align:left;padding-left:4px}
+  .dow .sun{color:#c98}.dow .fri{color:#7fa6d6}.dow .sat{color:#cf7d72}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+  .cell{min-height:62px;padding:3px 2px;border-top:1px solid #232120;cursor:pointer;position:relative}
+  .cell .dnum{font-family:-apple-system,system-ui,sans-serif;font-size:15px;font-weight:600;padding-left:3px}
+  .cell.dim .dnum{color:#4a4742}
+  .cell.today .dnum{background:#fff;color:#000;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center}
+  .cell.sel{outline:1.5px solid #6a655c;border-radius:10px;outline-offset:-1px}
+  .ev{font-family:-apple-system,system-ui,sans-serif;font-size:10.5px;line-height:1.15;color:#fff;border-radius:3px;padding:2px 3px 2px 5px;margin-top:2px;position:relative;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(255,255,255,.06)}
+  .ev::before{content:"";position:absolute;left:0;top:1px;bottom:1px;width:2.5px;border-radius:2px;background:var(--ec,#3f6f9e)}
+  .ev.solid{background:var(--ec,#3f6f9e)}
+  .ev.solid::before{display:none}
+
+  .day-detail{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .day-detail h3{font-family:-apple-system,system-ui,sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);margin-bottom:10px}
+  .de-row{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-top:1px dashed var(--line);cursor:pointer}
+  .de-row:first-of-type{border-top:none}
+  .de-time{font-family:-apple-system,system-ui,sans-serif;font-size:14px;font-weight:600;min-width:58px;color:var(--ink)}
+  .de-body .nm{font-size:16px;font-weight:600}
+  .de-body .mt{font-family:-apple-system,system-ui,sans-serif;font-size:13px;color:var(--grain);margin-top:1px}
+  .de-dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex-shrink:0}
+  .de-empty{color:var(--grain);font-style:italic;font-size:14px}
+
+  /* tabs */
+  .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--line);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+  .tab{flex:1;text-align:center;padding:12px 0 13px;font-family:-apple-system,system-ui,sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--grain);cursor:pointer;border:none;background:none}
+  .tab.on{color:var(--ink);font-weight:700}
+  .tab .ic{display:block;font-size:21px;margin-bottom:3px}
+
+  .fab{position:fixed;right:18px;bottom:calc(74px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;background:var(--ink);color:var(--paper);border:none;font-size:30px;cursor:pointer;box-shadow:0 6px 20px rgba(20,17,15,.3);z-index:55;line-height:1;font-family:-apple-system,system-ui,sans-serif}
+  .paste-fab{bottom:calc(142px + env(safe-area-inset-bottom));background:var(--brass);font-size:24px}
+
+  .ov{position:fixed;inset:0;background:rgba(20,17,15,.45);display:none;align-items:flex-end;justify-content:center;z-index:60}
+  .ov.show{display:flex}
+  .sheet{background:var(--paper);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
+  .sheet h2{font-size:22px;margin-bottom:4px;font-weight:600}
+  label{display:block;font-family:-apple-system,system-ui,sans-serif;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--grain);margin:12px 0 5px;font-weight:600}
+  input,select,textarea{width:100%;font-family:-apple-system,system-ui,sans-serif;font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink)}
+  textarea{min-height:64px;resize:vertical;font-family:'Iowan Old Style',Georgia,serif;font-style:italic}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  .save{width:100%;margin-top:18px;padding:14px;background:var(--ink);color:var(--paper);border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;font-family:-apple-system,system-ui,sans-serif}
+  .cancel{width:100%;margin-top:8px;padding:11px;background:none;border:none;color:var(--grain);font-size:14px;cursor:pointer;font-family:-apple-system,system-ui,sans-serif}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg .opt{flex:1;min-width:64px;text-align:center;font-family:-apple-system,system-ui,sans-serif;font-size:13px;padding:9px 4px;border:1px solid var(--line);border-radius:8px;background:var(--card);cursor:pointer;color:var(--grain)}
+  .seg .opt.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .hint{font-family:-apple-system,system-ui,sans-serif;font-size:12px;color:var(--grain);margin-bottom:10px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Elite Kitchens</div>
+    <h1 id="pageTitle">Callouts</h1>
+    <div class="sub" id="sub">Every job, from first call to fitted.</div>
+  </header>
+
+  <!-- DASHBOARD -->
+  <div id="dashPage">
+    <div class="pulse" id="pulse"></div>
+    <div class="today" id="today"></div>
+    <div class="bar" id="bar"></div>
+    <div id="list"></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="calPage">
+    <div class="cal-shell">
+      <div class="cal-top">
+        <button class="cal-nav prev" onclick="moveMonth(-1)">‹</button>
+        <span class="mname" id="mname"></span>
+        <button class="cal-nav next" onclick="moveMonth(1)">›</button>
+      </div>
+      <div class="dow"><div class="sun">S</div><div>M</div><div>T</div><div>W</div><div>T</div><div class="fri">F</div><div class="sat">S</div></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="day-detail" id="dayDetail"></div>
+  </div>
+</div>
+
+<button class="fab paste-fab" onclick="openPaste()" title="Paste a lead from WhatsApp">⎘</button>
+<button class="fab" onclick="openAdd()">+</button>
+
+<div class="tabs">
+  <button class="tab on" id="tabDash" onclick="go('dash')"><span class="ic">▤</span>Dashboard</button>
+  <button class="tab" id="tabCal" onclick="go('cal')"><span class="ic">▦</span>Calendar</button>
+</div>
+
+<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
+
+<script>
+/* ---------- data ---------- */
+const STAGES=["New","Booked","Visited","Quoted","Follow-up","Won","Lost"];
+const STAGE_COLOR={New:"var(--new)",Booked:"var(--booked)",Visited:"var(--visited)",Quoted:"var(--quoted)","Follow-up":"var(--brass)",Won:"var(--won)",Lost:"var(--lost)"};
+const AREAS=["Dublin","Meath","Kildare","Louth"];
+const AREA_COLOR={Dublin:"#3f6f9e",Meath:"#3c6e47",Kildare:"#9a6b2f",Louth:"#8a5a8a"};
+const SOURCES=["Meta ad","Referral","Repeat","Other"];
+const FOLLOWUP_DAYS=5;
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+let leads=loadLeads();
+let filter="Active";
+let editing=null;
+let draft={};
+let view_="dash";
+let calMonth=new Date().getMonth();
+let calYear=new Date().getFullYear();
+let selDay=ymd(new Date());
+
+function loadLeads(){
+  try{const raw=localStorage.getItem('ek_callouts');if(raw)return JSON.parse(raw);}catch(e){}
+  return [];
+}
+function saveLeads(){
+  try{localStorage.setItem('ek_callouts',JSON.stringify(leads));}catch(e){}
+}
+const nextId=()=>(leads.reduce((m,l)=>Math.max(m,l.id),0)+1);
+
+/* ---------- date helpers ---------- */
+function ymd(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function ymdOf(iso){return iso?ymd(new Date(iso)):null;}
+function timeOf(iso){const d=new Date(iso);return d.toLocaleTimeString("en-IE",{hour:"2-digit",minute:"2-digit",hour12:false});}
+function prettyDay(key){const[y,m,dd]=key.split("-").map(Number);const d=new Date(y,m-1,dd);return d.toLocaleDateString("en-IE",{weekday:"long",day:"numeric",month:"long"});}
+
+/* ---------- follow-up logic ---------- */
+function daysSince(iso){if(!iso)return null;return Math.floor((Date.now()-new Date(iso))/86400000);}
+function isDue(l){
+  if(l.stage==="Quoted"){const d=daysSince(l.quoted);return d!==null&&d>=FOLLOWUP_DAYS;}
+  if(l.stage==="Follow-up")return true;
+  return false;
+}
+function dueReason(l){
+  if(l.stage==="Follow-up")return "flagged for follow-up";
+  if(l.stage==="Quoted"){const d=daysSince(l.quoted);return `quoted ${d} days ago — no answer`;}
+  return "";
+}
+const fmt=n=>"€"+(n||0).toLocaleString("en-IE");
+
+/* ---------- navigation ---------- */
+function go(v){
+  view_=v;
+  document.getElementById("dashPage").style.display=v==="dash"?"block":"none";
+  document.getElementById("calPage").style.display=v==="cal"?"block":"none";
+  document.getElementById("tabDash").classList.toggle("on",v==="dash");
+  document.getElementById("tabCal").classList.toggle("on",v==="cal");
+  document.getElementById("pageTitle").textContent=v==="dash"?"Callouts":"Calendar";
+  document.getElementById("sub").textContent=v==="dash"?"Every job, from first call to fitted.":"Your callout schedule at a glance.";
+  render();
+}
+
+/* ---------- dashboard render ---------- */
+function render(){
+  if(view_==="dash")renderDash();
+  if(view_==="cal")renderCal();
+}
+function renderDash(){
+  const active=leads.filter(l=>l.stage!=="Won"&&l.stage!=="Lost");
+  const pipeline=active.filter(l=>l.value>0).reduce((s,l)=>s+l.value,0);
+  const won=leads.filter(l=>l.stage==="Won").reduce((s,l)=>s+l.value,0);
+  const due=leads.filter(isDue);
+
+  document.getElementById("pulse").innerHTML=`
+    <div class="stat ${due.length?'act':''}"><div class="n">${due.length}</div><div class="l">Need action today</div></div>
+    <div class="stat"><div class="n">${fmt(pipeline)}</div><div class="l">In the pipeline</div></div>
+    <div class="stat"><div class="n">${fmt(won)}</div><div class="l">Won</div></div>`;
+
+  const t=document.getElementById("today");
+  if(due.length){
+    t.innerHTML=`<h3>Chase these today</h3>`+due.map(l=>`
+      <div class="todo"><span class="who">${esc(l.name)}</span><span class="why">${dueReason(l)}</span>
+      <button class="go" onclick="openEdit(${l.id})">Open</button></div>`).join("");
+  }else{t.innerHTML=`<h3>Chase these today</h3><div class="clear">Nothing overdue. Pipeline's clean.</div>`;}
+
+  const counts={};STAGES.forEach(s=>counts[s]=leads.filter(l=>l.stage===s).length);
+  const chips=[["Active",active.length],...STAGES.map(s=>[s,counts[s]])];
+  document.getElementById("bar").innerHTML=chips.map(([s,c])=>`<button class="chip ${filter===s?'on':''}" onclick="setFilter('${s}')">${s}${c?` ${c}`:''}</button>`).join("");
+
+  let show=filter==="Active"?active:leads.filter(l=>l.stage===filter);
+  show=show.slice().sort((a,b)=>(isDue(b)-isDue(a))||(new Date(b.created)-new Date(a.created)));
+  const list=document.getElementById("list");
+  if(!show.length){list.innerHTML=`<div class="empty"><div class="big">No callouts here yet</div>Tap + to add one.</div>`;return;}
+  list.innerHTML=show.map(card).join("");
+}
+
+function card(l){
+  const due=isDue(l);
+  const sameArea=leads.filter(x=>x.area===l.area&&x.stage==="Booked"&&x.id!==l.id).length;
+  let flag="";
+  if(l.stage==="Booked"&&sameArea>0)flag=`⬩ You've ${sameArea} other booked call${sameArea>1?'s':''} in ${l.area} — batch the drive`;
+  let whenStr="";
+  if(l.callout){const d=new Date(l.callout);whenStr=d.toLocaleDateString("en-IE",{weekday:"short",day:"numeric",month:"short"})+" · "+timeOf(l.callout);}
+  return `
+  <div class="lead ${due?'due':''}" style="--stage-c:${STAGE_COLOR[l.stage]}">
+    <div class="lhead"><span class="lname">${esc(l.name)}</span>${l.value?`<span class="lval">${fmt(l.value)}</span>`:''}</div>
+    <div class="meta"><span>${esc(l.area)}</span>${l.address?`<span>${esc(l.address)}</span>`:''}<span>${esc(l.job||"—")}</span><span>${esc(l.source)}</span></div>
+    ${whenStr?`<div class="when">🕑 ${whenStr}</div>`:''}<span class="stagepill" style="background:${STAGE_COLOR[l.stage]}">${l.stage}</span>
+    ${l.note?`<div class="lnote">${esc(l.note)}</div>`:''}
+    ${flag?`<div class="flag">${flag}</div>`:''}
+    <div class="lactions">${actions(l)}</div>
+  </div>`;
+}
+function actions(l){
+  let b="";
+  if(l.stage==="New")b+=`<button class="act-btn prime" onclick="openEdit(${l.id})">Book callout</button>`;
+  if(l.stage==="Booked")b+=`<button class="act-btn prime" onclick="setStage(${l.id},'Visited')">Mark visited</button>`;
+  if(l.stage==="Visited")b+=`<button class="act-btn prime" onclick="setStage(${l.id},'Quoted')">Quote sent</button>`;
+  if(l.stage==="Quoted"||l.stage==="Follow-up")b+=`<button class="act-btn win" onclick="setStage(${l.id},'Won')">Won</button>`;
+  if(l.callout)b+=`<button class="act-btn cal mini" onclick="addToCalendar(${l.id})">Add to phone calendar</button>`;
+  b+=`<button class="act-btn mini" onclick="openEdit(${l.id})">Edit</button>`;
+  if(l.stage!=="Won"&&l.stage!=="Lost")b+=`<button class="act-btn lose mini" onclick="setStage(${l.id},'Lost')">Lost</button>`;
+  if(l.stage==="Won"||l.stage==="Lost")b+=`<button class="act-btn mini" onclick="setStage(${l.id},'Quoted')">Reopen</button>`;
+  return b;
+}
+function setStage(id,stage){
+  const l=leads.find(x=>x.id===id);if(!l)return;
+  l.stage=stage;
+  if(stage==="Quoted")l.quoted=new Date().toISOString();
+  saveLeads();render();
+}
+function setFilter(f){filter=f;render();}
+
+/* ---------- calendar render ---------- */
+function moveMonth(dir){
+  calMonth+=dir;
+  if(calMonth<0){calMonth=11;calYear--;}
+  if(calMonth>11){calMonth=0;calYear++;}
+  renderCal();
+}
+function renderCal(){
+  document.getElementById("mname").textContent=MONTHS[calMonth].slice(0,3).toUpperCase();
+  const first=new Date(calYear,calMonth,1);
+  const startDow=first.getDay();
+  const gridStart=new Date(calYear,calMonth,1-startDow);
+  // group callouts by ymd
+  const byDay={};
+  leads.filter(l=>l.callout).forEach(l=>{(byDay[ymdOf(l.callout)]=byDay[ymdOf(l.callout)]||[]).push(l);});
+  const todayKey=ymd(new Date());
+  let cells="";
+  for(let i=0;i<42;i++){
+    const d=new Date(gridStart);d.setDate(gridStart.getDate()+i);
+    const key=ymd(d);
+    const dim=d.getMonth()!==calMonth;
+    const evs=(byDay[key]||[]).sort((a,b)=>new Date(a.callout)-new Date(b.callout));
+    const evHtml=evs.slice(0,3).map(l=>`<div class="ev" style="--ec:${AREA_COLOR[l.area]}">${esc(l.name)}</div>`).join("")
+      +(evs.length>3?`<div class="ev" style="background:none;color:#9a948a">+${evs.length-3} more</div>`:"");
+    cells+=`<div class="cell ${dim?'dim':''} ${key===todayKey?'today':''} ${key===selDay?'sel':''}" onclick="selectDay('${key}')">
+      <div class="dnum">${d.getDate()}</div>${evHtml}</div>`;
+    if(i>=34&&d.getMonth()!==calMonth&&new Date(gridStart).getMonth()!==calMonth)break;
+  }
+  document.getElementById("grid").innerHTML=cells;
+  renderDayDetail();
+}
+function selectDay(key){
+  selDay=key;
+  document.querySelectorAll(".cell").forEach(c=>c.classList.remove("sel"));
+  renderCal();
+}
+function renderDayDetail(){
+  const d=document.getElementById("dayDetail");
+  const evs=leads.filter(l=>l.callout&&ymdOf(l.callout)===selDay).sort((a,b)=>new Date(a.callout)-new Date(b.callout));
+  let inner=`<h3>${prettyDay(selDay)}</h3>`;
+  if(!evs.length){
+    inner+=`<div class="de-empty">No callouts booked. Tap + to add one.</div>`;
+  }else{
+    inner+=evs.map(l=>`
+      <div class="de-row" onclick="openEdit(${l.id})">
+        <span class="de-time">${timeOf(l.callout)}</span>
+        <span class="de-dot" style="background:${AREA_COLOR[l.area]}"></span>
+        <div class="de-body"><div class="nm">${esc(l.name)}</div>
+        <div class="mt">${esc(l.area)}${l.address?" · "+esc(l.address):""} · ${esc(l.job||"—")}${l.value?" · "+fmt(l.value):""}</div></div>
+      </div>`).join("");
+  }
+  d.innerHTML=inner;
+}
+
+/* ---------- add to phone calendar (.ics) ---------- */
+function addToCalendar(id){const l=leads.find(x=>x.id===id);if(l)icsDownload(l);}
+function icsDownload(l){
+  if(!l||!l.callout)return;
+  const start=new Date(l.callout);
+  const end=new Date(start.getTime()+60*60000); // 1hr default
+  const fmtICS=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+  const loc=[l.address,l.area].filter(Boolean).join(", ");
+  const desc=[l.job,l.phone,l.email,l.note].filter(Boolean).join("\\n");
+  const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Elite Kitchens//Callouts//EN","BEGIN:VEVENT",
+    "UID:elitekitchens-"+l.id+"@leads","DTSTAMP:"+fmtICS(new Date()),"DTSTART:"+fmtICS(start),"DTEND:"+fmtICS(end),
+    "SUMMARY:Callout — "+l.name+" ("+l.area+")","LOCATION:"+loc,"DESCRIPTION:"+desc,"END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const blob=new Blob([ics],{type:"text/calendar"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="callout-"+l.name.replace(/\s+/g,"-")+".ics";
+  document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ---------- paste / parse ---------- */
+function parseLead(text){
+  const out={name:"",phone:"",email:"",address:"",area:"Dublin",job:"",source:"Meta ad",value:0,note:"",stage:"New"};
+  const t=text.replace(/\r/g,"");
+  let m=t.match(/alert:\s*(.+?)\s+is interested/i)||t.match(/lead[:\s]+(.+?)\s+is interested/i)||t.match(/^Name[:\s]+(.+)$/im);
+  if(m)out.name=tidyName(m[1]);
+  m=t.match(/Email[:\s]+([^\s]+@[^\s]+)/i);if(m)out.email=m[1].trim();
+  m=t.match(/Phone[:\s]+([+\d][\d\s()\-]{6,})/i);if(m)out.phone=m[1].replace(/\s+/g,"").trim();
+  m=t.match(/Lead Source[:\s]+(.+)/i);
+  if(m){const src=m[1];if(/kitchen/i.test(src))out.job="Kitchen";if(/wardrobe/i.test(src))out.job=(out.job?out.job+" + ":"")+"Wardrobes";if(/utility/i.test(src))out.job=(out.job?out.job+" + ":"")+"Utility";}
+  m=t.match(/€\s?([\d,]+)/);if(m)out.value=parseInt(m[1].replace(/,/g,""))||0;
+
+  // The details line mashes budget + timeframe + Eircode together with no spaces.
+  let det=(t.match(/See Details[:\s]*(.+)/i)||[])[1];
+  if(det){
+    det=det.trim();
+    // Pull the Eircode off the end → address field. Format: routing key + 4 chars.
+    const ec=extractEircode(det);
+    if(ec){
+      out.address=ec;
+      // strip the eircode (spaced or glued) from the note text
+      det=det.replace(/[AC-FHKNPRTV-Y]\d{2}\s?[0-9AC-FHKNPRTV-Y]{4}\s*$/i,"").trim();
+    }
+    out.note=det?("Lead details: "+det):"";
+  }
+  return out;
+}
+function extractEircode(text){
+  const t=text.trim();
+  let m=t.match(/([AC-FHKNPRTV-Y]\d{2}\s?[0-9AC-FHKNPRTV-Y]{4})\s*$/i)||t.match(/([A-Z]\d{2}\s?[0-9A-Z]{4})\s*$/i);
+  if(!m)return null;
+  const code=m[1].toUpperCase().replace(/\s+/g,"");
+  if(code.length!==7)return null;
+  return code.slice(0,3)+" "+code.slice(3);
+}
+function tidyName(s){return s.trim().replace(/\b\w/g,c=>c.toUpperCase()).replace(/\s+/g," ");}
+function openPaste(){
+  const s=document.getElementById("sheet");
+  s.innerHTML=`<h2>Paste a lead</h2>
+    <p class="hint">Long-press the WhatsApp lead message → Copy → paste it below. It lands as a New lead — book the callout time when you arrange it.</p>
+    <label>Lead message</label>
+    <textarea id="f_paste" style="min-height:150px;font-style:normal" placeholder="Paste the whole message here…"></textarea>
+    <button class="save" onclick="doParse()">Read lead</button>
+    <button class="cancel" onclick="closeSheet()">Cancel</button>`;
+  document.getElementById("ov").classList.add("show");
+  setTimeout(()=>document.getElementById("f_paste").focus(),60);
+}
+function doParse(){
+  const raw=document.getElementById("f_paste").value;
+  if(!raw.trim()){document.getElementById("f_paste").focus();return;}
+  editing=null;showSheet({...blank(),...parseLead(raw)});
+}
+
+/* ---------- add / edit / book ---------- */
+function openAdd(){editing=null;showSheet(blank());}
+function openEdit(id){editing=id;showSheet(leads.find(l=>l.id===id));}
+function blank(){
+  return {name:"",phone:"",email:"",address:"",area:"Dublin",job:"",source:"Meta ad",value:"",stage:"New",note:"",calDate:"",calTime:""};
+}
+function showSheet(l){
+  draft={...l};
+  // split existing callout into date+time for the inputs
+  if(l.callout){draft.calDate=ymdOf(l.callout);draft.calTime=timeOf(l.callout);}
+  if(draft.calDate===undefined)draft.calDate="";
+  if(draft.calTime===undefined)draft.calTime="";
+  const s=document.getElementById("sheet");
+  s.innerHTML=`
+    <h2>${editing?"Edit callout":"New callout"}</h2>
+    <p class="hint">Fill the date &amp; time to book it onto your calendar. Leave them blank to save as a lead and book later.</p>
+    <label>Name</label>
+    <input id="f_name" value="${esc(draft.name)}" placeholder="Customer name">
+    <div class="row">
+      <div><label>Phone</label><input id="f_phone" value="${esc(draft.phone||'')}" inputmode="tel" placeholder="Optional"></div>
+      <div><label>Quote value €</label><input id="f_value" value="${draft.value||''}" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <label>Email</label>
+    <input id="f_email" value="${esc(draft.email||'')}" inputmode="email" placeholder="Optional">
+    <label>Address</label>
+    <input id="f_address" value="${esc(draft.address||'')}" placeholder="Street, town, Eircode">
+    <label>Callout date &amp; time <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--brass)">— set to book it</span></label>
+    <div class="row">
+      <div><input type="date" id="f_date" value="${draft.calDate}"></div>
+      <div><input type="time" id="f_time" value="${draft.calTime}"></div>
+    </div>
+    <label>Area</label>
+    <div class="seg" id="seg_area">${AREAS.map(a=>`<div class="opt ${draft.area===a?'on':''}" onclick="pick('area','${a}')">${a}</div>`).join("")}</div>
+    <label>Source</label>
+    <div class="seg" id="seg_source">${SOURCES.map(a=>`<div class="opt ${draft.source===a?'on':''}" onclick="pick('source','${a}')">${a}</div>`).join("")}</div>
+    <label>Job</label>
+    <input id="f_job" value="${esc(draft.job||'')}" placeholder="Kitchen, wardrobes, utility…">
+    ${editing?`<label>Stage</label><div class="seg" id="seg_stage">${STAGES.map(a=>`<div class="opt ${draft.stage===a?'on':''}" onclick="pick('stage','${a}')">${a}</div>`).join("")}</div>`:''}
+    <label>Notes</label>
+    <textarea id="f_note" placeholder="What they want, measurements, objections…">${esc(draft.note||'')}</textarea>
+    <button class="save" onclick="save()">${editing?"Save changes":"Save"}</button>
+    ${editing?`<button class="cancel" onclick="del()">Delete</button>`:''}
+    <button class="cancel" onclick="closeSheet()">Cancel</button>`;
+  document.getElementById("ov").classList.add("show");
+  setTimeout(()=>document.getElementById("f_name").focus(),60);
+}
+function pick(field,val){draft[field]=val;document.querySelectorAll(`#seg_${field} .opt`).forEach(o=>o.classList.toggle('on',o.textContent===val));}
+function save(){
+  const name=document.getElementById("f_name").value.trim();
+  if(!name){document.getElementById("f_name").focus();return;}
+  const dateV=document.getElementById("f_date").value;
+  const timeV=document.getElementById("f_time").value||"10:00";
+  let callout=null;
+  if(dateV)callout=new Date(dateV+"T"+timeV).toISOString(); // a date present = booked
+  const data={
+    name,phone:document.getElementById("f_phone").value.trim(),
+    email:document.getElementById("f_email").value.trim(),
+    address:document.getElementById("f_address").value.trim(),
+    area:draft.area,source:draft.source,
+    job:document.getElementById("f_job").value.trim(),
+    value:parseInt(document.getElementById("f_value").value)||0,
+    note:document.getElementById("f_note").value.trim(),
+  };
+  let savedLead=null;
+  let calendarChanged=false;
+  if(editing){
+    const l=leads.find(x=>x.id===editing);
+    const prevCallout=l.callout;
+    Object.assign(l,data);
+    l.callout=callout;
+    if(callout&&callout!==prevCallout)calendarChanged=true;
+    if(draft.stage&&draft.stage!==l.stage){if(draft.stage==="Quoted")l.quoted=new Date().toISOString();l.stage=draft.stage;}
+    else if(callout&&l.stage==="New")l.stage="Booked"; // booking a New lead promotes it
+    savedLead=l;
+  }else{
+    savedLead={id:nextId(),...data,callout,stage:callout?"Booked":"New",quoted:null,created:new Date().toISOString()};
+    leads.unshift(savedLead);
+    if(callout){selDay=ymdOf(callout);calMonth=new Date(callout).getMonth();calYear=new Date(callout).getFullYear();calendarChanged=true;}
+  }
+  saveLeads();closeSheet();render();
+  if(calendarChanged&&savedLead&&savedLead.callout)icsDownload(savedLead);
+}
+function del(){if(editing)leads=leads.filter(l=>l.id!==editing);saveLeads();closeSheet();render();}
+function closeSheet(){document.getElementById("ov").classList.remove("show");editing=null;}
+document.getElementById("ov").addEventListener("click",e=>{if(e.target.id==="ov")closeSheet();});
+function esc(s){return(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+go("dash");
+</script>
+</body>
+</html>
