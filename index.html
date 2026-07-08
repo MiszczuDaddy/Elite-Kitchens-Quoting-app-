@@ -429,6 +429,19 @@ tr:last-child td{border-bottom:none}
   <div class="card"><div id="inv-list"></div></div>
 </div>
 
+<div id="render-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:26px;margin-bottom:8px">🖼️</div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Add a Render Image?</div>
+    <div style="color:#6b7280;font-size:13px;margin-bottom:16px">Upload a render to include as a second page in the PDF. Optional — skip to generate without one.</div>
+    <input type="file" id="render-file-input" accept="image/*" style="display:none">
+    <div id="render-file-label" style="border:2px dashed #d1d5db;border-radius:8px;padding:14px;margin-bottom:16px;cursor:pointer;font-size:13px;color:#6b7280" onclick="document.getElementById('render-file-input').click()">📁 Click to choose image</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="renderModalSkip()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Skip</button>
+      <button onclick="renderModalGo()" style="background:var(--g);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">📄 Generate PDF</button>
+    </div>
+  </div>
+</div>
 <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
     <div style="font-size:22px;margin-bottom:8px">🗑️</div>
@@ -509,7 +522,7 @@ document.getElementById('addcust-back-btn').onclick=()=>goTo('customers');
 document.getElementById('ac-cancel-btn').onclick=()=>{editingCustId=null;goTo('customers');};
 document.getElementById('builder-back-btn').onclick=()=>goTo('quotes');
 document.getElementById('builder-save-btn').onclick=()=>saveQuote();
-document.getElementById('builder-pdf-btn').onclick=()=>genPDF(editQid);
+document.getElementById('builder-pdf-btn').onclick=()=>showRenderModal(editQid);
 document.getElementById('builder-inv-btn').onclick=()=>selectInvoicePkg(editQid);
 document.getElementById('builder-email-btn').onclick=()=>emailQuote(editQid);
 document.getElementById('settings-save-btn').onclick=()=>saveSettings();
@@ -1063,7 +1076,7 @@ function renderQuotes(){
       const stCur=q.status||'Draft';
       const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
       const stSelect=`<select class="fc badge b-${stCur.toLowerCase().replace(/\s+/g,'')}" style="font-size:11px;padding:4px 6px;width:auto;border:none;font-weight:600" onchange="markQuoteStatus(${q.id},this.value)">${stOpts.map(s=>`<option ${s===stCur?'selected':''}>${s}</option>`).join('')}</select>`;
-      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="genPDF(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table>';
 }
 
@@ -1165,7 +1178,7 @@ function removeLogo(){
 }
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
-function genPDF(qid){
+function genPDF(qid,renderDataUrl){
   const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
   const c=customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
@@ -1798,6 +1811,13 @@ function doSave(){
   Elite Kitchens · 089 464 1917 · info@elitekitchens.ie · Balbriggan, Co. Dublin K32 XH72
 </div>
 
+${renderDataUrl?`
+<div style="page-break-before:always;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:97vh;padding:20px;box-sizing:border-box">
+  <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;text-align:center;letter-spacing:.07em;text-transform:uppercase">Kitchen Design Render</div>
+  <img src="${renderDataUrl}" style="max-width:100%;max-height:calc(97vh - 80px);object-fit:contain;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.12)">
+  <div style="font-size:10px;color:#9ca3af;margin-top:14px;text-align:center">Elite Kitchens · 089 464 1917 · info@elitekitchens.ie</div>
+</div>`:''}
+
 </body>
 </html>`;
 
@@ -1821,6 +1841,36 @@ function confirmNo(){
   const m=document.getElementById('confirm-modal');
   if(m) m.style.display='none';
   _confirmCallback=null;
+}
+
+// ─── RENDER MODAL ────────────────────────────────────────────────────────────
+let _renderQid=null;
+function showRenderModal(qid){
+  _renderQid=qid;
+  document.getElementById('render-file-input').value='';
+  document.getElementById('render-file-label').innerHTML='📁 Click to choose image';
+  document.getElementById('render-modal').style.display='flex';
+}
+document.getElementById('render-file-input').addEventListener('change',function(){
+  const f=this.files[0];
+  if(f) document.getElementById('render-file-label').innerHTML='✅ '+f.name;
+});
+function renderModalSkip(){
+  document.getElementById('render-modal').style.display='none';
+  genPDF(_renderQid,null);
+  _renderQid=null;
+}
+function renderModalGo(){
+  const input=document.getElementById('render-file-input');
+  document.getElementById('render-modal').style.display='none';
+  if(input.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(e){genPDF(_renderQid,e.target.result);};
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    genPDF(_renderQid,null);
+  }
+  _renderQid=null;
 }
 
 // ─── INVOICES ─────────────────────────────────────────────────────────────────
