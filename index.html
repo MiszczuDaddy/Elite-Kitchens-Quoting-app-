@@ -56,6 +56,8 @@ tr:last-child td{border-bottom:none}
 .b-man{background:var(--redL);color:var(--red)}
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stats-3{grid-template-columns:repeat(3,1fr)}
+.stats-4{grid-template-columns:repeat(4,1fr)}
 .sc{background:#fff;border:1px solid var(--grayM);border-radius:var(--rL);padding:16px 18px}
 .sv{font-size:26px;font-weight:700}.sl{font-size:12px;color:var(--gray);margin-top:2px}
 /* PKG */
@@ -80,6 +82,39 @@ tr:last-child td{border-bottom:none}
 /* PAGE HEADER */
 .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
 .pt{font-size:20px;font-weight:700}
+/* MULTI-COLUMN LAYOUTS (extracted so mobile media query can override them) */
+.builder-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+.builder-summary{position:sticky;top:20px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+/* PAGE HEADER ACTION GROUPS (search box + button, or the builder's button row) —
+   extracted so they can wrap onto their own row instead of overflowing on mobile */
+.ph-actions{display:flex;gap:8px;align-items:center}
+.search-inp{width:220px}
+/* TABLE SCROLL WRAPPER — lets wide tables scroll within their own box instead
+   of forcing the whole page to scroll sideways on a phone */
+.tscroll{overflow-x:auto}
+/* MOBILE — phone-sized screens (Thomas quotes jobs from the customer's kitchen) */
+@media (max-width:900px){
+  .sb{position:sticky;top:0;width:100%;min-height:auto;display:flex;flex-wrap:nowrap;align-items:center;overflow-x:auto;z-index:100}
+  .sb-logo{padding:8px 12px;border-bottom:none;white-space:nowrap;flex:0 0 auto}
+  .sb-logo h1{font-size:14px}
+  .sb-logo small{display:none}
+  #fb-status{padding:0 8px;border-bottom:none;flex:0 0 auto;white-space:nowrap}
+  #fb-info{margin-top:0}
+  .sb-sec{display:none}
+  .sb a{padding:10px 12px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto}
+  .sb a:hover,.sb a.on{border-left-color:transparent;border-bottom-color:#9ca3af}
+  .main{margin-left:0;padding:16px 14px}
+  .row2,.row3{grid-template-columns:1fr}
+  .stats,.stats-3,.stats-4{grid-template-columns:repeat(2,1fr)}
+  .builder-grid,.settings-grid{grid-template-columns:1fr}
+  .ph{flex-wrap:wrap;row-gap:10px}
+  .ph-actions{flex-wrap:wrap;width:100%}
+  .search-inp{width:auto;flex:1;min-width:0}
+  .builder-summary{position:sticky;top:auto;bottom:0;background:#fff;box-shadow:0 -4px 16px rgba(0,0,0,.12);z-index:60;margin:0 -14px;padding:10px 14px;border-top:1px solid var(--grayM)}
+  .builder-summary .card{margin-bottom:0;max-height:38vh;overflow-y:auto}
+  .fc{font-size:16px}
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -118,14 +153,14 @@ tr:last-child td{border-bottom:none}
   </div>
 
   <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Quotes Pipeline</div>
-  <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+  <div class="stats stats-3" style="margin-bottom:20px">
     <div class="sc"><div class="sv" id="st-total">0</div><div class="sl">Total Quotes</div></div>
     <div class="sc"><div class="sv" id="st-draft">0</div><div class="sl">Drafts</div></div>
     <div class="sc"><div class="sv" id="st-accepted">0</div><div class="sl">Accepted</div></div>
   </div>
 
   <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Invoices</div>
-  <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+  <div class="stats stats-3" style="margin-bottom:20px">
     <div class="sc"><div class="sv" id="st-inv-total">0</div><div class="sl">Total Invoices</div></div>
     <div class="sc"><div class="sv" id="st-inv-unpaid" style="color:#991b1b">0</div><div class="sl">Unpaid</div></div>
     <div class="sc"><div class="sv" id="st-inv-paid" style="color:#065f46">0</div><div class="sl">Paid</div></div>
@@ -138,8 +173,8 @@ tr:last-child td{border-bottom:none}
 <div class="scr" id="scr-customers">
   <div class="ph">
     <div class="pt">Customers</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input class="fc" id="custs-search" placeholder="🔍 Search customers..." style="width:220px" oninput="renderCusts()">
+    <div class="ph-actions">
+      <input class="fc search-inp" id="custs-search" placeholder="🔍 Search customers..." oninput="renderCusts()">
       <button class="btn btn-g" id="cust-add-btn">➕ Add Customer</button>
     </div>
   </div>
@@ -160,8 +195,8 @@ tr:last-child td{border-bottom:none}
 <div class="scr" id="scr-quotes">
   <div class="ph">
     <div class="pt">All Quotes</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <input class="fc" id="quotes-search" placeholder="🔍 Search quotes..." style="width:220px" oninput="renderQuotes()">
+    <div class="ph-actions">
+      <input class="fc search-inp" id="quotes-search" placeholder="🔍 Search quotes..." oninput="renderQuotes()">
       <button class="btn btn-g" id="quotes-new-btn">➕ New Quote</button>
     </div>
   </div>
@@ -172,9 +207,9 @@ tr:last-child td{border-bottom:none}
 <div class="scr" id="scr-builder">
   <div class="ph">
     <div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="builder-back-btn">← Back</button><div class="pt" id="builder-title">New Quote</div></div>
-    <div style="display:flex;gap:8px"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button><button class="btn btn-o" id="builder-email-btn" style="display:none">📧 Email Quote</button></div>
+    <div class="ph-actions"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button><button class="btn btn-o" id="builder-email-btn" style="display:none">📧 Email Quote</button></div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start">
+  <div class="builder-grid">
   <div>
     <!-- Customer -->
     <div class="card">
@@ -339,7 +374,7 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
   <!-- Summary sidebar -->
-  <div style="position:sticky;top:20px">
+  <div class="builder-summary">
     <div class="card">
       <div class="ct">Internal Summary</div>
       <div class="tl" id="s-ess-row"><span style="color:var(--gray)">Essential kitchen</span><span id="s-ess">€0</span></div>
@@ -360,7 +395,7 @@ tr:last-child td{border-bottom:none}
 <!-- SETTINGS -->
 <div class="scr" id="scr-settings">
   <div class="ph"><div class="pt">Settings</div></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div class="settings-grid">
     <div>
       <!-- Logo -->
       <div class="card">
@@ -420,7 +455,7 @@ tr:last-child td{border-bottom:none}
       </select>
     </div>
   </div>
-  <div class="stats" id="inv-stats" style="grid-template-columns:repeat(4,1fr)">
+  <div class="stats stats-4" id="inv-stats">
     <div class="sc"><div class="sv" id="ist-total">0</div><div class="sl">Total Invoices</div></div>
     <div class="sc"><div class="sv" id="ist-unpaid" style="color:#991b1b">0</div><div class="sl">Unpaid</div></div>
     <div class="sc"><div class="sv" id="ist-partial" style="color:#d97706">0</div><div class="sl">Partially Paid</div></div>
@@ -595,9 +630,9 @@ function renderCusts(){
     (c.addr||'').toLowerCase().includes(c_search)
   );
   if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(c_search?'No customers match your search.':'No customers yet.')+'</p>';return;}
-  el.innerHTML='<table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
     list.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:var(--gray)">${c.phone||'—'}</td><td style="color:var(--gray)">${c.email||'—'}</td><td style="color:var(--gray)">${c.addr||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button><button class="btn btn-o btn-sm" onclick="editCustomer(${c.id})">✏️ Edit</button><button class="btn btn-o btn-sm" onclick="delCustomer(${c.id})">🗑️</button></td></tr>`).join('')+
-  '</tbody></table>';
+  '</tbody></table></div>';
 }
 
 // ─── QUOTE BUILDER ───────────────────────────────────────────────────────────
@@ -1068,7 +1103,7 @@ function renderQuotes(){
            String(q.id).slice(-4).includes(q_search);
   });
   if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(q_search?'No quotes match your search.':'No quotes yet.')+'</p>';return;}
-  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
     list.map(q=>{
       const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
       const pkgs=(q.ess?.on!==false?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
@@ -1077,7 +1112,7 @@ function renderQuotes(){
       const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
       const stSelect=`<select class="fc badge b-${stCur.toLowerCase().replace(/\s+/g,'')}" style="font-size:11px;padding:4px 6px;width:auto;border:none;font-weight:600" onchange="markQuoteStatus(${q.id},this.value)">${stOpts.map(s=>`<option ${s===stCur?'selected':''}>${s}</option>`).join('')}</select>`;
       return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
-    }).join('')+'</tbody></table>';
+    }).join('')+'</tbody></table></div>';
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
@@ -1123,9 +1158,9 @@ function renderDash(){
   const el=document.getElementById('dash-list');
   const recent=quotes.slice(0,8);
   if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
-  el.innerHTML='<table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
     recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
-  '</tbody></table>';
+  '</tbody></table></div>';
 }
 
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
@@ -1918,7 +1953,7 @@ function renderInvoices(){
     return `<span class="badge" style="${map[s]||''}">${s}</span>`;
   };
 
-  el.innerHTML='<table><thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Accountant</th><th></th></tr></thead><tbody>'+
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Accountant</th><th></th></tr></thead><tbody>'+
     list.map(inv=>{
       const dateStr=(inv.date||'').slice(0,10);
       const acct=inv.sentToAccountant
@@ -1949,7 +1984,7 @@ function renderInvoices(){
         </td>
       </tr>`;
     }).join('')+
-  '</tbody></table>';
+  '</tbody></table></div>';
 }
 
 function markQuoteStatus(id, status){
