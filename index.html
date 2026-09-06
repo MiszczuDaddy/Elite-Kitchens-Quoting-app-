@@ -146,7 +146,7 @@ tr:last-child td{border-bottom:none}
 
   <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">This Month</div>
   <div class="stats" style="margin-bottom:20px">
-    <div class="sc"><div class="sv" id="st-month-quotes" style="font-size:20px">€0</div><div class="sl">Quoted</div></div>
+    <div class="sc"><div class="sv" id="st-month-quotes" style="font-size:20px">€0</div><div class="sl">Quoted (dearest option)</div></div>
     <div class="sc"><div class="sv" id="st-month-invoiced" style="font-size:20px">€0</div><div class="sl">Invoiced</div></div>
     <div class="sc"><div class="sv" id="st-outstanding" style="font-size:20px;color:#991b1b">€0</div><div class="sl">Outstanding</div></div>
     <div class="sc"><div class="sv" id="st-collected" style="font-size:20px;color:#065f46">€0</div><div class="sl">Collected</div></div>
@@ -209,6 +209,10 @@ tr:last-child td{border-bottom:none}
     <div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="builder-back-btn">← Back</button><div class="pt" id="builder-title">New Quote</div></div>
     <div class="ph-actions"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button><button class="btn btn-o" id="builder-email-btn" style="display:none">📧 Email Quote</button></div>
   </div>
+  <div id="rates-banner" class="card" style="display:none;background:#fef3c7;border-color:#fde68a;margin-bottom:16px;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+    <div style="font-size:13px;color:#92400e"><strong>⚠️ Prices have changed since this quote was created.</strong><div id="rates-banner-detail" style="font-size:12px;margin-top:4px"></div></div>
+    <button class="btn btn-o btn-sm" style="background:#fff;flex-shrink:0" onclick="updateToCurrentRates()">Update to current prices</button>
+  </div>
   <div class="builder-grid">
   <div>
     <!-- Customer -->
@@ -253,7 +257,7 @@ tr:last-child td{border-bottom:none}
             <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-ess-ppd" value="300"></div>
             <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-ess-tppd" value="200"></div>
           </div>
-          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-ess-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-ess-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
           <div style="font-size:12px;color:var(--gray);margin-top:8px">Vinyl wrap or melamine · Blum hinges · Installation</div>
         </div>
         <div class="pkg-hint" id="ess-hint" style="display:none">Tick to add an Essential option to this quote</div>
@@ -272,7 +276,7 @@ tr:last-child td{border-bottom:none}
             <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-prem-ppd" value="360"></div>
             <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-prem-tppd" value="200"></div>
           </div>
-          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-prem-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-prem-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
           <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-prem-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Blum soft-close hinges&#10;Professional installation"></textarea></div>
         </div>
         <div class="pkg-hint" id="prem-hint">Tick to add a Premium option to this quote</div>
@@ -291,7 +295,7 @@ tr:last-child td{border-bottom:none}
             <div><label class="fl">Price per door (€)</label><input class="fc" type="number" id="q-pp-ppd" value="360"></div>
             <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" id="q-pp-tppd" value="200"></div>
           </div>
-          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-pp-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux">Cemux Soft-Close — €60/drawer</option><option value="blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-pp-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
           <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-pp-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Pocket door system&#10;Oak cutlery trays&#10;Professional installation"></textarea></div>
           <!-- Premium Plus own extras -->
           <div style="margin-top:14px;border-top:1px solid var(--grayM);padding-top:14px">
@@ -427,7 +431,15 @@ tr:last-child td{border-bottom:none}
           <div class="fg"><label class="fl">Laminate worktop (€/m)</label><input class="fc" type="number" id="s-lam"></div>
           <div></div>
           <div class="fg"><label class="fl">Small glazed door (€)</label><input class="fc" type="number" id="s-gs"></div>
-          <div class="fg"><label class="fl">Large glazed larder (€)</label><input class="fc" type="number" id="s-gl"></div>
+          <div class="fg"><label class="fl">Large glazed larder (€)</label><input class="fc" type="number" id="s-gl-price"></div>
+        </div>
+      </div>
+      <!-- Drawer box prices -->
+      <div class="card">
+        <div class="ct">Drawer Box Prices</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Cemux Soft-Close (€/drawer)</label><input class="fc" type="number" id="s-dr-cemux"></div>
+          <div class="fg"><label class="fl">Blum Merivobox (€/drawer)</label><input class="fc" type="number" id="s-dr-blum"></div>
         </div>
       </div>
     </div>
@@ -435,6 +447,19 @@ tr:last-child td{border-bottom:none}
       <div class="card">
         <div class="ct">Extras Default Prices</div>
         <div id="settings-extras"></div>
+      </div>
+      <!-- Business details -->
+      <div class="card">
+        <div class="ct">Business Details</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Phone</label><input class="fc" id="s-biz-phone"></div>
+          <div class="fg"><label class="fl">Email</label><input class="fc" id="s-biz-email"></div>
+          <div class="fg"><label class="fl">Website</label><input class="fc" id="s-biz-web"></div>
+          <div class="fg"><label class="fl">Address</label><input class="fc" id="s-biz-addr"></div>
+          <div class="fg"><label class="fl">BIC</label><input class="fc" id="s-biz-bic"></div>
+          <div class="fg"><label class="fl">IBAN</label><input class="fc" id="s-biz-iban"></div>
+          <div class="fg" style="grid-column:1/-1"><label class="fl">VAT Number (optional — printed only if set)</label><input class="fc" id="s-biz-vat" placeholder="e.g. IE1234567A"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -510,12 +535,30 @@ const DEF_EXTRAS=[
   {key:'ledki',  name:'LED kickboard',          unit:'per metre',   price:300, manual:false},
   {key:'sink',   name:'Composite sink',          unit:'included',    price:0,   manual:false, free:true},
 ];
-const DEF_SETTINGS={ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:500,gl_price:1000,extras:DEF_EXTRAS};
+const DEF_SETTINGS={
+  ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:500,gl_price:1000,extras:DEF_EXTRAS,
+  dr_cemux:60,dr_blum:100,
+  biz_phone:'089 464 1917',biz_email:'info@elitekitchens.ie',biz_web:'www.elitekitchens.ie',
+  biz_addr:'Balbriggan, Co. Dublin K32 XH72',biz_bic:'AIBKIE2D',biz_iban:'IE94 AIBK 9320 1950 3570 63',
+  biz_vat:''
+};
 
 let customers    = load('customers')    || [];
 let quotes       = load('quotes')       || [];
 let invoices     = load('invoices')     || [];
 let quoteCounter = load('quoteCounter') || Math.max(0,...(quotes.map(q=>q.num||0)));
+// invoiceNums maps '<qid>_<pkgKey>' -> the invoice number allocated to that
+// quote+package, so two packages on one quote never share a number and
+// reopening either one reuses its own. invoiceCounter is seeded above the
+// highest number already issued (either recorded in invoiceNums, or parsed
+// out of existing invoice records) so it can never collide with history.
+let invoiceNums    = load('invoiceNums') || {};
+let invoiceCounter = load('invoiceCounter');
+if(!invoiceCounter){
+  const fromMap=Math.max(0,...Object.values(invoiceNums).map(n=>parseInt(String(n).replace(/\D/g,''),10)||0));
+  const fromInvoices=Math.max(0,...invoices.map(inv=>parseInt(String(inv.invNum||'').replace(/\D/g,''),10)||0));
+  invoiceCounter=Math.max(fromMap,fromInvoices);
+}
 let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
 if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
 // Carry an existing locally-saved logo into ST so it gets pushed to the cloud
@@ -525,7 +568,71 @@ if(!ST.logo){ const localLogo=load('logo'); if(localLogo) ST.logo=localLogo; }
 let editQid=null, editCid=null, exIdx=0, editingCustId=null;
 const VAT=13.5;
 
-function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);fbSave();}
+// ─── RATES ───────────────────────────────────────────────────────────────────
+// A quote freezes the unit prices it was built with in q.rates={gs,gl,cemux,blum}
+// so later Settings changes never re-price a quote that's already gone to a
+// customer. ratesOf() reads them, falling back to current settings for quotes
+// saved before q.rates existed. curRates is the builder's working copy: newQuote
+// starts it from current settings, editQuote from the quote's own frozen rates.
+function ratesOf(q){
+  return {
+    gs:    q?.rates?.gs    ?? ST.gs_price,
+    gl:    q?.rates?.gl    ?? ST.gl_price,
+    cemux: q?.rates?.cemux ?? ST.dr_cemux ?? 60,
+    blum:  q?.rates?.blum  ?? ST.dr_blum  ?? 100
+  };
+}
+function currentRates(){
+  return {gs:ST.gs_price, gl:ST.gl_price, cemux:ST.dr_cemux??60, blum:ST.dr_blum??100};
+}
+function drawerPrice(rates,key){
+  if(key==='cemux') return rates?.cemux ?? ST.dr_cemux ?? 60;
+  if(key==='blum')  return rates?.blum  ?? ST.dr_blum  ?? 100;
+  return 0;
+}
+let curRates=currentRates();
+
+// Shows/hides the builder's "prices have changed" banner by comparing the
+// quote's frozen rates against today's settings. Called from editQuote() and
+// from the banner's own "Update to current prices" button.
+function showRatesBanner(rates){
+  const banner=document.getElementById('rates-banner');
+  if(!banner) return;
+  const cur=currentRates();
+  const diffs=[];
+  if(rates.gs!==cur.gs)       diffs.push(`Small glazed door €${rates.gs} → €${cur.gs}`);
+  if(rates.gl!==cur.gl)       diffs.push(`Large glazed larder €${rates.gl} → €${cur.gl}`);
+  if(rates.cemux!==cur.cemux) diffs.push(`Cemux drawer €${rates.cemux} → €${cur.cemux}`);
+  if(rates.blum!==cur.blum)   diffs.push(`Blum drawer €${rates.blum} → €${cur.blum}`);
+  if(diffs.length){
+    document.getElementById('rates-banner-detail').textContent=diffs.join(' · ');
+    banner.style.display='flex';
+  } else {
+    banner.style.display='none';
+  }
+}
+function updateToCurrentRates(){
+  curRates=currentRates();
+  document.getElementById('rates-banner').style.display='none';
+  recalc();
+  showToast('Prices updated to today\'s settings — Save Quote to keep it.','#2e7d32');
+}
+
+// ─── INVOICE NUMBERING ───────────────────────────────────────────────────────
+// Allocated once per quote+package and reused on reopen — never derived from
+// q.num, which two packages on the same quote would otherwise share.
+function allocInvoiceNum(qid,pkgKey){
+  const key=qid+'_'+pkgKey;
+  if(invoiceNums[key]) return invoiceNums[key];
+  invoiceCounter++;
+  const num='INV-'+String(invoiceCounter).padStart(4,'0');
+  invoiceNums[key]=num;
+  save('invoiceCounter',invoiceCounter);
+  save('invoiceNums',invoiceNums);
+  return num;
+}
+
+function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);fbSave();}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
@@ -613,7 +720,7 @@ async function delCustomer(cid){
     if(fbUser){
       try{
         await fbDb.collection('users').doc(fbUser.uid).set(
-          {customers,quotes,invoices,settings:ST,quoteCounter,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+          {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
         fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
       }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
     }
@@ -638,6 +745,8 @@ function renderCusts(){
 // ─── QUOTE BUILDER ───────────────────────────────────────────────────────────
 function newQuote(custId){
   editQid=null; editCid=custId||null;
+  curRates=currentRates();
+  const rb=document.getElementById('rates-banner'); if(rb) rb.style.display='none';
   document.getElementById('builder-title').textContent='New Quote';
   document.getElementById('builder-pdf-btn').style.display='none';
   document.getElementById('builder-inv-btn').style.display='none';
@@ -862,10 +971,9 @@ function recalc(){
   const ppOn=document.getElementById('q-pp-on').checked;
   const dCount=parseInt(document.getElementById('q-drawers').value)||0;
   const ntb=parseInt(document.getElementById('q-topboxes').value)||0;
-  const DPRICES={none:0,cemux:60,blum:100};
-  const essDrawerT=dCount*(DPRICES[document.getElementById('q-ess-drawer').value]||0);
-  const premDrawerT=premOn?dCount*(DPRICES[document.getElementById('q-prem-drawer').value]||0):0;
-  const ppDrawerT=ppOn?dCount*(DPRICES[document.getElementById('q-pp-drawer').value]||0):0;
+  const essDrawerT=dCount*drawerPrice(curRates,document.getElementById('q-ess-drawer').value);
+  const premDrawerT=premOn?dCount*drawerPrice(curRates,document.getElementById('q-prem-drawer').value):0;
+  const ppDrawerT=ppOn?dCount*drawerPrice(curRates,document.getElementById('q-pp-drawer').value):0;
   const essTbPpd=parseFloat(document.getElementById('q-ess-tppd')?.value)||0;
   const premTbPpd=parseFloat(document.getElementById('q-prem-tppd')?.value)||0;
   const ppTbPpd=parseFloat(document.getElementById('q-pp-tppd')?.value)||0;
@@ -876,7 +984,7 @@ function recalc(){
   const wtT=wtOn?(parseFloat(document.getElementById('q-wt').value)||0):0;
   const gsQ=parseInt(document.getElementById('q-gs').value)||0;
   const glQ=parseInt(document.getElementById('q-gl').value)||0;
-  const gsT=gsQ*ST.gs_price, glT=glQ*ST.gl_price, glassT=gsT+glT;
+  const gsT=gsQ*curRates.gs, glT=glQ*curRates.gl, glassT=gsT+glT;
   document.getElementById('gs-total').textContent=fmt(gsT);
   document.getElementById('gl-total').textContent=fmt(glT);
   const exts=getExtras();
@@ -916,6 +1024,7 @@ function saveQuote(){
   const q={
     id:editQid||(Date.now()+1),
     cid,
+    rates:{...curRates},
     doors:parseInt(document.getElementById('q-doors').value)||0,
     drawers:parseInt(document.getElementById('q-drawers').value)||0,
     topboxes:parseInt(document.getElementById('q-topboxes').value)||0,
@@ -941,12 +1050,12 @@ function saveQuote(){
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
   // Save to localStorage immediately
-  save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);
+  save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
   showToast('⏳ Saving...');
   // Save to Firebase and confirm
   if(fbUser){
     fbDb.collection('users').doc(fbUser.uid).set({
-      customers,quotes,invoices,settings:ST,quoteCounter,
+      customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     }).then(()=>{
       showToast('✅ Quote saved to cloud!','#065f46');
@@ -969,6 +1078,8 @@ function editQuote(qid){
   const q=quotes.find(x=>x.id===qid); if(!q) return;
   const c=customers.find(x=>x.id===q.cid)||{};
   editQid=qid; editCid=q.cid;
+  curRates=ratesOf(q);
+  showRatesBanner(curRates);
   document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
@@ -1048,7 +1159,7 @@ async function delQuote(qid){
   if(fbUser){
     try{
       await fbDb.collection('users').doc(fbUser.uid).set(
-        {customers,quotes,invoices,settings:ST,quoteCounter,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
     }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
   }
@@ -1061,29 +1172,29 @@ async function delQuote(qid){
 // Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
 // + ppExtras (Premium Plus) + shared (worktops/glass/extras).
 function quoteAmount(q){
-  const gsT=(q.glass?.sq||0)*ST.gs_price;
-  const glT=(q.glass?.lq||0)*ST.gl_price;
+  const R=ratesOf(q);
+  const gsT=(q.glass?.sq||0)*R.gs;
+  const glT=(q.glass?.lq||0)*R.gl;
   const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
   const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
   const shared=gsT+glT+extT+wtT;
 
-  const DPRICES={none:0,cemux:60,blum:100};
   const dCount=q.drawers||0;
   const ntb=q.topboxes||0;
   const doors=q.doors||0;
 
-  const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
+  const essDrawerT=dCount*drawerPrice(R,q.ess?.drawer||'none');
   const essK=doors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
   const essOn=q.ess?.on!==false;
 
   let packages=essOn?[essK]:[];
 
   if(q.prem?.on){
-    const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
+    const premDrawerT=dCount*drawerPrice(R,q.prem?.drawer||'none');
     packages.push(doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT);
   }
   if(q.pp?.on){
-    const ppDrawerT=dCount*(DPRICES[q.pp?.drawer||'none']||0);
+    const ppDrawerT=dCount*drawerPrice(R,q.pp?.drawer||'none');
     const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:(Number(e.qty)||0)*(Number(e.price)||0)),0);
     packages.push(doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT+ppExtTotal);
   }
@@ -1131,7 +1242,8 @@ function renderDash(){
   const now=new Date(); const thisMonth=now.getMonth(); const thisYear=now.getFullYear();
   const fmt=n=>'€'+Math.round(n).toLocaleString('en-IE');
 
-  // This month quoted — sum of Essential VAT-inc totals for quotes created this month
+  // This month quoted — sum of quoteAmount() (the HIGHEST active package,
+  // inc. VAT — see quoteAmount()'s own comment) for quotes created this month.
   const monthQuoted=quotes.filter(q=>{
     const d=new Date(q.created||0);
     return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;
@@ -1170,7 +1282,16 @@ function renderSettings(){
   document.getElementById('s-pp-ppd').value=ST.pp_ppd;
   document.getElementById('s-lam').value=ST.lam_rate;
   document.getElementById('s-gs').value=ST.gs_price;
-  document.getElementById('s-gl').value=ST.gl_price;
+  document.getElementById('s-gl-price').value=ST.gl_price;
+  document.getElementById('s-dr-cemux').value=ST.dr_cemux??60;
+  document.getElementById('s-dr-blum').value=ST.dr_blum??100;
+  document.getElementById('s-biz-phone').value=ST.biz_phone||'';
+  document.getElementById('s-biz-email').value=ST.biz_email||'';
+  document.getElementById('s-biz-web').value=ST.biz_web||'';
+  document.getElementById('s-biz-addr').value=ST.biz_addr||'';
+  document.getElementById('s-biz-bic').value=ST.biz_bic||'';
+  document.getElementById('s-biz-iban').value=ST.biz_iban||'';
+  document.getElementById('s-biz-vat').value=ST.biz_vat||'';
   const el=document.getElementById('settings-extras');
   el.innerHTML=ST.extras.map((e,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--grayL)"><span>${e.name} <span style="color:var(--gray);font-size:11px">${e.unit}</span></span>${e.manual?'<span class="badge b-man">Manual</span>':`<input class="fc" type="number" value="${e.price}" data-i="${i}" style="width:90px;text-align:right">`}</div>`).join('');
   el.querySelectorAll('input[data-i]').forEach(inp=>inp.addEventListener('change',()=>{ST.extras[inp.dataset.i].price=parseFloat(inp.value)||0;}));
@@ -1183,7 +1304,17 @@ function saveSettings(){
   ST.pp_ppd=parseFloat(document.getElementById('s-pp-ppd').value)||360;
   ST.lam_rate=parseFloat(document.getElementById('s-lam').value)||120;
   ST.gs_price=parseFloat(document.getElementById('s-gs').value)||500;
-  ST.gl_price=parseFloat(document.getElementById('s-gl').value)||1000;
+  ST.gl_price=parseFloat(document.getElementById('s-gl-price').value)||1000;
+  ST.dr_cemux=parseFloat(document.getElementById('s-dr-cemux').value)||60;
+  ST.dr_blum=parseFloat(document.getElementById('s-dr-blum').value)||100;
+  ST.biz_phone=document.getElementById('s-biz-phone').value.trim();
+  ST.biz_email=document.getElementById('s-biz-email').value.trim();
+  ST.biz_web=document.getElementById('s-biz-web').value.trim();
+  ST.biz_addr=document.getElementById('s-biz-addr').value.trim();
+  ST.biz_bic=document.getElementById('s-biz-bic').value.trim();
+  ST.biz_iban=document.getElementById('s-biz-iban').value.trim();
+  ST.biz_vat=document.getElementById('s-biz-vat').value.trim();
+  paintDrawerLabels();
   saveAll(); alert('✅ Settings saved!');
 }
 
@@ -1219,14 +1350,14 @@ function genPDF(qid,renderDataUrl){
   const logo=load('logo')||'';
 
   // ── Calculations ──────────────────────────────────────────────────────────
+  const R=ratesOf(q);
   const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
-  const gsT=(q.glass?.sq||0)*ST.gs_price;
-  const glT=(q.glass?.lq||0)*ST.gl_price;
+  const gsT=(q.glass?.sq||0)*R.gs;
+  const glT=(q.glass?.lq||0)*R.gl;
   const glassT=gsT+glT;
   const extT=(q.extras||[]).reduce((s,e)=>s+e.qty*e.price,0);
   const shared=extT+wtT+glassT;
 
-  const DPRICES={none:0,cemux:60,blum:100};
   const DLABELS={none:'',cemux:'Cemux Soft-Close',blum:'Blum Merivobox'};
   const dCount=q.drawers||0;
   const ntb=q.topboxes||0;
@@ -1237,12 +1368,12 @@ function genPDF(qid,renderDataUrl){
   const firstName=(c.name||'').split(' ')[0]||'Customer';
 
   // ── Per-package totals ────────────────────────────────────────────────────
-  const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
+  const essDrawerT=dCount*drawerPrice(R,q.ess?.drawer||'none');
   const essK=(q.doors||0)*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
 
   const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
-  const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
-  const ppDrawerT=dCount*(DPRICES[q.pp?.drawer||'none']||0);
+  const premDrawerT=dCount*drawerPrice(R,q.prem?.drawer||'none');
+  const ppDrawerT=dCount*drawerPrice(R,q.pp?.drawer||'none');
 
   function totalIncVAT(k,ppExt){
     const ex=k+(ppExt||0)+shared;
@@ -1432,10 +1563,11 @@ function dlPDF(){
 <table style="width:100%;margin-bottom:8px"><tr>
   <td style="vertical-align:top">${logoHtml}</td>
   <td style="text-align:right;vertical-align:top;font-size:11px;line-height:1.7;color:#333">
-    <div>(t) 089 464 1917</div>
-    <div>(e) info@elitekitchens.ie</div>
-    <div>(w) www.elitekitchens.ie</div>
-    <div>(a) Balbriggan, Co. Dublin K32 XH72</div>
+    <div>(t) ${ST.biz_phone}</div>
+    <div>(e) ${ST.biz_email}</div>
+    <div>(w) ${ST.biz_web}</div>
+    <div>(a) ${ST.biz_addr}</div>
+    ${ST.biz_vat?`<div>VAT: ${ST.biz_vat}</div>`:''}
   </td>
 </tr></table>
 <hr class="div">
@@ -1494,13 +1626,13 @@ ${includesSection}
 <div style="font-size:11px;margin-bottom:4px">Kind regards,</div>
 <div style="font-size:12px;margin-bottom:1px"><strong>Thomas</strong></div>
 <div style="color:#2e7d32;font-size:11px;margin-bottom:1px">Elite Kitchens</div>
-<div style="color:#555;font-size:11px">089 464 1917 | info@elitekitchens.ie</div>
+<div style="color:#555;font-size:11px">${ST.biz_phone} | ${ST.biz_email}</div>
 
 ${renderDataUrl?`
 <div style="page-break-before:always;padding:24px 20px;text-align:center;box-sizing:border-box">
   <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;letter-spacing:.07em;text-transform:uppercase">Kitchen Design Render</div>
   <img src="${renderDataUrl}" style="max-width:100%;max-height:230mm;object-fit:contain;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.12);display:block;margin:0 auto">
-  <div style="font-size:10px;color:#9ca3af;margin-top:14px">Elite Kitchens · 089 464 1917 · info@elitekitchens.ie</div>
+  <div style="font-size:10px;color:#9ca3af;margin-top:14px">Elite Kitchens · ${ST.biz_phone} · ${ST.biz_email}</div>
 </div>`:''}
 
 </body>
@@ -1589,7 +1721,7 @@ function genInvoice(qid, pkgKey){
   const c=customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
 
-  const DPRICES={none:0,cemux:60,blum:100};
+  const R=ratesOf(q);
   const DLABELS={none:'Standard',cemux:'Cemux Soft-Close',blum:'Blum Merivobox'};
   const dCount=q.drawers||0;
 
@@ -1608,10 +1740,10 @@ function genInvoice(qid, pkgKey){
   // Kitchen — single line covering cabinetry, drawers, extras, glass (customer sees one price)
   const ntbInv=q.topboxes||0;
   const cabNet=(Number(q.doors)||0)*(Number(pkg.ppd)||300)+(ntbInv*(Number(pkg.tppd)||200));
-  const drawerNet=dCount*((pkg.drawer&&pkg.drawer!=='none')?DPRICES[pkg.drawer]||0:0);
+  const drawerNet=dCount*((pkg.drawer&&pkg.drawer!=='none')?drawerPrice(R,pkg.drawer):0);
   const ppExtNet=pkgKey==='pp'?(q.pp?.extras||[]).filter(e=>!e.free).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0):0;
   const gsQ=q.glass?.sq||0, glQ=q.glass?.lq||0;
-  const glassNet=gsQ*ST.gs_price+glQ*ST.gl_price;
+  const glassNet=gsQ*R.gs+glQ*R.gl;
   const extrasNet=(q.extras||[]).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0);
   const wtNet=q.wt?.wtOn?(q.wt?.wtP||0):0;
   const kitchenTotal=cabNet+drawerNet+ppExtNet+glassNet+extrasNet+wtNet;
@@ -1652,7 +1784,7 @@ function genInvoice(qid, pkgKey){
   const balance=total*0.70;
 
   // ── Invoice meta ──────────────────────────────────────────────────────────
-  const invNum='INV-'+String(q.num||q.id).padStart(4,'0');
+  const invNum=allocInvoiceNum(qid,pkgKey);
   const today=new Date();
   const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
   const due=new Date(today); due.setDate(due.getDate()+30);
@@ -1746,9 +1878,9 @@ function doSave(){
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px">From</div>
     <div style="font-weight:700;margin-bottom:3px">Elite Kitchens</div>
     <div style="font-size:12px;color:#374151;line-height:1.7">
-      089 464 1917<br>
-      info@elitekitchens.ie<br>
-      Balbriggan, Co. Dublin K32 XH72
+      ${ST.biz_phone}<br>
+      ${ST.biz_email}<br>
+      ${ST.biz_addr}${ST.biz_vat?'<br>VAT: '+ST.biz_vat:''}
     </div>
   </td>
   <td style="vertical-align:top;width:35%">
@@ -1832,11 +1964,11 @@ function doSave(){
   <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px">
     <tr style="background:#f9fafb">
       <td style="padding:8px 14px;font-weight:700;width:25%">BIC</td>
-      <td style="padding:8px 14px">AIBKIE2D</td>
+      <td style="padding:8px 14px">${ST.biz_bic}</td>
     </tr>
     <tr>
       <td style="padding:8px 14px;font-weight:700">IBAN</td>
-      <td style="padding:8px 14px">IE94 AIBK 9320 1950 3570 63</td>
+      <td style="padding:8px 14px">${ST.biz_iban}</td>
     </tr>
   </table>
 </div>
@@ -1853,7 +1985,7 @@ function doSave(){
 </div>
 
 <div style="font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:14px;text-align:center">
-  Elite Kitchens · 089 464 1917 · info@elitekitchens.ie · Balbriggan, Co. Dublin K32 XH72
+  Elite Kitchens · ${ST.biz_phone} · ${ST.biz_email} · ${ST.biz_addr}
 </div>
 
 </body>
@@ -2093,12 +2225,15 @@ async function fbLoad(){
       if(data.settings)      ST           = Object.assign({}, ST, data.settings);
       if(data.quoteCounter)  quoteCounter = data.quoteCounter;
       else quoteCounter = Math.max(0,...(quotes.map(q=>q.num||0)));
+      if(data.invoiceCounter) invoiceCounter = data.invoiceCounter;
+      if(data.invoiceNums)    invoiceNums    = data.invoiceNums;
       // Logo travels inside settings (ST.logo) so it syncs across browsers/devices.
       // Mirror it into localStorage so the existing load('logo') calls keep working.
       if(ST.logo) save('logo', ST.logo);
       // Save to localStorage as backup
       save('customers',customers); save('quotes',quotes);
       save('invoices',invoices);   save('settings',ST);
+      save('invoiceCounter',invoiceCounter); save('invoiceNums',invoiceNums);
       // Refresh current screen
       const activeScr = document.querySelector('.scr.on');
       if(activeScr){ goTo(activeScr.id.replace('scr-','')); }
@@ -2118,7 +2253,7 @@ async function fbSave(){
   if(!fbUser) return;
   try{
     await fbDb.collection('users').doc(fbUser.uid).set({
-      customers, quotes, invoices, settings: ST, quoteCounter,
+      customers, quotes, invoices, settings: ST, quoteCounter, invoiceCounter, invoiceNums,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     fbSetStatus('☁️ Saved ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
@@ -2160,7 +2295,7 @@ Looking forward to hearing from you.
 Kind regards,
 Thomas
 Elite Kitchens
-089 464 1917 | info@elitekitchens.ie`;
+${ST.biz_phone} | ${ST.biz_email}`;
 
   const gmailUrl='https://mail.google.com/mail/?view=cm'
     +'&to='+encodeURIComponent(c.email)
@@ -2180,7 +2315,15 @@ function showToast(msg, color){
   window._toastTimer=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.style.display='none',300);},2500);
 }
 
+// Repaints the three drawer-type dropdowns' price labels from Settings, so
+// they can never drift from what's actually charged.
+function paintDrawerLabels(){
+  document.querySelectorAll('.opt-dr-cemux').forEach(o=>o.textContent='Cemux Soft-Close — €'+(ST.dr_cemux??60)+'/drawer');
+  document.querySelectorAll('.opt-dr-blum').forEach(o=>o.textContent='Blum Merivobox — €'+(ST.dr_blum??100)+'/drawer');
+}
+
 // ─── INIT ────────────────────────────────────────────────────────────────────
+paintDrawerLabels();
 goTo('dashboard');
 
 </script>
