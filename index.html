@@ -1363,13 +1363,18 @@ function genPDF(qid,renderDataUrl){
   const ntb=q.topboxes||0;
 
   // ── Date & reference ──────────────────────────────────────────────────────
-  const dateStr=new Date().toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
-  const ref=(c.name||'Quote').replace(/\s+/g,'')+'01';
-  const firstName=(c.name||'').split(' ')[0]||'Customer';
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const today=new Date();
+  const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const validTo=new Date(today); validTo.setDate(validTo.getDate()+30);
+  const validStr=validTo.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const ref='EK-'+String(q.num||q.id).padStart(4,'0');
+  const firstName=(c.name||'').split(' ')[0]||'there';
 
   // ── Per-package totals ────────────────────────────────────────────────────
   const essDrawerT=dCount*drawerPrice(R,q.ess?.drawer||'none');
-  const essK=(q.doors||0)*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+  const nDoors=q.doors||0;
+  const essK=nDoors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
 
   const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
   const premDrawerT=dCount*drawerPrice(R,q.prem?.drawer||'none');
@@ -1379,6 +1384,7 @@ function genPDF(qid,renderDataUrl){
     const ex=k+(ppExt||0)+shared;
     return Math.round(ex*(1+VAT/100));
   }
+  const money=n=>'€'+Math.round(n).toLocaleString('en-IE');
 
   // ── Active packages ───────────────────────────────────────────────────────
   const essDesc='Vinyl wrap or melamine doors\nBlum soft-close hinges\nInstallation';
@@ -1386,254 +1392,297 @@ function genPDF(qid,renderDataUrl){
   const ppDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nPremium add-on systems\nProfessional installation';
 
   const activePkgs=[];
-  if(q.ess?.on!==false) activePkgs.push({
-    name:'Essential',
-    k:essK,
-    desc:essDesc,
-    drawer:q.ess?.drawer||'none',
-    ppExt:0
-  });
-  if(q.prem?.on) activePkgs.push({
-    name:'Premium',
-    k:(q.doors||0)*(q.prem?.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,
-    desc:q.prem?.desc||premDescFallback,
-    drawer:q.prem?.drawer||'none',
-    ppExt:0
-  });
+  if(q.ess?.on!==false) activePkgs.push({name:'Essential',k:essK,desc:essDesc,drawer:q.ess?.drawer||'none',ppExt:0,extras:[]});
+  if(q.prem?.on) activePkgs.push({name:'Premium',k:nDoors*(q.prem?.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,desc:q.prem?.desc||premDescFallback,drawer:q.prem?.drawer||'none',ppExt:0,extras:[]});
   if(q.pp?.on) activePkgs.push({
     name:'Premium Plus',
-    k:(q.doors||0)*(q.pp?.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT,
+    k:nDoors*(q.pp?.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT,
     desc:q.pp?.desc||ppDescFallback,
     drawer:q.pp?.drawer||'none',
-    ppExt:ppExtTotal
+    ppExt:ppExtTotal,
+    extras:(q.pp?.extras||[]).filter(e=>e.name)
   });
   if(!activePkgs.length){alert('Please select at least one package (Essential, Premium, or Premium Plus) before generating a PDF.');return;}
 
+  const showExVat=q.showExVat||false;
+  const descLines=d=>(d||'').split('\n').map(s=>s.trim()).filter(Boolean);
+
   // ── Logo ──────────────────────────────────────────────────────────────────
   const logoHtml=logo
-    ?`<img src="${logo}" style="max-height:55px;max-width:180px;object-fit:contain">`
-    :`<div style="font-size:22px;font-weight:900;color:#111;letter-spacing:-1px">ELITE KITCHENS</div>`;
+    ?`<img src="${logo}" style="max-height:60px;max-width:200px;object-fit:contain">`
+    :`<div class="wordmark">Elite Kitchens</div><div class="wordmark-sub">Bespoke kitchens · design, supply &amp; fit</div>`;
 
-  // ── Pricing table helpers ─────────────────────────────────────────────────
-  function firstDescLine(desc){
-    return (desc||'').split('\n').map(s=>s.trim()).filter(Boolean)[0]||'—';
-  }
-  function incCell(shade){
-    return `<td style="padding:6px 10px;text-align:center;font-size:11px;font-weight:700;color:#2e7d32;background:${shade}">Included</td>`;
-  }
+  // ── Specification facts ───────────────────────────────────────────────────
+  // Deliberately no door / top box / drawer counts here. Those are the units
+  // the price is built from, and printing them lets a customer divide the
+  // total by the count and read the per-door rate straight off the quote.
+  // Quantities stay internal; the customer sees what they're getting, not how
+  // it was costed.
+  const facts=[];
+  facts.push(['Hinges &amp; runners','Blum soft-close throughout']);
+  facts.push(['Panels &amp; gables','Finished to match your door colour']);
+  facts.push(['Handles','From our standard range']);
+  if(wtT>0) facts.push(['Worktops','Supplied and fitted']);
+  const factRows=facts.map(f=>
+    `<tr><td class="fact-k">${f[0]}</td><td class="fact-v">${f[1]}</td></tr>`).join('');
 
-  let theadRow=`<tr style="background:#1e2832;color:#fff"><th style="padding:7px 10px;text-align:left;font-size:11px;font-weight:700;width:40%"></th>`;
-  activePkgs.forEach(p=>{ theadRow+=`<th style="padding:7px 10px;text-align:center;font-size:11px;font-weight:700">${p.name}</th>`; });
-  theadRow+=`</tr>`;
-
-  // Door style row
-  let doorRow=`<tr><td style="padding:6px 10px;font-size:11px">Door Style</td>`;
-  activePkgs.forEach(p=>{ doorRow+=`<td style="padding:6px 10px;text-align:center;font-size:11px">${firstDescLine(p.desc)}</td>`; });
-  doorRow+=`</tr>`;
-
-  // Drawer boxes row (only if any package has drawers)
-  const anyDrawers=activePkgs.some(p=>p.drawer&&p.drawer!=='none')||dCount>0;
-  let drawerRow='';
-  if(anyDrawers){
-    drawerRow=`<tr style="background:#f9f9f9"><td style="padding:6px 10px;font-size:11px">Drawer Boxes${dCount>0?' ('+dCount+')':''}</td>`;
-    activePkgs.forEach(p=>{
-      const lbl=DLABELS[p.drawer]||(p.drawer==='none'?'Standard':'—');
-      drawerRow+=`<td style="padding:6px 10px;text-align:center;font-size:11px">${lbl}</td>`;
-    });
-    drawerRow+=`</tr>`;
-  }
-
-  function stdRow(label,shade){
-    let r=`<tr style="background:${shade}"><td style="padding:6px 10px;font-size:11px">${label}</td>`;
-    activePkgs.forEach(()=>{ r+=incCell(shade); });
-    return r+`</tr>`;
-  }
-
-  let bodyRows=doorRow+drawerRow;
-  let rowIdx=0;
-  function nextShade(){return rowIdx++%2===0?'#fff':'#f9f9f9';}
-  bodyRows+=stdRow('Kitchen Cabinetry (supply &amp; fit)',nextShade());
-  if(q.incl?.sink)      bodyRows+=stdRow('Sink',nextShade());
-  if(q.incl?.extractor) bodyRows+=stdRow('Extractor',nextShade());
-  if(q.incl?.removal)   bodyRows+=stdRow('Removal of Existing Kitchen',nextShade());
-  if(wtT>0)             bodyRows+=stdRow('Worktops',nextShade());
-  if(glassT>0)          bodyRows+=stdRow('Glass Door Cabinets',nextShade());
-
-  // Premium Plus paid add-ons (e.g. glass door cabinets added as a Premium Plus extra) — itemized, shown only in the Premium Plus column
-  const ppPaidExtras=activePkgs.some(p=>p.name==='Premium Plus')?(q.pp?.extras||[]).filter(e=>!e.free&&e.name&&e.qty>0):[];
-  if(ppPaidExtras.length){
-    const shade=nextShade();
-    let ppExtraRow=`<tr style="background:${shade}"><td style="padding:6px 10px;font-size:11px">Premium Plus Add-ons</td>`;
-    activePkgs.forEach(p=>{
-      if(p.name==='Premium Plus'){
-        const lines=ppPaidExtras.map(e=>`${e.name}${e.qty>1?' x'+e.qty:''} (€${Math.round(e.qty*e.price).toLocaleString('en-IE')})`).join('<br>');
-        ppExtraRow+=`<td style="padding:6px 10px;text-align:center;font-size:10px;line-height:1.4">${lines}</td>`;
-      } else {
-        ppExtraRow+=`<td style="padding:6px 10px;text-align:center;font-size:11px;color:#999">—</td>`;
-      }
-    });
-    ppExtraRow+=`</tr>`;
-    bodyRows+=ppExtraRow;
-  }
-
-  const showExVat=q.showExVat||false;
-  let totalRow=`<tr style="background:#1e2832;color:#fff"><td style="padding:7px 10px;font-size:11px;font-weight:700">TOTAL (inc. VAT)</td>`;
-  activePkgs.forEach(p=>{
-    const incVat=totalIncVAT(p.k,p.ppExt);
-    const exVat=Math.round((p.k+(p.ppExt||0)+shared));
-    const exVatLine=showExVat?`<div style="font-size:9px;font-weight:400;opacity:.75;margin-top:2px">€${exVat.toLocaleString('en-IE')} ex. VAT</div>`:'';
-    totalRow+=`<td style="padding:7px 10px;text-align:center;font-size:12px;font-weight:700">€${incVat.toLocaleString('en-IE')}${exVatLine}</td>`;
+  // ── Package cards ─────────────────────────────────────────────────────────
+  const colW=Math.floor(100/activePkgs.length);
+  // Build every card's spec list first, so all cards can be padded to the same
+  // number of lines — otherwise the prices sit at different heights and the
+  // row of options looks unconsidered.
+  const specs=activePkgs.map(p=>{
+    const out=[];
+    descLines(p.desc).slice(0,4).forEach(l=>out.push(esc(l)));
+    const drawerLbl=DLABELS[p.drawer]||'';
+    // Don't repeat the drawer box if the description already names it.
+    if(drawerLbl&&dCount>0&&!out.some(l=>l.toLowerCase().includes(drawerLbl.toLowerCase()))){
+      out.push(esc(drawerLbl)+' drawer boxes');
+    }
+    p.extras.filter(e=>e.free).forEach(e=>out.push(esc(e.name)));
+    p.extras.filter(e=>!e.free&&e.qty>0).forEach(e=>out.push(esc(e.name)+(e.qty>1?' ×'+e.qty:'')));
+    return out;
   });
-  totalRow+=`</tr>`;
+  const maxSpec=Math.max(...specs.map(x=>x.length));
 
-  const pricingTable=`<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:12px">
-    <thead>${theadRow}</thead>
-    <tbody>${bodyRows}${totalRow}</tbody>
-  </table>`;
+  const cards=activePkgs.map((p,i)=>{
+    const inc=totalIncVAT(p.k,p.ppExt);
+    const ex=Math.round(p.k+(p.ppExt||0)+shared);
+    const lines=specs[i].slice();
+    while(lines.length<maxSpec) lines.push(null);   // pad to align the prices
+    return `<td class="pkg" style="width:${colW}%">
+      <div class="pkg-name">${esc(p.name)}</div>
+      <div class="pkg-spec">${lines.map(s=>s===null
+        ? `<div class="pkg-li" style="visibility:hidden">&nbsp;</div>`
+        : `<div class="pkg-li">${s}</div>`).join('')}</div>
+      <div class="pkg-rule"></div>
+      <div class="pkg-price">${money(inc)}</div>
+      <div class="pkg-vat">including VAT at ${VAT}%</div>
+      ${showExVat?`<div class="pkg-ex">${money(ex)} excluding VAT</div>`:''}
+    </td>`;
+  }).join('');
 
-  // ── Cabinetry bullets ─────────────────────────────────────────────────────
-  const cabBullets=[
-    activePkgs.length>1
-      ?`${activePkgs.length} door style options available — see pricing options below`
-      :'Door style available — see pricing options below',
-    'Side panels &amp; gables finished to match your selected door colour',
-    'Blum hinges &amp; fittings with soft-close mechanism throughout',
-    dCount>0?`${dCount} drawer box${dCount>1?'es':''} — see options below`:'Soft-close drawers throughout',
-    'Handles from our standard range'
-  ];
-  const cabHtml=cabBullets.map(b=>`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px">${b}</span></div>`).join('');
+  // ── Every option includes ─────────────────────────────────────────────────
+  const incl=['Kitchen cabinetry — supply and installation'];
+  if(q.incl?.sink)       incl.push('Sink');
+  if(q.incl?.extractor)  incl.push('Extractor');
+  if(q.incl?.removal)    incl.push('Removal of your existing kitchen');
+  if(q.incl?.electrical) incl.push('Electrical work');
+  if(q.incl?.plumbing)   incl.push('Plumbing');
+  if(wtT>0)              incl.push('Worktops');
+  const gsQty=q.glass?.sq||0, glQty=q.glass?.lq||0;
+  if(gsQty>0) incl.push(gsQty+' small glazed door cabinet'+(gsQty>1?'s':''));
+  if(glQty>0) incl.push(glQty+' large glazed larder door'+(glQty>1?'s':''));
+  (q.extras||[]).filter(e=>e.name).forEach(e=>incl.push(esc(e.name)+((e.qty>1)?' ×'+e.qty:'')));
+  incl.push('6-month snagging');
 
-  // ── "This Kitchen Includes" extras ────────────────────────────────────────
-  const extrasItems=(q.extras||[]).filter(e=>e.name).map(e=>e.name);
-  const ppFreeItems=(q.pp?.extras||[]).filter(e=>e.free&&e.name).map(e=>e.name);
-  if(q.glass?.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
-  if(q.glass?.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
-  if(wtT>0) extrasItems.push('Worktop');
-  const allIncludes=[...extrasItems,...ppFreeItems];
+  const half=Math.ceil(incl.length/2);
+  const inclCol=arr=>arr.map(i=>`<div class="tick">${i}</div>`).join('');
 
-  const includesSection=allIncludes.length?`
-    <hr style="border:none;border-top:1px solid #ddd;margin:10px 0">
-    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">This Kitchen Includes</div>
-    ${allIncludes.map(it=>`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:#2e7d32;font-size:13px;line-height:1.2;font-weight:700">•</span><span style="font-size:11px">${it}</span></div>`).join('')}
-  `:'';
+  const excl=['Appliances'];
+  if(!q.incl?.electrical) excl.push('Electrical work');
+  if(!q.incl?.plumbing)   excl.push('Plumbing');
+  excl.push('Tiling &amp; flooring');
 
   // ── Full HTML ─────────────────────────────────────────────────────────────
   const html=`<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Elite Kitchens Quote</title>
+<title>Elite Kitchens — Quotation ${ref}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Faustina:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:0}
-  body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;background:#fff;padding:12mm 14mm}
-  @media print{body{padding:9mm 12mm}.no-print{display:none!important}}
-  hr.div{border:none;border-top:1px solid #ddd;margin:8px 0}
-  .sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+  :root{
+    --ink:#16130F; --soft:#5C554B; --faint:#8B8377;
+    --deep:#22302A; --brass:#9C7233; --grn:#3F6B4A; --excl:#8A3B2E;
+    --rule:#DFDBD2; --tint:#F6F3ED;
+  }
+  body{
+    font-family:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+    font-size:11.5px; line-height:1.55; color:var(--ink); background:#fff;
+    padding:15mm 16mm 13mm;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media print{ body{padding:13mm 14mm} .no-print{display:none!important} }
+  .serif{font-family:'Faustina',Georgia,'Times New Roman',serif}
+  .wordmark{font-family:'Faustina',Georgia,serif;font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.05}
+  .wordmark-sub{font-size:9.5px;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-top:4px}
+  .contact{text-align:right;font-size:10.5px;line-height:1.85;color:var(--soft)}
+  .rule{height:1px;background:var(--rule);margin:13px 0}
+  .rule-ink{height:2px;background:var(--ink);margin:0 0 9px}
+
+  .eyebrow{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .sec-h{font-family:'Faustina',Georgia,serif;font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+  .sec{margin-top:17px;page-break-inside:avoid}
+
+  .meta td{padding:0;vertical-align:top}
+  .meta .lbl{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+  .meta .val{font-size:12px;font-weight:500}
+  .meta .ref{font-family:'Faustina',Georgia,serif;font-size:19px;font-weight:600}
+
+  .greet{font-size:12px;margin-bottom:5px}
+  .lede{font-size:12px;line-height:1.7;color:var(--soft);max-width:148mm}
+
+  .fact-k{font-size:11px;color:var(--faint);padding:4px 14px 4px 0;white-space:nowrap;vertical-align:top;width:34%}
+  .fact-v{font-size:11px;padding:4px 0;vertical-align:top}
+
+  .pkgs{width:100%;border-collapse:separate;border-spacing:9px 0;table-layout:fixed;margin:0 -9px}
+  .pkg{vertical-align:top;background:var(--tint);border:1px solid var(--rule);padding:13px 14px 15px}
+  .pkg-name{font-family:'Faustina',Georgia,serif;font-size:14.5px;font-weight:600;margin-bottom:8px}
+  .pkg-spec{}
+  .pkg-li{font-size:10.5px;color:var(--soft);line-height:1.5;padding-left:9px;position:relative;margin-bottom:2px}
+  .pkg-li:before{content:"–";position:absolute;left:0;color:var(--faint)}
+  .pkg-rule{height:2px;background:var(--brass);width:26px;margin:11px 0 8px}
+  .pkg-price{font-family:'Faustina',Georgia,serif;font-size:25px;font-weight:600;letter-spacing:-.015em;line-height:1}
+  .pkg-vat{font-size:9.5px;color:var(--faint);margin-top:3px}
+  .pkg-ex{font-size:9.5px;color:var(--faint);margin-top:1px}
+
+  .tick{font-size:10.5px;line-height:1.5;padding-left:14px;position:relative;margin-bottom:3px;color:var(--ink)}
+  .tick:before{content:"✓";position:absolute;left:0;color:var(--grn);font-weight:600}
+  .cross{font-size:10.5px;line-height:1.5;padding-left:14px;position:relative;margin-bottom:3px;color:var(--soft)}
+  .cross:before{content:"✕";position:absolute;left:0;color:var(--excl)}
+
+  .terms{background:var(--deep);color:#fff;padding:13px 16px}
+  .terms .eyebrow{color:rgba(255,255,255,.55)}
+  .terms-row{font-size:11px;line-height:1.75;color:rgba(255,255,255,.9)}
+  .terms-row b{color:#fff;font-weight:600}
+
+  .sign{font-size:11px;line-height:1.7}
+  .sign .nm{font-family:'Faustina',Georgia,serif;font-size:14px;font-weight:600}
+
+  .render-pg{page-break-before:always;text-align:center;padding-top:6mm}
 </style>
 </head>
 <body>
 
-<div class="no-print" style="background:#111827;color:#fff;padding:10px 16px;margin:-12mm -14mm 10mm;display:flex;justify-content:space-between;align-items:center">
-  <span style="font-weight:700">Elite Kitchens — Quote Preview</span>
+<div class="no-print" style="background:#22302A;color:#fff;padding:10px 16px;margin:-15mm -16mm 12mm;display:flex;justify-content:space-between;align-items:center">
+  <span style="font-weight:600;font-size:13px">Quotation ${ref} — preview</span>
   <div style="display:flex;gap:10px">
-    <button onclick="dlPDF()" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">⬇️ Download PDF</button>
-    <button onclick="window.print()" style="background:#fff;color:#111827;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Print</button>
+    <button onclick="dlPDF()" style="background:#9C7233;color:#fff;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Download PDF</button>
+    <button onclick="window.print()" style="background:#fff;color:#22302A;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Print</button>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <script>
 function dlPDF(){
-  const toolbar=document.querySelector('.no-print');
-  toolbar.style.display='none';
-  document.body.style.padding='14mm 16mm';
-  const fname='EliteKitchens-Quote-${ref}.pdf';
-  html2pdf().set({
-    margin:0,filename:fname,
-    image:{type:'jpeg',quality:0.98},
-    html2canvas:{scale:2,useCORS:true},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(document.body).save().then(()=>{
-    toolbar.style.display='flex';
-    document.body.style.padding='20mm 20mm';
+  var bar=document.querySelector('.no-print');
+  bar.style.display='none';
+  document.body.style.padding='13mm 14mm';
+  var done=function(){ bar.style.display='flex'; document.body.style.padding='15mm 16mm'; };
+  // Wait for the webfonts, or the PDF renders in a fallback face.
+  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
+    html2pdf().set({
+      margin:0, filename:'EliteKitchens-${ref}.pdf',
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy']}
+    }).from(document.body).save().then(done,done);
   });
 }
 <\/script>
 
-<table style="width:100%;margin-bottom:8px"><tr>
+<table style="width:100%"><tr>
   <td style="vertical-align:top">${logoHtml}</td>
-  <td style="text-align:right;vertical-align:top;font-size:11px;line-height:1.7;color:#333">
-    <div>(t) ${ST.biz_phone}</div>
-    <div>(e) ${ST.biz_email}</div>
-    <div>(w) ${ST.biz_web}</div>
-    <div>(a) ${ST.biz_addr}</div>
-    ${ST.biz_vat?`<div>VAT: ${ST.biz_vat}</div>`:''}
+  <td class="contact">
+    ${ST.biz_phone?esc(ST.biz_phone)+'<br>':''}
+    ${ST.biz_email?esc(ST.biz_email)+'<br>':''}
+    ${ST.biz_web?esc(ST.biz_web)+'<br>':''}
+    ${ST.biz_addr?esc(ST.biz_addr):''}
+    ${ST.biz_vat?'<br>VAT '+esc(ST.biz_vat):''}
   </td>
 </tr></table>
-<hr class="div">
 
-<table style="width:100%;margin-bottom:8px"><tr>
-  <td style="font-size:11px">${dateStr}</td>
-  <td style="text-align:right;font-size:11px;font-weight:700">Reference: ${ref}</td>
+<div class="rule"></div>
+
+<table class="meta" style="width:100%"><tr>
+  <td style="width:34%">
+    <div class="lbl">Quotation</div>
+    <div class="ref">${ref}</div>
+  </td>
+  <td style="width:33%">
+    <div class="lbl">Date</div>
+    <div class="val">${dateStr}</div>
+  </td>
+  <td style="width:33%">
+    <div class="lbl">Valid until</div>
+    <div class="val">${validStr}</div>
+  </td>
 </tr></table>
 
-<div style="font-weight:700;margin-bottom:4px">${c.name||''}</div>
-<div style="margin-bottom:4px">Dear ${firstName},</div>
-<div style="font-size:11px;line-height:1.5;color:#111">Thank you for the opportunity to quote for your new kitchen. Please find below our proposed specifications and pricing. A detailed design will be provided on confirmation of order and receipt of deposit.</div>
+<div class="rule"></div>
 
-<hr class="div">
+<div class="eyebrow" style="margin-bottom:5px">Prepared for</div>
+<div class="serif" style="font-size:17px;font-weight:600;margin-bottom:2px">${esc(c.name||'')}</div>
+${c.addr?`<div style="font-size:11px;color:var(--soft);margin-bottom:11px">${esc(c.addr)}</div>`:'<div style="margin-bottom:9px"></div>'}
 
-<div style="font-size:11px;font-weight:700;margin-bottom:5px">Cabinetry</div>
-${cabHtml}
+<div class="greet">Dear ${esc(firstName)},</div>
+<div class="lede">Thank you for the opportunity to quote for your new kitchen. Below you'll find the specification and pricing for the work as we discussed it. A detailed design is prepared on confirmation of order and receipt of deposit.</div>
 
-<div style="font-size:11px;font-weight:700;margin:6px 0 4px">Pricing Options</div>
-${pricingTable}
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">Your kitchen</div>
+  <table style="width:100%"><tr>
+    <td style="width:48%;vertical-align:top"><table style="width:100%">${factRows}</table></td>
+    <td style="width:4%"></td>
+    <td style="width:48%;vertical-align:top;font-size:11px;color:var(--soft);line-height:1.65">
+      Every cabinet is made to fit your room rather than assembled from stock sizes, with panels and gables finished to match the doors you choose. Hinges and runners are Blum throughout, soft-close as standard.
+    </td>
+  </tr></table>
+</div>
 
-${includesSection}
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">${activePkgs.length>1?'Your options':'Your quotation'}</div>
+  <table class="pkgs"><tr>${cards}</tr></table>
+</div>
 
-<hr class="div">
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">${activePkgs.length>1?'Every option includes':'Included'}</div>
+  <table style="width:100%"><tr>
+    <td style="width:49%;vertical-align:top">${inclCol(incl.slice(0,half))}</td>
+    <td style="width:2%"></td>
+    <td style="width:49%;vertical-align:top">${inclCol(incl.slice(half))}</td>
+  </tr></table>
+</div>
 
-<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:11px;margin-bottom:6px">
-<tr>
-  <td style="width:34%;padding:7px 10px;vertical-align:top;border-right:1px solid #ddd">
-    <div style="font-weight:700;margin-bottom:5px;text-transform:uppercase;font-size:10px;letter-spacing:.04em">Includes</div>
-    <div style="color:#2e7d32;margin-bottom:3px">✓ Supply &amp; installation</div>
-    ${q.incl?.sink?'<div style="color:#2e7d32;margin-bottom:3px">✓ Sink</div>':''}
-    ${q.incl?.extractor?'<div style="color:#2e7d32;margin-bottom:3px">✓ Extractor</div>':''}
-    ${q.incl?.removal?'<div style="color:#2e7d32;margin-bottom:3px">✓ Removal of existing kitchen</div>':''}
-    ${q.incl?.electrical?'<div style="color:#2e7d32;margin-bottom:3px">✓ Electrical work</div>':''}
-    ${q.incl?.plumbing?'<div style="color:#2e7d32;margin-bottom:3px">✓ Plumbing</div>':''}
-    <div style="color:#2e7d32">✓ 6-month snagging</div>
-  </td>
-  <td style="width:33%;padding:7px 10px;vertical-align:top;border-right:1px solid #ddd">
-    <div style="font-weight:700;margin-bottom:5px;text-transform:uppercase;font-size:10px;letter-spacing:.04em">Excludes</div>
-    <div style="color:#c62828;margin-bottom:3px">✗ Appliances</div>
-    ${!q.incl?.electrical?'<div style="color:#c62828;margin-bottom:3px">✗ Electrical work</div>':''}
-    ${!q.incl?.plumbing?'<div style="color:#c62828;margin-bottom:3px">✗ Plumbing</div>':''}
-    <div style="color:#c62828">✗ Tiling &amp; flooring</div>
-  </td>
-  <td style="width:33%;padding:7px 10px;vertical-align:top">
-    <div style="font-weight:700;margin-bottom:5px;text-transform:uppercase;font-size:10px;letter-spacing:.04em">Payment Terms</div>
-    <div style="margin-bottom:3px"><strong>30%</strong> deposit to secure date</div>
-    <div style="margin-bottom:3px"><strong>70%</strong> on completion</div>
-    <div>Valid for <strong>30 days</strong></div>
-  </td>
-</tr>
-</table>
+<div class="sec">
+  <table style="width:100%"><tr>
+    <td style="width:47%;vertical-align:top;padding-right:14px">
+      <div class="eyebrow" style="margin-bottom:7px">Not included</div>
+      ${excl.map(e=>`<div class="cross">${e}</div>`).join('')}
+    </td>
+    <td style="width:53%;vertical-align:top">
+      <div class="terms">
+        <div class="eyebrow" style="margin-bottom:7px">Payment terms</div>
+        <div class="terms-row"><b>30%</b> deposit to secure your installation date</div>
+        <div class="terms-row"><b>70%</b> on completion</div>
+        <div class="terms-row" style="margin-top:5px;color:rgba(255,255,255,.65)">This quotation is valid until ${validStr}.</div>
+      </div>
+    </td>
+  </tr></table>
+</div>
 
-<div style="font-size:11px;margin-bottom:8px">We look forward to the possibility of working with you. Please don't hesitate to get in touch with any questions.</div>
-
-<div style="font-size:11px;margin-bottom:4px">Kind regards,</div>
-<div style="font-size:12px;margin-bottom:1px"><strong>Thomas</strong></div>
-<div style="color:#2e7d32;font-size:11px;margin-bottom:1px">Elite Kitchens</div>
-<div style="color:#555;font-size:11px">${ST.biz_phone} | ${ST.biz_email}</div>
+<div class="sec sign">
+  <div class="rule"></div>
+  <div style="color:var(--soft);margin-bottom:9px">I'd be glad to talk anything through — changes to the spec, or how a different door style would look in your room. Just give me a call.</div>
+  <div style="margin-bottom:2px">Kind regards,</div>
+  <div class="nm">Thomas</div>
+  <div style="color:var(--soft)">Elite Kitchens${ST.biz_phone?' · '+esc(ST.biz_phone):''}${ST.biz_email?' · '+esc(ST.biz_email):''}</div>
+</div>
 
 ${renderDataUrl?`
-<div style="page-break-before:always;padding:24px 20px;text-align:center;box-sizing:border-box">
-  <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;letter-spacing:.07em;text-transform:uppercase">Kitchen Design Render</div>
-  <img src="${renderDataUrl}" style="max-width:100%;max-height:230mm;object-fit:contain;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.12);display:block;margin:0 auto">
-  <div style="font-size:10px;color:#9ca3af;margin-top:14px">Elite Kitchens · ${ST.biz_phone} · ${ST.biz_email}</div>
+<div class="render-pg">
+  <div class="eyebrow" style="margin-bottom:10px">Design render · ${ref}</div>
+  <img src="${renderDataUrl}" style="max-width:100%;max-height:225mm;object-fit:contain;display:block;margin:0 auto">
+  <div style="font-size:9.5px;color:var(--faint);margin-top:12px">Indicative render. Final design confirmed at detailed design stage.</div>
 </div>`:''}
+
 
 </body>
 </html>`;
