@@ -959,17 +959,17 @@ function editQuote(qid){
   document.getElementById('q-ess-drawer').value=q.ess?.drawer||'none';
   document.getElementById('q-prem-drawer').value=q.prem?.drawer||'none';
   document.getElementById('q-pp-drawer').value=q.pp?.drawer||'none';
-  document.getElementById('q-ess-ppd').value=q.ess.ppd;
-  document.getElementById('q-prem-ppd').value=q.prem.ppd;
-  document.getElementById('q-pp-ppd').value=q.pp.ppd;
-  document.getElementById('q-prem-desc').value=q.prem.desc||'';
-  document.getElementById('q-pp-desc').value=q.pp.desc||'';
+  document.getElementById('q-ess-ppd').value=q.ess?.ppd||300;
+  document.getElementById('q-prem-ppd').value=q.prem?.ppd||360;
+  document.getElementById('q-pp-ppd').value=q.pp?.ppd||360;
+  document.getElementById('q-prem-desc').value=q.prem?.desc||'';
+  document.getElementById('q-pp-desc').value=q.pp?.desc||'';
   document.getElementById('q-ess-on').checked=q.ess?.on!==false;
-  document.getElementById('q-prem-on').checked=q.prem.on;
-  document.getElementById('q-pp-on').checked=q.pp.on;
+  document.getElementById('q-prem-on').checked=q.prem?.on||false;
+  document.getElementById('q-pp-on').checked=q.pp?.on||false;
   if(q.ess?.on!==false) togglePkg('ess'); else{document.getElementById('ess-body').style.display='none';document.getElementById('ess-hint').style.display='block';document.getElementById('pkg-ess').className='pkg';document.getElementById('s-ess-row').style.display='none';document.getElementById('sf-ess-row').style.display='none';}
-  if(q.prem.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
-  if(q.pp.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
+  if(q.prem?.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
+  if(q.pp?.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
   document.getElementById('q-wt-on').checked=q.wt?.wtOn||false;
   document.getElementById('wt-fields').style.display=q.wt?.wtOn?'block':'none';
   document.getElementById('q-wt').value=q.wt?.wtP||0;
@@ -978,7 +978,7 @@ function editQuote(qid){
   document.getElementById('q-status').value=q.status||'Draft';
   document.getElementById('q-notes').value=q.notes||'';
   document.getElementById('extra-rows').innerHTML='';
-  document.getElementById('no-extras').style.display=q.extras.length?'none':'block';
+  document.getElementById('no-extras').style.display=q.extras?.length?'none':'block';
   (q.extras||[]).forEach(e=>{
     addExtra(e.name,e.unit,e.price,false);
     const rows=document.getElementById('extra-rows').querySelectorAll('.exrow');
@@ -1179,7 +1179,6 @@ function removeLogo(){
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
 function genPDF(qid,renderDataUrl){
-  if(renderDataUrl) showToast('📸 Render attached — scroll down in PDF to see it','#2e7d32');
   const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
   const c=customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
@@ -1204,7 +1203,7 @@ function genPDF(qid,renderDataUrl){
 
   // ── Per-package totals ────────────────────────────────────────────────────
   const essDrawerT=dCount*(DPRICES[q.ess?.drawer||'none']||0);
-  const essK=q.doors*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
+  const essK=(q.doors||0)*(q.ess?.ppd||300)+ntb*(q.ess?.tppd||200)+essDrawerT;
 
   const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
   const premDrawerT=dCount*(DPRICES[q.prem?.drawer||'none']||0);
@@ -1230,15 +1229,15 @@ function genPDF(qid,renderDataUrl){
   });
   if(q.prem?.on) activePkgs.push({
     name:'Premium',
-    k:q.doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,
-    desc:q.prem.desc||premDescFallback,
+    k:(q.doors||0)*(q.prem?.ppd||360)+ntb*(q.prem?.tppd||200)+premDrawerT,
+    desc:q.prem?.desc||premDescFallback,
     drawer:q.prem?.drawer||'none',
     ppExt:0
   });
   if(q.pp?.on) activePkgs.push({
     name:'Premium Plus',
-    k:q.doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT,
-    desc:q.pp.desc||ppDescFallback,
+    k:(q.doors||0)*(q.pp?.ppd||360)+ntb*(q.pp?.tppd||200)+ppDrawerT,
+    desc:q.pp?.desc||ppDescFallback,
     drawer:q.pp?.drawer||'none',
     ppExt:ppExtTotal
   });
@@ -1341,8 +1340,8 @@ function genPDF(qid,renderDataUrl){
   // ── "This Kitchen Includes" extras ────────────────────────────────────────
   const extrasItems=(q.extras||[]).filter(e=>e.name).map(e=>e.name);
   const ppFreeItems=(q.pp?.extras||[]).filter(e=>e.free&&e.name).map(e=>e.name);
-  if(q.glass.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
-  if(q.glass.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
+  if(q.glass?.sq>0) extrasItems.push(`${q.glass.sq} small glazed door cabinet${q.glass.sq>1?'s':''}`);
+  if(q.glass?.lq>0) extrasItems.push(`${q.glass.lq} large glazed larder door${q.glass.lq>1?'s':''}`);
   if(wtT>0) extrasItems.push('Worktop');
   const allIncludes=[...extrasItems,...ppFreeItems];
 
@@ -1462,10 +1461,20 @@ ${includesSection}
 <div style="color:#2e7d32;font-size:11px;margin-bottom:1px">Elite Kitchens</div>
 <div style="color:#555;font-size:11px">089 464 1917 | info@elitekitchens.ie</div>
 
+${renderDataUrl?`
+<div style="page-break-before:always;padding:24px 20px;text-align:center;box-sizing:border-box">
+  <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;letter-spacing:.07em;text-transform:uppercase">Kitchen Design Render</div>
+  <img src="${renderDataUrl}" style="max-width:100%;max-height:230mm;object-fit:contain;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.12);display:block;margin:0 auto">
+  <div style="font-size:10px;color:#9ca3af;margin-top:14px">Elite Kitchens · 089 464 1917 · info@elitekitchens.ie</div>
+</div>`:''}
+
 </body>
 </html>`;
 
-  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  const w=window.open('','_blank');
+  if(!w){alert('Popup blocked — please allow popups for this site to view the PDF.');return;}
+  w.document.write(html);w.document.close();
+  if(renderDataUrl) showToast('📸 Render attached — scroll down in PDF to see it','#2e7d32');
 }
 
 function saveInvoiceRecord(qid, pkgKey, invNum, total){
@@ -1551,7 +1560,7 @@ function genInvoice(qid, pkgKey){
 
   // ── Chosen package ────────────────────────────────────────────────────────
   const pkgMap={
-    ess:{label:'Essential',ppd:q.ess.ppd||300,tppd:q.ess?.tppd||200,desc:'Kitchen Cabinetry — Essential',drawer:q.ess?.drawer||'none'},
+    ess:{label:'Essential',ppd:q.ess?.ppd||300,tppd:q.ess?.tppd||200,desc:'Kitchen Cabinetry — Essential',drawer:q.ess?.drawer||'none'},
     prem:{label:'Premium',ppd:q.prem?.ppd||360,tppd:q.prem?.tppd||200,desc:'Kitchen Cabinetry — Premium',drawer:q.prem?.drawer||'none'},
     pp:{label:'Premium Plus',ppd:q.pp?.ppd||360,tppd:q.pp?.tppd||200,desc:'Kitchen Cabinetry — Premium Plus',drawer:q.pp?.drawer||'none'}
   };
@@ -1812,22 +1821,14 @@ function doSave(){
   Elite Kitchens · 089 464 1917 · info@elitekitchens.ie · Balbriggan, Co. Dublin K32 XH72
 </div>
 
-${renderDataUrl?`
-<div style="page-break-before:always;padding:24px 20px;text-align:center;box-sizing:border-box">
-  <div style="font-size:11px;color:#9ca3af;margin-bottom:14px;letter-spacing:.07em;text-transform:uppercase">Kitchen Design Render</div>
-  <img id="render-img" src="" style="max-width:100%;object-fit:contain;border-radius:4px;box-shadow:0 4px 24px rgba(0,0,0,.12);display:block;margin:0 auto">
-  <div style="font-size:10px;color:#9ca3af;margin-top:14px">Elite Kitchens · 089 464 1917 · info@elitekitchens.ie</div>
-</div>
-<scr${'ipt'}>(function(){try{var i=document.getElementById('render-img');if(i&&window.opener&&window.opener._ekRender){i.src=window.opener._ekRender;}}catch(e){}})();</${'script'}>`:''}
-
 </body>
 </html>`;
 
-  window._ekRender = renderDataUrl || null;
   const blob=new Blob([html],{type:'text/html'});
   const blobUrl=URL.createObjectURL(blob);
-  window.open(blobUrl,'_blank');
-  setTimeout(()=>{URL.revokeObjectURL(blobUrl);window._ekRender=null;},60000);
+  const w=window.open(blobUrl,'_blank');
+  if(!w){alert('Popup blocked — please allow popups for this site to view the invoice.');URL.revokeObjectURL(blobUrl);return;}
+  setTimeout(()=>{URL.revokeObjectURL(blobUrl);},60000);
 }
 
 
