@@ -1462,21 +1462,24 @@ function genPDF(qid,renderDataUrl){
     </td>`;
   }).join('');
 
-  // ── Every option includes ─────────────────────────────────────────────────
-  const incl=['Kitchen cabinetry — supply and installation'];
-  if(q.incl?.sink)       incl.push('Sink');
-  if(q.incl?.extractor)  incl.push('Extractor');
-  if(q.incl?.removal)    incl.push('Removal of your existing kitchen');
-  if(q.incl?.electrical) incl.push('Electrical work');
-  if(q.incl?.plumbing)   incl.push('Plumbing');
-  if(wtT>0)              incl.push('Worktops');
+  // ── What's included, split into two groups ────────────────────────────────
+  // Items in the kitchen are kept separate from work carried out, so a paid
+  // upgrade doesn't read like a free promise. Custom extras land in the
+  // kitchen group, which is correct nearly always.
+  const inclKitchen=[];
+  if(q.incl?.sink)      inclKitchen.push('Sink');
+  if(q.incl?.extractor) inclKitchen.push('Extractor');
+  if(wtT>0)             inclKitchen.push('Worktops');
   const gsQty=q.glass?.sq||0, glQty=q.glass?.lq||0;
-  if(gsQty>0) incl.push(gsQty+' small glazed door cabinet'+(gsQty>1?'s':''));
-  if(glQty>0) incl.push(glQty+' large glazed larder door'+(glQty>1?'s':''));
-  (q.extras||[]).filter(e=>e.name).forEach(e=>incl.push(esc(e.name)+((e.qty>1)?' ×'+e.qty:'')));
-  incl.push('6-month snagging');
+  if(gsQty>0) inclKitchen.push(gsQty+' small glazed door cabinet'+(gsQty>1?'s':''));
+  if(glQty>0) inclKitchen.push(glQty+' large glazed larder door'+(glQty>1?'s':''));
+  (q.extras||[]).filter(e=>e.name).forEach(e=>inclKitchen.push(esc(e.name)+((e.qty>1)?' ×'+e.qty:'')));
 
-  const half=Math.ceil(incl.length/2);
+  const inclWork=['Kitchen cabinetry — supply and installation'];
+  if(q.incl?.removal)    inclWork.push('Removal of your existing kitchen');
+  if(q.incl?.electrical) inclWork.push('Electrical work');
+  if(q.incl?.plumbing)   inclWork.push('Plumbing');
+
   const inclCol=arr=>arr.map(i=>`<div class="tick">${i}</div>`).join('');
 
   const excl=['Appliances'];
@@ -1645,9 +1648,15 @@ ${c.addr?`<div style="font-size:11px;color:var(--soft);margin-bottom:11px">${esc
   <div class="rule-ink"></div>
   <div class="sec-h">${activePkgs.length>1?'Every option includes':'Included'}</div>
   <table style="width:100%"><tr>
-    <td style="width:49%;vertical-align:top">${inclCol(incl.slice(0,half))}</td>
-    <td style="width:2%"></td>
-    <td style="width:49%;vertical-align:top">${inclCol(incl.slice(half))}</td>
+    ${inclKitchen.length?`<td style="width:49%;vertical-align:top">
+      <div class="eyebrow" style="margin-bottom:7px">In your kitchen</div>
+      ${inclCol(inclKitchen)}
+    </td>
+    <td style="width:2%"></td>`:''}
+    <td style="width:${inclKitchen.length?'49':'100'}%;vertical-align:top">
+      <div class="eyebrow" style="margin-bottom:7px">Work included</div>
+      ${inclCol(inclWork)}
+    </td>
   </tr></table>
 </div>
 
@@ -1659,9 +1668,10 @@ ${c.addr?`<div style="font-size:11px;color:var(--soft);margin-bottom:11px">${esc
     </td>
     <td style="width:53%;vertical-align:top">
       <div class="terms">
-        <div class="eyebrow" style="margin-bottom:7px">Payment terms</div>
+        <div class="eyebrow" style="margin-bottom:7px">Terms</div>
         <div class="terms-row"><b>30%</b> deposit to secure your installation date</div>
         <div class="terms-row"><b>70%</b> on completion</div>
+        <div class="terms-row"><b>6-month</b> snagging after completion</div>
         <div class="terms-row" style="margin-top:5px;color:rgba(255,255,255,.65)">This quotation is valid until ${validStr}.</div>
       </div>
     </td>
