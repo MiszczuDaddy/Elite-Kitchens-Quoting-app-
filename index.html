@@ -1422,7 +1422,7 @@ function genPDF(qid,renderDataUrl){
   facts.push(['Hinges &amp; runners','Blum soft-close throughout']);
   facts.push(['Panels &amp; gables','Finished to match your door colour']);
   facts.push(['Handles','From our standard range']);
-  if(wtT>0) facts.push(['Worktops','Supplied and fitted']);
+  if(wtT>0) facts.push(['Worktops','Supplied and fitted<div style="font-size:9.5px;color:var(--faint);margin-top:2px">Laminate worktops are not covered against water damage.</div>']);
   const factRows=facts.map(f=>
     `<tr><td class="fact-k">${f[0]}</td><td class="fact-v">${f[1]}</td></tr>`).join('');
 
