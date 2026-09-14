@@ -63,6 +63,16 @@ never `ST` directly. `genPDF`/`genInvoice`/`quoteAmount` each start with
 hardcoded `{none:0,cemux:60,blum:100}` map) into any pricing path — that's
 the exact bug §2 item 4 fixed.
 
+**Document viewer.** `genPDF` and `genInvoice` don't open popups — both call
+the shared `showDocViewer(html)`, which sets `#doc-viewer-frame`'s (a
+same-origin `<iframe>`) `.srcdoc` and shows the full-screen `#doc-viewer`
+overlay; `closeDocViewer()` hides it and clears the iframe. `selectInvoicePkg`
+(the multi-package chooser) is an in-page modal (`#pkg-modal`), not a popup
+either. See §2's popup note. `esc(s)` (HTML-escaping) is a top-level helper
+next to `load`/`save` — use it, don't write a local copy, anywhere
+self-entered data (a name, an address, an extra's name) is interpolated into
+a template literal or `innerHTML`.
+
 ## 2. Business rules
 
 - VAT is **13.5%** throughout (`const VAT`).
@@ -96,6 +106,12 @@ the exact bug §2 item 4 fixed.
   electrical, plumbing) — so a €900 upgrade doesn't read with the same
   weight as a free inclusion. Keep new inclusion types in the correct group;
   when in doubt, custom extras go in the kitchen group.
+- The quote PDF, the invoice, and the multi-package chooser all render
+  in-page (a same-origin iframe for the two documents, a plain modal for the
+  chooser) — never a `window.open()` popup. Popups are blocked by default on
+  mobile and depend on `window.opener` surviving, which isn't guaranteed. If
+  you add a third document type, give it the same treatment: build its HTML,
+  call `showDocViewer(html)`, done.
 
 ## 3. How to test
 
@@ -105,20 +121,39 @@ headless browser (Playwright is pre-installed in the Claude Code sandbox —
 needed), push objects straight into the `quotes` / `customers` globals, and
 call functions directly.
 
-Two different output captures are needed — this catches people out:
+`genPDF` and `genInvoice` don't open a popup or build a Blob any more — both
+write into `#doc-viewer-frame`, a same-origin `<iframe>`, via the shared
+`showDocViewer(html)`. Capture their output by listening for that iframe's
+`load` event, **not** by stubbing `window.open`/`Blob` (that stopped doing
+anything the moment item 20 landed — the functions never call them):
 
 ```js
-// genPDF writes into a new window
-let written = '';
-window.open = () => ({ document: { write(h){ written = h }, close(){} } });
-
-// genInvoice builds a Blob and opens a blob URL
-let inv = '';
-const RealBlob = window.Blob;
-window.Blob = function(parts, o){ inv = String(parts[0]); return new RealBlob(parts, o); };
-window.URL.createObjectURL = () => 'blob:stub';
-window.URL.revokeObjectURL = () => {};
+async function captureViewer(page, fn) {
+  return await page.evaluate((fn) => new Promise((resolve, reject) => {
+    const iframe = document.getElementById('doc-viewer-frame');
+    const onLoad = () => {
+      iframe.removeEventListener('load', onLoad);
+      try { resolve(iframe.contentDocument.documentElement.outerHTML); }
+      catch (e) { reject(e); }
+    };
+    iframe.addEventListener('load', onLoad);
+    try { fn(); } catch (e) { iframe.removeEventListener('load', onLoad); reject(e); }
+  }), fn); // fn must be a page-context closure, e.g. () => genPDF(1, null)
+}
 ```
+
+**Reading `iframe.contentDocument` in the same tick you set `.srcdoc` returns
+an empty body** — the assignment is asynchronous, same as a real navigation.
+Comparing two empty-body captures silently passes (both sides are `''`),
+which hid a broken repricing check once. The `load`-event wait above avoids
+this; whatever method you use, **assert the capture is non-empty** (a few
+hundred characters at least) before trusting a comparison against it. Don't
+go back to a fixed `setTimeout` "wait a tick" if you can avoid it — the
+`load` event is exact; a timeout is a guess that can flake under load.
+
+Call `closeDocViewer()` between captures — the iframe's `.srcdoc` is a live
+DOM property, not a queue, so a second call before the first `load` fires
+will re-trigger the listener setup race described above.
 
 To check what a customer would actually *see* in the PDF (as opposed to
 string-matching the raw HTML, which false-positives on CSS — e.g. the class
@@ -127,6 +162,14 @@ match a search for the number 17), load the captured HTML into a **second**
 real page via `page.setContent(html)` and read `document.body.innerText` /
 query the DOM. This is how the render-page-count and door/drawer-count-leak
 checks were actually verified — do the same for any new visual claim.
+
+The multi-package chooser (`selectInvoicePkg`) is a plain in-page modal
+(`#pkg-modal`), not a document — drive it directly: set the radio's
+`.checked`, call `pkgModalGo()`. The invoice's `doSave()` calls
+`window.parent.saveInvoiceRecord(...)` — to test it, reach into the iframe
+and call it directly (`iframe.contentWindow.doSave()`) and assert the parent
+page's `invoices` array actually grew, rather than just asserting the call
+didn't throw.
 
 Firebase will fail to load offline — ignore `firebase is not defined`, it is
 not a real failure in this environment (the CDN is blocked in the sandbox).
@@ -141,10 +184,13 @@ source of crashes:
 
 All three must produce a PDF **and** an invoice without throwing, and every
 screen (`renderQuotes`, `renderDash`, `renderInvoices`, `renderCusts`,
-`editQuote`) must render for each. If you touch pricing, also: save a quote,
-change every price in Settings, and confirm the saved quote's total and its
-invoice are byte-identical before/after (this is the regression that matters
-most — see §2).
+`editQuote`) must render for each. Also push an invoice record missing
+`total` and `paidAmount` (older or corrupted data) and confirm
+`renderInvoices` still renders it, at €0.00, without throwing — that's the
+exact shape that used to break the whole Invoices screen. If you touch
+pricing, also: save a quote, change every price in Settings, and confirm the
+saved quote's total and its invoice are byte-identical before/after (this is
+the regression that matters most — see §2).
 
 Also check for duplicate element ids after any HTML change — one of the bugs
 below was exactly that:
@@ -179,18 +225,22 @@ detail — each one documents exactly what was verified.
 
 | # | Branch | What it did |
 |---|--------|-------------|
-| 1 | `claude/keen-bohr-854bug` | Item 1, 2, and most of 3 below: fixed `genInvoice`'s `ReferenceError`, moved the render-image page into `genPDF`, guarded unguarded `q.<field>` access in `genPDF`/`genInvoice`/`editQuote`. **Did not** fix `renderInvoices`' `inv.total.toFixed` — that part of item 3 is still open, see below. |
+| 1 | `claude/keen-bohr-854bug` | Item 1, 2, and most of 3 below: fixed `genInvoice`'s `ReferenceError`, moved the render-image page into `genPDF`, guarded unguarded `q.<field>` access in `genPDF`/`genInvoice`/`editQuote`. Did not fix `renderInvoices`' `inv.total.toFixed` — that part of item 3 was finished later, in PR 7. |
 | 2 | `fix/mobile-layout` | Item 14: sidebar → sticky top bar below 900px, `.row2`/`.row3`/builder grid/settings grid collapse to one column, builder summary becomes a sticky-bottom bar, tables scroll in their own box (`.tscroll`), inputs go to 16px to stop iOS zoom. |
 | 3 | `fix/pricing-invoices-settings` | Items 4, 5, 6, 7, 8, and 23: froze `q.rates`, added `ratesOf`/`drawerPrice`/`curRates`, moved drawer prices and all business details into Settings, added `invoiceCounter`/`invoiceNums` so packages can't share a number, fixed the `id="s-gl"` duplicate, relabelled the dashboard "Quoted" tile. |
 | 4 | `redesign/pdf-template` | Not in the original list below — a full visual redesign of the quote PDF (editorial layout, Faustina/IBM Plex Sans, package cards). Verbatim-replaced everything in `genPDF` between the rates/calculations block and the `window.open()` call. Introduced the "no door/topbox/drawer counts, no per-unit rates" rule now in §2. |
 | 5 | `pdf-includes-split` | Not in the original list — split "Every option includes" into "In your kitchen" / "Work included", moved 6-month snagging into the terms panel. |
 | 6 | `pdf-worktop-warranty-note` | Not in the original list — added the laminate-worktop water-damage caveat under the Worktops line, only shown when a worktop is quoted. |
+| 7 | `fix/invoice-viewer-and-cleanup` | Items 3 (finished), 20, 21, 22, 24: replaced all three popup/`window.opener` dependencies (`genPDF`, `genInvoice`, `selectInvoicePkg`'s chooser) with the in-page `#doc-viewer` iframe and `#pkg-modal`; `doSave()` now calls `window.parent`; guarded `renderInvoices`' `inv.total`/`inv.paidAmount`; `recalc()` resets all three package prices (not just prem/pp) to €0 when unticked; Settings extras prices only commit on Save; hoisted `esc()` to a top-level helper and used it in `genInvoice` and all four list renderers. Also committed this file to the repo root. |
 
 **If you're picking this up fresh:** the pricing/rates/invoice-numbering
 machinery (item 3 in the progress table) and the current `genPDF` HTML
 structure (items 4–6) are both load-bearing for everything below. Read
 `ratesOf`/`drawerPrice`/`curRates` and the current `genPDF` body before
-touching pricing or the PDF template again.
+touching pricing or the PDF template again. The document-viewer/modal
+machinery from PR 7 (`showDocViewer`/`closeDocViewer`/`#pkg-modal`) is
+load-bearing for item 19 below, which still wants `genInvoice` to report a
+missing quote — do that through the same viewer, not a new popup.
 
 ---
 
@@ -210,15 +260,12 @@ then fix and say what broke. Everything else is still open.
 
 ## 3. Older quotes crash the PDF
 
-**PARTIALLY DONE.** PR 1 guarded `genPDF`/`genInvoice`/`editQuote` — those no
-longer crash on an old-shape quote. **Still open:** `renderInvoices()` reads
-`inv.total.toFixed(2)` and `inv.paidAmount` unguarded (`index.html`, in the
-invoice-list row template). An invoice record saved before some field
-existed — or any `total`/`paidAmount` that ends up non-numeric — will throw
-and break the whole Invoices screen, not just one row. Fix: `?.`/`Number(...)`
-with fallbacks, same treatment as the rest of item 3 already got. Sweep the
-file once more for any other unguarded `q.<field>.<sub>` or `inv.<field>`
-while you're in there.
+**DONE** (PR 1 + PR 7, above). PR 1 guarded `genPDF`/`genInvoice`/`editQuote`.
+PR 7 finished it: `renderInvoices()` and `markInvoice()` now read
+`Number(inv.total)||0` / `Number(inv.paidAmount)||0` instead of calling
+`.toFixed()` on a possibly-missing value — an invoice record with no `total`
+and no `paidAmount` renders at €0.00 instead of breaking the whole Invoices
+screen.
 
 ## 4. Settings changes retroactively re-price sent quotes
 
@@ -336,29 +383,28 @@ quote.
 
 ## 20. PDF and invoice open in popups
 
-**PARTIALLY DONE.** A popup-blocked check was added on both `window.open`
-calls (in `genPDF` and `genInvoice`) — a blocked popup now alerts the user
-instead of failing silently. **Still open:** the deeper fix. Popups are still
-blocked by default on mobile, and the invoice's "Save to Invoices" button
-still depends on `window.opener` across a blob URL, which some browsers null
-out — when that happens the invoice never reaches the records. Render the
-preview in a full-screen in-page iframe instead; that removes the popup and
-the `window.opener` dependency together.
+**DONE** (PR 7, above). There were actually **three** `window.opener`
+dependencies, not two — `selectInvoicePkg`'s multi-package chooser was also
+a popup, calling `window.opener.genInvoice(...)`. All three are gone:
+`genPDF` and `genInvoice` render into `#doc-viewer`'s same-origin iframe via
+`showDocViewer(html)`; the chooser is the in-page `#pkg-modal`; the
+invoice's `doSave()` calls `window.parent.saveInvoiceRecord(...)`. See §1's
+"Document viewer" note.
 
 ## 21. Unticked packages show a stale price
 
-**Still open.** `recalc` only updates `live-prem` / `live-pp` when those
-packages are ticked, so an old figure stays visible in the collapsed header.
-Reset to €0 in the `else` branch.
+**DONE** (PR 7, above). `recalc()` now has an `else` branch for all three
+packages (Essential included, for symmetry — the same bug pattern applied
+to it too, even though the original report only named prem/pp) resetting
+`live-*`/`s-*`/`sf-*` to €0/€0.00 when that package is unticked.
 
 ## 22. Settings prices save themselves without being saved
 
-**Still open.** The extras price inputs write straight into `ST.extras` on
-change, so the next `saveAll()` from anywhere persists them even if Save
-Settings was never pressed. Hold edits in a temp object and commit on Save.
-(Note: this is specifically about the *extras* price list in Settings —
-`saveSettings()` itself now handles the drawer/business-detail fields
-correctly, added in PR 3.)
+**DONE** (PR 7, above). The extras price inputs' `change` listener that wrote
+straight into `ST.extras` is gone; `renderSettings()` only reads from
+`ST.extras` now. `saveSettings()` commits the DOM values into `ST.extras` at
+the same point it commits every other field on the screen — nothing persists
+until Save Settings is actually pressed.
 
 ## 23. Duplicate element ids
 
@@ -367,17 +413,16 @@ HTML change, since it's cheap and this class of bug is easy to reintroduce.
 
 ## 24. Unescaped `innerHTML` throughout
 
-**PARTIALLY DONE.** `genPDF` has its own local `esc()` helper (added as part
-of the PDF redesign, PR 4) and uses it for the values it interpolates —
-customer name, extras names, package descriptions. **Still open everywhere
-else:** `esc()` is scoped inside `genPDF` only, not a shared top-level
-helper. `genInvoice`, and the list renderers (`renderCusts`, `renderQuotes`,
-`renderDash`, `renderInvoices`), still interpolate customer/extras names into
-template literals and `innerHTML` unescaped. Low risk with self-entered data,
-but a name containing a quote or angle bracket breaks a table row or an
-input. If you pick this up: hoist `genPDF`'s `esc()` to a top-level helper
-and use it everywhere user data is interpolated, rather than writing a second
-copy.
+**DONE** (PR 7, above), for the fields that mattered: `esc()` moved out of
+`genPDF` to a top-level helper (next to `load`/`save`), and is now used in
+`genInvoice` (customer name/address/phone/email, extras/pp-extras names) and
+all four list renderers (`renderCusts`, `renderQuotes`, `renderDash` —
+customer names; `renderInvoices` — invoice number and customer name). Verified
+with a name containing `"><script>...</script>` and an `onerror=` payload:
+no `<script>` element gets created in any of these, and the text still
+displays (escaped, not silently dropped). `renderSettings`' extras-catalog
+names were deliberately left alone — those come from the fixed `DEF_EXTRAS`
+catalog, not free-typed customer data.
 
 ---
 
