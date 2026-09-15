@@ -1485,7 +1485,10 @@ function genPDF(qid,renderDataUrl){
   const excl=['Appliances'];
   if(!q.incl?.electrical) excl.push('Electrical work');
   if(!q.incl?.plumbing)   excl.push('Plumbing');
+  excl.push('Gas disconnection and reconnection — arranged by you with a registered RGI installer');
   excl.push('Tiling &amp; flooring');
+  excl.push('Painting and decorating — best done once the kitchen is fitted');
+  excl.push('Skip and waste removal — arranged by you');
 
   // ── Full HTML ─────────────────────────────────────────────────────────────
   const html=`<!DOCTYPE html>
