@@ -513,6 +513,37 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
 </div>
+
+<!-- PACKAGE CHOOSER — in-page modal (was a window.open() popup with a
+     window.opener.genInvoice() callback; replaced so it works with popups
+     blocked and doesn't depend on an opener relationship) -->
+<div id="pkg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:400px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px">Generate Invoice</div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:20px">Which package did the customer choose?</div>
+    <div id="pkg-modal-opts"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button onclick="pkgModalGo()" style="flex:1;padding:12px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Generate Invoice →</button>
+      <button onclick="pkgModalCancel()" style="padding:12px 18px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT VIEWER — full-screen same-origin iframe, replacing the
+     window.open()+document.write() (quote PDF) / Blob+URL.createObjectURL
+     (invoice) popups. Both are blocked by default on mobile, and the
+     invoice previously depended on window.opener surviving across a blob
+     URL to save itself back — an iframe has neither problem: it's always
+     same-origin to the page that set its srcdoc, so genPDF/genInvoice's own
+     "no-print" toolbar buttons and (for the invoice) doSave()'s
+     window.parent call all just work. -->
+<div id="doc-viewer" style="display:none;position:fixed;inset:0;background:#fff;z-index:10000;flex-direction:column">
+  <div style="background:#111827;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span style="font-weight:700;font-size:13px">Document Preview</span>
+    <button onclick="closeDocViewer()" style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">✕ Close</button>
+  </div>
+  <iframe id="doc-viewer-frame" style="flex:1;width:100%;border:none"></iframe>
+</div>
 </div><!-- /main -->
 <div id="toast" style="display:none;position:fixed;bottom:28px;right:28px;background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s"></div>
 
@@ -520,6 +551,12 @@ tr:last-child td{border-bottom:none}
 // ─── DATA ────────────────────────────────────────────────────────────────────
 function load(k){try{return JSON.parse(localStorage.getItem('ek3_'+k))}catch(e){return null}}
 function save(k,v){localStorage.setItem('ek3_'+k,JSON.stringify(v))}
+
+// Shared HTML-escaping helper — used anywhere self-entered data (customer
+// names, extras names, addresses) is interpolated into a template literal
+// or innerHTML, so a name containing a quote or angle bracket can't break
+// the markup around it.
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 
 const DEF_EXTRAS=[
   {key:'pocket', name:'Pocket door system',   unit:'per opening', price:0,   manual:true},
@@ -738,7 +775,7 @@ function renderCusts(){
   );
   if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(c_search?'No customers match your search.':'No customers yet.')+'</p>';return;}
   el.innerHTML='<div class="tscroll"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
-    list.map(c=>`<tr><td><strong>${c.name}</strong></td><td style="color:var(--gray)">${c.phone||'—'}</td><td style="color:var(--gray)">${c.email||'—'}</td><td style="color:var(--gray)">${c.addr||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button><button class="btn btn-o btn-sm" onclick="editCustomer(${c.id})">✏️ Edit</button><button class="btn btn-o btn-sm" onclick="delCustomer(${c.id})">🗑️</button></td></tr>`).join('')+
+    list.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td style="color:var(--gray)">${esc(c.phone)||'—'}</td><td style="color:var(--gray)">${esc(c.email)||'—'}</td><td style="color:var(--gray)">${esc(c.addr)||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button><button class="btn btn-o btn-sm" onclick="editCustomer(${c.id})">✏️ Edit</button><button class="btn btn-o btn-sm" onclick="delCustomer(${c.id})">🗑️</button></td></tr>`).join('')+
   '</tbody></table></div>';
 }
 
@@ -993,11 +1030,14 @@ function recalc(){
   const ppExtT=ppExts.reduce((s,e)=>s+e.qty*e.price,0);
   const shared=extT+wtT+glassT;
   if(essOn){document.getElementById('live-ess').textContent=fmt(essK);document.getElementById('s-ess').textContent=fmt(essK);document.getElementById('sf-ess').textContent=fmtd(incvat(essK+shared));}
+  else{document.getElementById('live-ess').textContent=fmt(0);document.getElementById('s-ess').textContent=fmt(0);document.getElementById('sf-ess').textContent=fmtd(0);}
   document.getElementById('s-ext').textContent=fmt(extT);
   document.getElementById('s-wt').textContent=fmt(wtT);
   document.getElementById('s-gl').textContent=fmt(glassT);
   if(premOn){document.getElementById('live-prem').textContent=fmt(premK);document.getElementById('s-prem').textContent=fmt(premK);document.getElementById('sf-prem').textContent=fmtd(incvat(premK+shared));}
+  else{document.getElementById('live-prem').textContent=fmt(0);document.getElementById('s-prem').textContent=fmt(0);document.getElementById('sf-prem').textContent=fmtd(0);}
   if(ppOn){document.getElementById('live-pp').textContent=fmt(ppK+ppExtT);document.getElementById('s-pp').textContent=fmt(ppK);document.getElementById('sf-pp').textContent=fmtd(incvat(ppK+shared+ppExtT));}
+  else{document.getElementById('live-pp').textContent=fmt(0);document.getElementById('s-pp').textContent=fmt(0);document.getElementById('sf-pp').textContent=fmtd(0);}
 }
 
 // ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
@@ -1222,7 +1262,7 @@ function renderQuotes(){
       const stCur=q.status||'Draft';
       const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
       const stSelect=`<select class="fc badge b-${stCur.toLowerCase().replace(/\s+/g,'')}" style="font-size:11px;padding:4px 6px;width:auto;border:none;font-weight:600" onchange="markQuoteStatus(${q.id},this.value)">${stOpts.map(s=>`<option ${s===stCur?'selected':''}>${s}</option>`).join('')}</select>`;
-      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table></div>';
 }
 
@@ -1271,7 +1311,7 @@ function renderDash(){
   const recent=quotes.slice(0,8);
   if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
   el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
-    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${c.name}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
+    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${esc(c.name)}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
   '</tbody></table></div>';
 }
 
@@ -1293,8 +1333,11 @@ function renderSettings(){
   document.getElementById('s-biz-iban').value=ST.biz_iban||'';
   document.getElementById('s-biz-vat').value=ST.biz_vat||'';
   const el=document.getElementById('settings-extras');
+  // Extras price inputs are read (not written) here — they only commit into
+  // ST.extras inside saveSettings(), same as every other field on this
+  // screen. No 'change' listener: typing a new price must not take effect
+  // until Save Settings is actually pressed.
   el.innerHTML=ST.extras.map((e,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--grayL)"><span>${e.name} <span style="color:var(--gray);font-size:11px">${e.unit}</span></span>${e.manual?'<span class="badge b-man">Manual</span>':`<input class="fc" type="number" value="${e.price}" data-i="${i}" style="width:90px;text-align:right">`}</div>`).join('');
-  el.querySelectorAll('input[data-i]').forEach(inp=>inp.addEventListener('change',()=>{ST.extras[inp.dataset.i].price=parseFloat(inp.value)||0;}));
   const logo=load('logo');
   if(logo) showLogo(logo);
 }
@@ -1314,6 +1357,9 @@ function saveSettings(){
   ST.biz_bic=document.getElementById('s-biz-bic').value.trim();
   ST.biz_iban=document.getElementById('s-biz-iban').value.trim();
   ST.biz_vat=document.getElementById('s-biz-vat').value.trim();
+  document.querySelectorAll('#settings-extras input[data-i]').forEach(inp=>{
+    ST.extras[inp.dataset.i].price=parseFloat(inp.value)||0;
+  });
   paintDrawerLabels();
   saveAll(); alert('✅ Settings saved!');
 }
@@ -1363,7 +1409,6 @@ function genPDF(qid,renderDataUrls){
   const ntb=q.topboxes||0;
 
   // ── Date & reference ──────────────────────────────────────────────────────
-  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const today=new Date();
   const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
   const validTo=new Date(today); validTo.setDate(validTo.getDate()+30);
@@ -1565,12 +1610,9 @@ function genPDF(qid,renderDataUrls){
 </head>
 <body>
 
-<div class="no-print" style="background:#22302A;color:#fff;padding:10px 16px;margin:-15mm -16mm 12mm;display:flex;justify-content:space-between;align-items:center">
-  <span style="font-weight:600;font-size:13px">Quotation ${ref} — preview</span>
-  <div style="display:flex;gap:10px">
-    <button onclick="dlPDF()" style="background:#9C7233;color:#fff;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Download PDF</button>
-    <button onclick="window.print()" style="background:#fff;color:#22302A;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Print</button>
-  </div>
+<div class="no-print" style="background:#22302A;color:#fff;padding:10px 16px;margin:-15mm -16mm 12mm;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px">
+  <button onclick="dlPDF()" style="background:#9C7233;color:#fff;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Download PDF</button>
+  <button onclick="window.print()" style="background:#fff;color:#22302A;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Print</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <script>
@@ -1700,9 +1742,7 @@ ${(renderDataUrls&&renderDataUrls.length)?renderDataUrls.map((url,i)=>`
 </body>
 </html>`;
 
-  const w=window.open('','_blank');
-  if(!w){alert('Popup blocked — please allow popups for this site to view the PDF.');return;}
-  w.document.write(html);w.document.close();
+  showDocViewer(html);
   if(renderDataUrls&&renderDataUrls.length) showToast(`📸 ${renderDataUrls.length} render${renderDataUrls.length>1?'s':''} attached — scroll down in PDF to see ${renderDataUrls.length>1?'them':'it'}`,'#2e7d32');
 }
 
@@ -1751,31 +1791,29 @@ function selectInvoicePkg(qid){
   if(!active.length){alert('Please select at least one package before generating an invoice.');return;}
   if(active.length===1){genInvoice(qid,active[0].key);return;}
 
-  // Multi-package: open selection window
+  // Multi-package: ask which one via the in-page modal (#pkg-modal)
+  _pkgModalQid=qid;
   const optHtml=active.map(p=>`
     <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;margin-bottom:8px;font-size:14px">
-      <input type="radio" name="pkg" value="${p.key}" style="width:16px;height:16px">
+      <input type="radio" name="pkg-modal-choice" value="${p.key}" style="width:16px;height:16px">
       <span><strong>${p.label}</strong></span>
     </label>`).join('');
+  document.getElementById('pkg-modal-opts').innerHTML=optHtml;
+  document.getElementById('pkg-modal').style.display='flex';
+}
 
-  const selHtml=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Select Package</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;padding:30px;max-width:400px;color:#111}</style>
-  </head><body>
-  <div style="font-size:18px;font-weight:700;margin-bottom:6px">Generate Invoice</div>
-  <div style="font-size:13px;color:#6b7280;margin-bottom:20px">Which package did the customer choose?</div>
-  ${optHtml}
-  <button onclick="go()" style="margin-top:12px;width:100%;padding:12px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Generate Invoice →</button>
-  <script>
-    function go(){
-      const sel=document.querySelector('input[name=pkg]:checked');
-      if(!sel){alert('Please select a package.');return;}
-      window.opener.genInvoice(${qid}, sel.value);
-      window.close();
-    }
-  <\/script>
-  </body></html>`;
-  const w=window.open('','_blank','width=420,height=360');
-  w.document.write(selHtml);w.document.close();
+let _pkgModalQid=null;
+function pkgModalGo(){
+  const sel=document.querySelector('input[name=pkg-modal-choice]:checked');
+  if(!sel){alert('Please select a package.');return;}
+  const qid=_pkgModalQid;
+  document.getElementById('pkg-modal').style.display='none';
+  _pkgModalQid=null;
+  genInvoice(qid, sel.value);
+}
+function pkgModalCancel(){
+  document.getElementById('pkg-modal').style.display='none';
+  _pkgModalQid=null;
 }
 
 function genInvoice(qid, pkgKey){
@@ -1813,11 +1851,11 @@ function genInvoice(qid, pkgKey){
   const includedItems=[];
   if(wtNet>0) includedItems.push('Worktop');
   if(dCount>0&&pkg.drawer&&pkg.drawer!=='none') includedItems.push(`${DLABELS[pkg.drawer]} drawer boxes (${dCount} units)`);
-  if(pkgKey==='pp')(q.pp?.extras||[]).filter(e=>e.name&&(e.free||e.qty>0)).forEach(e=>includedItems.push(e.name));
+  if(pkgKey==='pp')(q.pp?.extras||[]).filter(e=>e.name&&(e.free||e.qty>0)).forEach(e=>includedItems.push(esc(e.name)));
   const igsQ=q.glass?.sq||0, iglQ=q.glass?.lq||0;
   if(igsQ>0) includedItems.push(`Glazed door cabinet${igsQ>1?'s':''} — small (${igsQ})`);
   if(iglQ>0) includedItems.push(`Glazed larder door${iglQ>1?'s':''} — large (${iglQ})`);
-  (q.extras||[]).filter(e=>e.name).forEach(e=>includedItems.push(e.name));
+  (q.extras||[]).filter(e=>e.name).forEach(e=>includedItems.push(esc(e.name)));
 
   const includedHtml=includedItems.length
     ?'<div style="margin-top:6px">'+includedItems.map(it=>'<div style="font-size:11px;color:#4b5563;padding:2px 0">&#8226; '+it+'</div>').join('')+'</div>'
@@ -1883,14 +1921,11 @@ function genInvoice(qid, pkgKey){
 </head>
 <body>
 
-<div class="no-print" style="background:#111827;color:#fff;padding:12px 20px;margin:-20mm -20mm 20mm;display:flex;justify-content:space-between;align-items:center">
-  <span style="font-weight:700">Elite Kitchens — Invoice Preview</span>
-  <div style="display:flex;gap:10px;align-items:center">
-    <span id="save-confirm" style="font-size:13px;color:#6ee7b7;display:none">✅ Saved to Invoices!</span>
-    <button id="save-inv-btn" onclick="doSave()" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">💾 Save to Invoices</button>
-    <button onclick="dlInvPDF()" style="background:#6366f1;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">⬇️ Download PDF</button>
-    <button onclick="window.print()" style="background:#fff;color:#111827;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Print</button>
-  </div>
+<div class="no-print" style="background:#111827;color:#fff;padding:12px 20px;margin:-20mm -20mm 20mm;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px">
+  <span id="save-confirm" style="font-size:13px;color:#6ee7b7;display:none">✅ Saved to Invoices!</span>
+  <button id="save-inv-btn" onclick="doSave()" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">💾 Save to Invoices</button>
+  <button onclick="dlInvPDF()" style="background:#6366f1;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">⬇️ Download PDF</button>
+  <button onclick="window.print()" style="background:#fff;color:#111827;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Print</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <script>
@@ -1911,8 +1946,8 @@ function dlInvPDF(){
 <\/script>
 <script>
 function doSave(){
-  if(window.opener && window.opener.saveInvoiceRecord){
-    window.opener.saveInvoiceRecord(${qid},'${pkgKey}','${invNum}',${total});
+  if(window.parent && window.parent.saveInvoiceRecord){
+    window.parent.saveInvoiceRecord(${qid},'${pkgKey}','${invNum}',${total});
     document.getElementById('save-confirm').style.display='inline';
     document.getElementById('save-inv-btn').textContent='✅ Saved';
     document.getElementById('save-inv-btn').style.background='#065f46';
@@ -1947,11 +1982,11 @@ function doSave(){
   </td>
   <td style="vertical-align:top;width:35%">
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px">Bill To</div>
-    <div style="font-weight:700;margin-bottom:3px">${c.name||''}</div>
+    <div style="font-weight:700;margin-bottom:3px">${esc(c.name)}</div>
     <div style="font-size:12px;color:#374151;line-height:1.7">
-      ${c.addr?c.addr+'<br>':''}
-      ${c.phone?c.phone+'<br>':''}
-      ${c.email||''}
+      ${c.addr?esc(c.addr)+'<br>':''}
+      ${c.phone?esc(c.phone)+'<br>':''}
+      ${esc(c.email)}
     </div>
   </td>
   <td style="vertical-align:top;text-align:right;width:30%">
@@ -2053,11 +2088,7 @@ function doSave(){
 </body>
 </html>`;
 
-  const blob=new Blob([html],{type:'text/html'});
-  const blobUrl=URL.createObjectURL(blob);
-  const w=window.open(blobUrl,'_blank');
-  if(!w){alert('Popup blocked — please allow popups for this site to view the invoice.');URL.revokeObjectURL(blobUrl);return;}
-  setTimeout(()=>{URL.revokeObjectURL(blobUrl);},60000);
+  showDocViewer(html);
 }
 
 
@@ -2077,6 +2108,17 @@ function confirmNo(){
   const m=document.getElementById('confirm-modal');
   if(m) m.style.display='none';
   _confirmCallback=null;
+}
+
+// ─── DOCUMENT VIEWER ─────────────────────────────────────────────────────────
+// Shared by genPDF and genInvoice — see the HTML comment above #doc-viewer.
+function showDocViewer(html){
+  document.getElementById('doc-viewer-frame').srcdoc=html;
+  document.getElementById('doc-viewer').style.display='flex';
+}
+function closeDocViewer(){
+  document.getElementById('doc-viewer').style.display='none';
+  document.getElementById('doc-viewer-frame').srcdoc='';
 }
 
 // ─── RENDER MODAL ────────────────────────────────────────────────────────────
@@ -2156,15 +2198,17 @@ function renderInvoices(){
   el.innerHTML='<div class="tscroll"><table><thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Accountant</th><th></th></tr></thead><tbody>'+
     list.map(inv=>{
       const dateStr=(inv.date||'').slice(0,10);
+      const total=Number(inv.total)||0;
+      const paidAmount=Number(inv.paidAmount)||0;
       const acct=inv.sentToAccountant
         ?'<span class="badge b-auto">✓ Sent</span>'
         :'<span style="color:var(--gray);font-size:12px">Not sent</span>';
       return `<tr>
-        <td><strong>${inv.invNum}</strong></td>
-        <td>${inv.customerName}</td>
+        <td><strong>${esc(inv.invNum)}</strong></td>
+        <td>${esc(inv.customerName)}</td>
         <td style="font-weight:700">
-          €${inv.total.toFixed(2)}
-          ${inv.status==='Partially Paid'?`<div style="font-size:11px;color:#92400e;margin-top:2px">Paid: €${(inv.paidAmount||0).toFixed(2)} · Outstanding: €${(inv.total-(inv.paidAmount||0)).toFixed(2)}</div>`:''}
+          €${total.toFixed(2)}
+          ${inv.status==='Partially Paid'?`<div style="font-size:11px;color:#92400e;margin-top:2px">Paid: €${paidAmount.toFixed(2)} · Outstanding: €${(total-paidAmount).toFixed(2)}</div>`:''}
           ${inv.status==='Paid'?'<div style="font-size:11px;color:#065f46;margin-top:2px">Fully paid ✓</div>':''}
         </td>
         <td>${statusBadge(inv.status)}</td>
@@ -2203,7 +2247,7 @@ function markInvoice(id, status){
     if(isNaN(parsed)||parsed<0){alert('Please enter a valid amount.');return;}
     inv.paidAmount=parsed;
   } else {
-    inv.paidAmount=status==='Paid'?inv.total:0;
+    inv.paidAmount=status==='Paid'?(Number(inv.total)||0):0;
   }
   inv.status=status;
   saveAll();
