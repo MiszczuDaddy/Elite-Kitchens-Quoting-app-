@@ -490,12 +490,12 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div id="render-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:380px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
     <div style="font-size:26px;margin-bottom:8px">🖼️</div>
-    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Add a Render Image?</div>
-    <div style="color:#6b7280;font-size:13px;margin-bottom:16px">Upload a render to include as a second page in the PDF. Optional — skip to generate without one.</div>
-    <input type="file" id="render-file-input" accept="image/*" style="display:none">
-    <div id="render-file-label" style="border:2px dashed #d1d5db;border-radius:8px;padding:14px;margin-bottom:16px;cursor:pointer;font-size:13px;color:#6b7280" onclick="document.getElementById('render-file-input').click()">📁 Click to choose image</div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Add Render Images?</div>
+    <div style="color:#6b7280;font-size:13px;margin-bottom:16px">Upload up to 5 renders to include as extra pages in the PDF, one per page. Optional — skip to generate without any.</div>
+    <input type="file" id="render-file-input" accept="image/*" multiple style="display:none">
+    <div id="render-file-label" style="border:2px dashed #d1d5db;border-radius:8px;padding:14px;margin-bottom:16px;cursor:pointer;font-size:13px;color:#6b7280" onclick="document.getElementById('render-file-input').click()">📁 Click to choose images</div>
     <div style="display:flex;gap:10px;justify-content:center">
       <button onclick="renderModalSkip()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Skip</button>
       <button id="render-go-btn" onclick="renderModalGo()" style="background:var(--g);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">📄 Generate PDF</button>
@@ -1344,7 +1344,7 @@ function removeLogo(){
 }
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
-function genPDF(qid,renderDataUrl){
+function genPDF(qid,renderDataUrls){
   const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
   const c=customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
@@ -1689,12 +1689,12 @@ ${c.addr?`<div style="font-size:11px;color:var(--soft);margin-bottom:11px">${esc
   <div style="color:var(--soft)">Elite Kitchens${ST.biz_phone?' · '+esc(ST.biz_phone):''}${ST.biz_email?' · '+esc(ST.biz_email):''}</div>
 </div>
 
-${renderDataUrl?`
+${(renderDataUrls&&renderDataUrls.length)?renderDataUrls.map((url,i)=>`
 <div class="render-pg">
-  <div class="eyebrow" style="margin-bottom:10px">Design render · ${ref}</div>
-  <img src="${renderDataUrl}" style="max-width:100%;max-height:225mm;object-fit:contain;display:block;margin:0 auto">
+  <div class="eyebrow" style="margin-bottom:10px">Design render${renderDataUrls.length>1?' '+(i+1)+' of '+renderDataUrls.length:''} · ${ref}</div>
+  <img src="${url}" style="max-width:100%;max-height:225mm;object-fit:contain;display:block;margin:0 auto">
   <div style="font-size:9.5px;color:var(--faint);margin-top:12px">Indicative render. Final design confirmed at detailed design stage.</div>
-</div>`:''}
+</div>`).join(''):''}
 
 
 </body>
@@ -1703,7 +1703,7 @@ ${renderDataUrl?`
   const w=window.open('','_blank');
   if(!w){alert('Popup blocked — please allow popups for this site to view the PDF.');return;}
   w.document.write(html);w.document.close();
-  if(renderDataUrl) showToast('📸 Render attached — scroll down in PDF to see it','#2e7d32');
+  if(renderDataUrls&&renderDataUrls.length) showToast(`📸 ${renderDataUrls.length} render${renderDataUrls.length>1?'s':''} attached — scroll down in PDF to see ${renderDataUrls.length>1?'them':'it'}`,'#2e7d32');
 }
 
 function saveInvoiceRecord(qid, pkgKey, invNum, total){
@@ -2080,48 +2080,54 @@ function confirmNo(){
 }
 
 // ─── RENDER MODAL ────────────────────────────────────────────────────────────
+const MAX_RENDER_IMAGES=5;
 let _renderQid=null;
-let _pendingRenderDataUrl=null;
+let _pendingRenderDataUrls=[];
 function showRenderModal(qid){
   _renderQid=qid;
-  _pendingRenderDataUrl=null;
+  _pendingRenderDataUrls=[];
   document.getElementById('render-file-input').value='';
-  document.getElementById('render-file-label').innerHTML='📁 Click to choose image';
+  document.getElementById('render-file-label').innerHTML='📁 Click to choose images';
   document.getElementById('render-go-btn').disabled=false;
   document.getElementById('render-go-btn').textContent='📄 Generate PDF';
   document.getElementById('render-modal').style.display='flex';
 }
 document.getElementById('render-file-input').addEventListener('change',function(){
-  const f=this.files[0];
-  if(!f) return;
+  const files=[...this.files].slice(0,MAX_RENDER_IMAGES);
+  if(!files.length) return;
+  if(this.files.length>MAX_RENDER_IMAGES) showToast(`⚠️ Only the first ${MAX_RENDER_IMAGES} images were used`,'#b45309');
   document.getElementById('render-file-label').innerHTML='⏳ Loading preview...';
   document.getElementById('render-go-btn').disabled=true;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    _pendingRenderDataUrl=e.target.result;
+  Promise.all(files.map(f=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>resolve(e.target.result);
+    reader.onerror=()=>reject();
+    reader.readAsDataURL(f);
+  }))).then(urls=>{
+    _pendingRenderDataUrls=urls;
     document.getElementById('render-file-label').innerHTML=
-      '<img src="'+e.target.result+'" style="max-width:260px;max-height:110px;object-fit:contain;border-radius:6px;display:block;margin:0 auto 6px"><span style="font-size:12px;color:#374151">✅ '+f.name+'</span>';
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:6px">'+
+      urls.map(u=>`<img src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:6px">`).join('')+
+      '</div><span style="font-size:12px;color:#374151">✅ '+urls.length+' image'+(urls.length>1?'s':'')+' selected</span>';
     document.getElementById('render-go-btn').disabled=false;
-  };
-  reader.onerror=function(){
-    _pendingRenderDataUrl=null;
-    document.getElementById('render-file-label').innerHTML='❌ Could not load image. Try another file.';
+  }).catch(()=>{
+    _pendingRenderDataUrls=[];
+    document.getElementById('render-file-label').innerHTML='❌ Could not load one of the images. Try again.';
     document.getElementById('render-go-btn').disabled=false;
-  };
-  reader.readAsDataURL(f);
+  });
 });
 function renderModalSkip(){
   const qid=_renderQid;
-  _renderQid=null; _pendingRenderDataUrl=null;
+  _renderQid=null; _pendingRenderDataUrls=[];
   document.getElementById('render-modal').style.display='none';
   genPDF(qid,null);
 }
 function renderModalGo(){
   const qid=_renderQid;
-  const dataUrl=_pendingRenderDataUrl;
-  _renderQid=null; _pendingRenderDataUrl=null;
+  const dataUrls=_pendingRenderDataUrls;
+  _renderQid=null; _pendingRenderDataUrls=[];
   document.getElementById('render-modal').style.display='none';
-  genPDF(qid,dataUrl);
+  genPDF(qid,dataUrls.length?dataUrls:null);
 }
 
 // ─── INVOICES ─────────────────────────────────────────────────────────────────
