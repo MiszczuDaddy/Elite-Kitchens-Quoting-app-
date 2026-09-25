@@ -529,6 +529,15 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- Historical specifications are read-only; they can be previewed as a PDF. -->
+<div id="quote-history-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px;max-width:480px;width:92%;max-height:80vh;overflow:auto">
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px">Quote history</div>
+    <div id="quote-history-list"></div>
+    <button class="btn btn-o" onclick="closeQuoteHistory()" style="margin-top:14px">Close</button>
+  </div>
+</div>
+
 <!-- DOCUMENT VIEWER — full-screen same-origin iframe, replacing the
      window.open()+document.write() (quote PDF) / Blob+URL.createObjectURL
      (invoice) popups. Both are blocked by default on mobile, and the
@@ -1061,10 +1070,22 @@ function validateQuoteNumbers(){
   return true;
 }
 
+// Compare customer-facing specifications. Status and internal notes do not create a version.
+function quoteSpecification(q,c){
+  return {customer:{name:c?.name||'',phone:c?.phone||'',email:c?.email||'',addr:c?.addr||''},
+    doors:q.doors,drawers:q.drawers,topboxes:q.topboxes,rates:q.rates,
+    ess:q.ess,prem:q.prem,pp:q.pp,wt:q.wt,glass:q.glass,extras:q.extras,incl:q.incl,showExVat:q.showExVat};
+}
+function quoteLabel(q){
+  return 'Quote #'+String(q.num||q.id).padStart(4,'0')+' v'+(q.version||1);
+}
+
 // ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
 function saveQuote(){
   try{
   if(!validateQuoteNumbers()) return;
+  const previous=editQid?quotes.find(x=>x.id===editQid):null;
+  const previousCustomer=previous?{...(previous.customerSnapshot||customers.find(x=>x.id===previous.cid)||{})}:null;
   const name=document.getElementById('q-name').value.trim();
   if(!name){showToast('Please enter a customer name.','#991b1b');return;}
   // upsert customer
@@ -1101,13 +1122,28 @@ function saveQuote(){
     incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked, electrical:document.getElementById('q-incl-electrical').checked, plumbing:document.getElementById('q-incl-plumbing').checked},
     showExVat:document.getElementById('q-show-exvat').checked,
     created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString(),
-    num:editQid?(quotes.find(x=>x.id===editQid)||{}).num:undefined
+    num:editQid?(quotes.find(x=>x.id===editQid)||{}).num:undefined,
+    customerSnapshot:{name,phone,email,addr},
+    revisions:previous?.revisions||[],
+    version:previous?.version||1,
+    savedAt:previous?.savedAt||new Date().toISOString()
   };
+  if(previous){
+    const changed=JSON.stringify(quoteSpecification(previous,previousCustomer))!==JSON.stringify(quoteSpecification(q,q.customerSnapshot));
+    if(changed && (previous.status!=='Draft' || previous.revisions?.length)){
+      const {revisions,...snapshot}=previous;
+      q.revisions=[...(previous.revisions||[]),{...structuredClone(snapshot),customerSnapshot:previousCustomer,version:previous.version||1}];
+      q.version=(previous.version||1)+1;
+      q.savedAt=new Date().toISOString();
+    }else if(changed){
+      q.savedAt=new Date().toISOString();
+    }
+  }
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
   saveAll();
-  document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
+  document.getElementById('builder-title').textContent=quoteLabel(q);
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
@@ -1142,7 +1178,7 @@ function editQuote(qid){
   editQid=qid; editCid=q.cid;
   curRates=ratesOf(q);
   showRatesBanner(curRates);
-  document.getElementById('builder-title').textContent='Quote #'+String(q.num||q.id).padStart(4,'0');
+  document.getElementById('builder-title').textContent=quoteLabel(q);
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
@@ -1284,7 +1320,7 @@ function renderQuotes(){
       const stCur=q.status||'Draft';
       const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
       const stSelect=`<select class="fc badge b-${stCur.toLowerCase().replace(/\s+/g,'')}" style="font-size:11px;padding:4px 6px;width:auto;border:none;font-weight:600" onchange="markQuoteStatus(${q.id},this.value)">${stOpts.map(s=>`<option ${s===stCur?'selected':''}>${s}</option>`).join('')}</select>`;
-      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button><button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button>${q.revisions?.length?'<button class="btn btn-o btn-sm" onclick="showQuoteHistory('+q.id+')">🕘 History</button>':''}<button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table></div>';
 }
 
@@ -1333,7 +1369,7 @@ function renderDash(){
   const recent=quotes.slice(0,8);
   if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
   el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
-    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')}</strong></td><td>${esc(c.name)}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
+    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
   '</tbody></table></div>';
 }
 
@@ -1412,9 +1448,11 @@ function removeLogo(){
 }
 
 // ─── PDF ─────────────────────────────────────────────────────────────────────
-function genPDF(qid,renderDataUrls){
-  const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
-  const c=customers.find(x=>x.id===q.cid)||{};
+function genPDF(qid,renderDataUrls,revisionIndex=null){
+  const current=quotes.find(x=>x.id===qid); if(!current){alert('Save the quote first.');return;}
+  const q=revisionIndex===null?current:current.revisions?.[revisionIndex];
+  if(!q){alert('That quote version is unavailable.');return;}
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
 
   // ── Calculations ──────────────────────────────────────────────────────────
@@ -1431,11 +1469,11 @@ function genPDF(qid,renderDataUrls){
   const ntb=q.topboxes||0;
 
   // ── Date & reference ──────────────────────────────────────────────────────
-  const today=new Date();
-  const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
-  const validTo=new Date(today); validTo.setDate(validTo.getDate()+30);
+  const quoteDate=new Date(q.savedAt||q.created||Date.now());
+  const dateStr=quoteDate.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const validTo=new Date(quoteDate); validTo.setDate(validTo.getDate()+30);
   const validStr=validTo.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
-  const ref='EK-'+String(q.num||q.id).padStart(4,'0');
+  const ref='EK-'+String(q.num||q.id).padStart(4,'0')+'-v'+(q.version||1);
   const firstName=(c.name||'').split(' ')[0]||'there';
 
   // ── Per-package totals ────────────────────────────────────────────────────
@@ -1770,7 +1808,7 @@ ${(renderDataUrls&&renderDataUrls.length)?renderDataUrls.map((url,i)=>`
 
 function saveInvoiceRecord(qid, pkgKey, invNum, total){
   const q=quotes.find(x=>x.id===qid); if(!q) return;
-  const c=customers.find(x=>x.id===q.cid)||{};
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
   const existing=invoices.findIndex(x=>x.id===qid+'_'+pkgKey);
   const invRecord={
     id:qid+'_'+pkgKey,
@@ -1778,6 +1816,8 @@ function saveInvoiceRecord(qid, pkgKey, invNum, total){
     invNum,
     customerName:c.name||'Unknown',
     customerId:q.cid,
+    // An issued invoice must stay tied to the quote version it was made from.
+    quoteSnapshot:existing>=0?(invoices[existing].quoteSnapshot||null):structuredClone((({revisions,...snapshot})=>snapshot)(q)),
     total,
     date:new Date().toISOString(),
     status:'Unpaid',
@@ -1785,6 +1825,7 @@ function saveInvoiceRecord(qid, pkgKey, invNum, total){
     sentToAccountant:false
   };
   if(existing>=0){
+    invRecord.date=invoices[existing].date||invRecord.date;
     invRecord.status=invoices[existing].status;
     invRecord.paidAmount=invoices[existing].paidAmount;
     invRecord.sentToAccountant=invoices[existing].sentToAccountant;
@@ -1839,8 +1880,10 @@ function pkgModalCancel(){
 }
 
 function genInvoice(qid, pkgKey){
-  const q=quotes.find(x=>x.id===qid); if(!q) return;
-  const c=customers.find(x=>x.id===q.cid)||{};
+  const current=quotes.find(x=>x.id===qid); if(!current) return;
+  const issued=invoices.find(x=>x.id===qid+'_'+pkgKey);
+  const q=issued?.quoteSnapshot||current;
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
   const logo=load('logo')||'';
 
   const R=ratesOf(q);
@@ -1907,7 +1950,7 @@ function genInvoice(qid, pkgKey){
 
   // ── Invoice meta ──────────────────────────────────────────────────────────
   const invNum=allocInvoiceNum(qid,pkgKey);
-  const today=new Date();
+  const today=new Date(issued?.date||Date.now());
   const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
   const due=new Date(today); due.setDate(due.getDate()+30);
   const dueStr=due.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
@@ -2130,6 +2173,23 @@ function confirmNo(){
   const m=document.getElementById('confirm-modal');
   if(m) m.style.display='none';
   _confirmCallback=null;
+}
+
+function showQuoteHistory(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const versions=[...(q.revisions||[]),q];
+  document.getElementById('quote-history-list').innerHTML=versions.map((v,i)=>
+    '<div style="padding:10px 0;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+    '<span><strong>v'+(v.version||i+1)+'</strong> · '+esc((v.savedAt||v.created||'').slice(0,10))+
+    ' · €'+Math.round(quoteAmount(v)).toLocaleString('en-IE')+'</span>'+
+    '<button class="btn btn-o btn-sm" onclick="viewQuoteVersion('+qid+','+(i===versions.length-1?'null':i)+')">View PDF</button></div>'
+  ).join('');
+  document.getElementById('quote-history-modal').style.display='flex';
+}
+function closeQuoteHistory(){document.getElementById('quote-history-modal').style.display='none';}
+function viewQuoteVersion(qid,index){
+  closeQuoteHistory();
+  genPDF(qid,null,index);
 }
 
 // ─── DOCUMENT VIEWER ─────────────────────────────────────────────────────────
@@ -2407,7 +2467,7 @@ function emailQuote(qid){
   if(!c.email){alert('No email address saved for this customer. Please add one in the quote.');return;}
 
   const firstName=(c.name||'').split(' ')[0]||'there';
-  const qNum='#'+String(q.num||q.id).padStart(4,'0');
+  const qNum='#'+String(q.num||q.id).padStart(4,'0')+' v'+(q.version||1);
 
   // Work out active packages for subject
   const pkgs=['Essential'];
