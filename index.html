@@ -687,6 +687,11 @@ function saveLocal(){
   save('invoices',invoices);save('quoteCounter',quoteCounter);
   save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
 }
+async function datasetDigest(data){
+  const bytes=new TextEncoder().encode(JSON.stringify(data));
+  const hash=await crypto.subtle.digest('SHA-256',bytes);
+  return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+}
 function downloadBackup(){
   const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),...localDataset()},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -2444,7 +2449,7 @@ function syncWarning(message, canLoadCloud=false){
   }
   fbSetStatus('⚠️ Cloud sync stopped','#f87171');
 }
-function applyCloud(data){
+async function applyCloud(data){
   customers=data.customers||[];
   quotes=data.quotes||[];
   invoices=data.invoices||[];
@@ -2454,7 +2459,7 @@ function applyCloud(data){
   invoiceNums=data.invoiceNums||{};
   if(ST.logo) save('logo',ST.logo);
   saveLocal();
-  save('lastSyncDigest',JSON.stringify(localDataset()));
+  save('lastSyncDigest',await datasetDigest(localDataset()));
   const active=document.querySelector('.scr.on');
   if(active)goTo(active.id.replace('scr-',''));
 }
@@ -2483,7 +2488,7 @@ async function useCloudCopy(){
     const doc=await fbDb.collection('users').doc(fbUser.uid).get();
     if(!doc.exists)throw new Error('Cloud copy missing');
     fbRemoteData=doc.data();
-    applyCloud(fbRemoteData);
+    await applyCloud(fbRemoteData);
     fbConflict=false;
     fbBaseVersion=Number(fbRemoteData.version)||0;
     fbBaseLegacyUpdatedAt=fbRemoteData.updatedAt?.toMillis?.()||null;
@@ -2504,7 +2509,7 @@ async function fbLoad(){
     const local=localDataset();
     const previousDigest=load('lastSyncDigest');
     const localChanged=previousDigest!==null
-      ?JSON.stringify(local)!==previousDigest
+      ?(await datasetDigest(local))!==previousDigest
       :!!(local.quotes.length||local.customers.length||local.invoices.length);
     if(data){
       fbRemoteData=data;
@@ -2518,7 +2523,7 @@ async function fbLoad(){
         fbConflict=true;
         syncWarning('Local data differs from the cloud. Nothing has been overwritten. Download a backup, then choose the cloud copy to continue.',true);
       }else{
-        applyCloud(data);
+        await applyCloud(data);
         fbSetStatus('☁️ Synced '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
       }
     }else{
@@ -2559,7 +2564,7 @@ function fbSave(){
         return remoteVersion+1;
       });
       fbBaseVersion=nextVersion;
-      save('lastSyncDigest',JSON.stringify(payload));
+      save('lastSyncDigest',await datasetDigest(payload));
       fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
       return true;
     }catch(e){
