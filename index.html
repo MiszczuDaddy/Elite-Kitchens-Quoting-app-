@@ -2510,7 +2510,7 @@ async function fbLoad(){
     const previousDigest=load('lastSyncDigest');
     const localChanged=previousDigest!==null
       ?(await datasetDigest(local))!==previousDigest
-      :!!(local.quotes.length||local.customers.length||local.invoices.length);
+      :!!(local.quotes.length||local.customers.length||local.invoices.length||load('settings')!==null||load('logo')!==null||local.quoteCounter||local.invoiceCounter);
     if(data){
       fbRemoteData=data;
       fbBaseVersion=Number(data.version)||0;
