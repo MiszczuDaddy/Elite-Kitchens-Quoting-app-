@@ -139,6 +139,7 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <div class="main">
+<div id="sync-warning" class="card" style="display:none;background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:13px"></div>
 
 <!-- DASHBOARD -->
 <div class="scr" id="scr-dashboard">
@@ -463,7 +464,7 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
-  <button class="btn btn-g" id="settings-save-btn">💾 Save Settings</button>
+  <button class="btn btn-g" id="settings-save-btn">💾 Save Settings</button> <button class="btn btn-o" onclick="downloadBackup()">⬇️ Download backup</button>
 </div>
 
 <!-- INVOICES -->
@@ -678,7 +679,23 @@ function allocInvoiceNum(qid,pkgKey){
   return num;
 }
 
-function saveAll(){save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);fbSave();}
+function localDataset(){
+  return {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums};
+}
+function saveLocal(){
+  save('customers',customers);save('quotes',quotes);save('settings',ST);
+  save('invoices',invoices);save('quoteCounter',quoteCounter);
+  save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),...localDataset()},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='elite-kitchens-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function saveAll(){saveLocal();return fbSave();}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
@@ -761,15 +778,8 @@ function editCustomer(cid){
 async function delCustomer(cid){
   showConfirm(async()=>{
     customers=customers.filter(c=>c.id!==cid);
-    save('customers',customers);
+    await saveAll();
     renderCusts();
-    if(fbUser){
-      try{
-        await fbDb.collection('users').doc(fbUser.uid).set(
-          {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-        fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
-      }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
-    }
   });
 }
 function renderCusts(){
@@ -1142,29 +1152,17 @@ function saveQuote(){
   if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
-  saveAll();
+  saveLocal();
   document.getElementById('builder-title').textContent=quoteLabel(q);
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
   document.getElementById('builder-email-btn').style.display='';
-  // Save to localStorage immediately
-  save('customers',customers);save('quotes',quotes);save('settings',ST);save('invoices',invoices);save('quoteCounter',quoteCounter);save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
   showToast('⏳ Saving...');
-  // Save to Firebase and confirm
-  if(fbUser){
-    fbDb.collection('users').doc(fbUser.uid).set({
-      customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,
-      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).then(()=>{
-      showToast('✅ Quote saved to cloud!','#065f46');
-      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
-    }).catch(e=>{
-      showToast('⚠️ Cloud save failed — data saved locally','#991b1b');
-      console.error(e);
-    });
-  } else {
-    showToast('✅ Saved locally (sign in to sync)');
-  }
+  fbSave().then(ok=>{
+    if(ok) showToast('✅ Quote saved to cloud!','#065f46');
+    else if(!fbUser) showToast('✅ Saved locally (sign in to sync)');
+    else showToast('⚠️ Saved locally — cloud sync needs attention','#991b1b');
+  });
   } catch(err){
     showToast('❌ Error: '+err.message,'#991b1b');
     console.error('saveQuote error:',err);
@@ -1252,15 +1250,8 @@ function editQuote(qid){
 async function delQuote(qid){
   showConfirm(async()=>{
   quotes=quotes.filter(q=>q.id!==qid);
-  save('quotes',quotes);
+  await saveAll();
   renderQuotes();
-  if(fbUser){
-    try{
-      await fbDb.collection('users').doc(fbUser.uid).set(
-        {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
-      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
-    }catch(e){fbSetStatus('⚠️ Delete sync error','#f87171');}
-  }
   });
 }
 
@@ -1424,11 +1415,29 @@ function saveSettings(){
 
 // ─── LOGO ────────────────────────────────────────────────────────────────────
 function uploadLogo(input){
-  const file=input.files[0]; if(!file) return;
+  const file=input.files[0]; if(!file)return;
   if(file.size>2*1024*1024){alert('Image too large — please use an image under 2MB.');return;}
-  const r=new FileReader();
-  r.onload=e=>{save('logo',e.target.result);ST.logo=e.target.result;showLogo(e.target.result);saveAll();};
-  r.readAsDataURL(file);
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const scale=Math.min(1,400/img.width,400/img.height);
+      canvas.width=Math.max(1,Math.round(img.width*scale));
+      canvas.height=Math.max(1,Math.round(img.height*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      let data='';
+      for(const quality of [0.8,0.6,0.4]){
+        data=canvas.toDataURL('image/jpeg',quality);
+        if(data.length<200000)break;
+      }
+      if(data.length>=200000){alert('Logo is still too large. Please choose a simpler image.');return;}
+      save('logo',data);ST.logo=data;showLogo(data);saveAll();
+    };
+    img.onerror=()=>alert('Could not read that image.');
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 function showLogo(data){
   document.getElementById('logo-img').src=data;
@@ -2385,6 +2394,7 @@ function fbSignOut(){
 }
 
 // Listen for auth state — fires on every page load if already signed in
+document.querySelector('.main').inert=true;
 fbAuth.onAuthStateChanged(async user => {
   const btn  = document.getElementById('fb-btn');
   const info = document.getElementById('fb-info');
@@ -2398,6 +2408,8 @@ fbAuth.onAuthStateChanged(async user => {
     await fbLoad();
   } else {
     fbUser = null;
+    fbReady=false; fbConflict=false; fbBaseVersion=null; fbRemoteData=null;
+    document.querySelector('.main').inert=false;
     btn.textContent = '🔑 Sign in with Google';
     btn.style.background = 'rgba(255,255,255,.08)';
     btn.style.borderColor = 'rgba(255,255,255,.2)';
@@ -2407,54 +2419,154 @@ fbAuth.onAuthStateChanged(async user => {
   }
 });
 
-async function fbLoad(){
-  if(!fbUser) return;
+// Each cloud write checks the version in a Firestore transaction. The local
+// copy stays available when another device has saved in the meantime.
+let fbReady=false, fbConflict=false, fbBaseVersion=null, fbRemoteData=null;
+let fbSaveQueue=Promise.resolve();
+function syncWarning(message, canLoadCloud=false){
+  const banner=document.getElementById('sync-warning');
+  banner.style.display='block';
+  banner.innerHTML='';
+  const p=document.createElement('div');p.textContent=message;banner.appendChild(p);
+  const backup=document.createElement('button');
+  backup.className='btn btn-o btn-sm';backup.style.marginTop='10px';
+  backup.textContent='⬇️ Download local backup';backup.onclick=downloadBackup;
+  banner.appendChild(backup);
+  const retry=document.createElement('button');
+  retry.className='btn btn-o btn-sm';retry.style.margin='10px 0 0 8px';
+  retry.textContent='Retry cloud save';retry.onclick=retryCloudSave;
+  banner.appendChild(retry);
+  if(canLoadCloud){
+    const loadButton=document.createElement('button');
+    loadButton.className='btn btn-o btn-sm';loadButton.style.margin='10px 0 0 8px';
+    loadButton.textContent='Download backup and use cloud copy';
+    loadButton.onclick=useCloudCopy;banner.appendChild(loadButton);
+  }
+  fbSetStatus('⚠️ Cloud sync stopped','#f87171');
+}
+function applyCloud(data){
+  customers=data.customers||[];
+  quotes=data.quotes||[];
+  invoices=data.invoices||[];
+  ST=Object.assign({},ST,data.settings||{});
+  quoteCounter=Math.max(Number(data.quoteCounter)||0,0,...quotes.map(q=>Number(q.num)||0));
+  invoiceCounter=Number(data.invoiceCounter)||invoiceCounter;
+  invoiceNums=data.invoiceNums||{};
+  if(ST.logo) save('logo',ST.logo);
+  saveLocal();
+  save('lastSyncDigest',JSON.stringify(localDataset()));
+  const active=document.querySelector('.scr.on');
+  if(active)goTo(active.id.replace('scr-',''));
+}
+async function retryCloudSave(){
+  if(!fbUser)return;
   try{
-    const doc = await fbDb.collection('users').doc(fbUser.uid).get();
-    if(doc.exists){
-      const data = doc.data();
-      if(data.customers)     customers    = data.customers;
-      if(data.quotes)        quotes       = data.quotes;
-      if(data.invoices)      invoices     = data.invoices;
-      if(data.settings)      ST           = Object.assign({}, ST, data.settings);
-      if(data.quoteCounter)  quoteCounter = data.quoteCounter;
-      else quoteCounter = Math.max(0,...(quotes.map(q=>q.num||0)));
-      if(data.invoiceCounter) invoiceCounter = data.invoiceCounter;
-      if(data.invoiceNums)    invoiceNums    = data.invoiceNums;
-      // Logo travels inside settings (ST.logo) so it syncs across browsers/devices.
-      // Mirror it into localStorage so the existing load('logo') calls keep working.
-      if(ST.logo) save('logo', ST.logo);
-      // Save to localStorage as backup
-      save('customers',customers); save('quotes',quotes);
-      save('invoices',invoices);   save('settings',ST);
-      save('invoiceCounter',invoiceCounter); save('invoiceNums',invoiceNums);
-      // Refresh current screen
-      const activeScr = document.querySelector('.scr.on');
-      if(activeScr){ goTo(activeScr.id.replace('scr-','')); }
-      fbSetStatus('☁️ Synced ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
-    } else {
-      // First time — push existing local data up
-      await fbSave();
-      fbSetStatus('☁️ Data saved to cloud','rgba(255,255,255,.5)');
+    const doc=await fbDb.collection('users').doc(fbUser.uid).get();
+    const remoteVersion=Number(doc.data()?.version)||0;
+    if(remoteVersion!==fbBaseVersion){
+      fbRemoteData=doc.data()||null;
+      fbConflict=true;
+      syncWarning('The cloud has newer changes. Your local work is safe here. Download a backup before choosing the cloud copy.',!!fbRemoteData);
+      return;
     }
-  } catch(e){
-    fbSetStatus('⚠️ Sync error','#f87171');
+    fbConflict=false;fbReady=true;
+    if(await fbSave())document.getElementById('sync-warning').style.display='none';
+  }catch(e){
     console.error(e);
+    syncWarning('Could not reach the cloud. Your changes remain on this device. Retry when connected.',!!fbRemoteData);
   }
 }
-
-async function fbSave(){
-  if(!fbUser) return;
+async function useCloudCopy(){
+  downloadBackup();
+  if(!fbUser)return;
   try{
-    await fbDb.collection('users').doc(fbUser.uid).set({
-      customers, quotes, invoices, settings: ST, quoteCounter, invoiceCounter, invoiceNums,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    fbSetStatus('☁️ Saved ' + new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
-  } catch(e){
-    fbSetStatus('⚠️ Save error','#f87171');
+    const doc=await fbDb.collection('users').doc(fbUser.uid).get();
+    if(!doc.exists)throw new Error('Cloud copy missing');
+    fbRemoteData=doc.data();
+    applyCloud(fbRemoteData);
+    fbConflict=false;
+    fbBaseVersion=Number(fbRemoteData.version)||0;
+    document.getElementById('sync-warning').style.display='none';
+    fbSetStatus('☁️ Synced cloud copy','rgba(255,255,255,.5)');
+  }catch(e){
     console.error(e);
+    syncWarning('Could not load the latest cloud copy. Your local backup was downloaded; try again when connected.',true);
   }
+}
+async function fbLoad(){
+  if(!fbUser)return;
+  const uid=fbUser.uid;
+  try{
+    const doc=await fbDb.collection('users').doc(uid).get();
+    if(!fbUser || fbUser.uid!==uid)return;
+    const data=doc.exists?doc.data():null;
+    const local=localDataset();
+    const previousDigest=load('lastSyncDigest');
+    const localChanged=previousDigest!==null
+      ?JSON.stringify(local)!==previousDigest
+      :!!(local.quotes.length||local.customers.length||local.invoices.length);
+    if(data){
+      fbRemoteData=data;
+      fbBaseVersion=Number(data.version)||0;
+      const remote={customers:data.customers||[],quotes:data.quotes||[],
+        invoices:data.invoices||[],settings:Object.assign({},ST,data.settings||{}),
+        quoteCounter:Math.max(Number(data.quoteCounter)||0,0,...(data.quotes||[]).map(q=>Number(q.num)||0)),
+        invoiceCounter:Number(data.invoiceCounter)||invoiceCounter,invoiceNums:data.invoiceNums||{}};
+      if(localChanged && JSON.stringify(local)!==JSON.stringify(remote)){
+        fbConflict=true;
+        syncWarning('Local data differs from the cloud. Nothing has been overwritten. Download a backup, then choose the cloud copy to continue.',true);
+      }else{
+        applyCloud(data);
+        fbSetStatus('☁️ Synced '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+      }
+    }else{
+      fbBaseVersion=0;
+      fbReady=true;
+      await fbSave();
+    }
+    fbReady=true;
+  }catch(e){
+    console.error(e);
+    syncWarning('Could not load cloud data. Your local data is available; cloud saving is paused.');
+  }finally{
+    document.querySelector('.main').inert=false;
+  }
+}
+function fbSave(){
+  if(!fbUser)return Promise.resolve(false);
+  if(!fbReady || fbConflict){
+    syncWarning('Cloud saving is paused. Your changes are saved on this device. Download a backup and resolve the sync warning before continuing.',!!fbRemoteData);
+    return Promise.resolve(false);
+  }
+  // Capture this save before another UI action changes the in-memory arrays.
+  const payload=structuredClone(localDataset());
+  const uid=fbUser.uid;
+  fbSaveQueue=fbSaveQueue.catch(()=>{}).then(async()=>{
+    if(fbConflict || !fbUser || fbUser.uid!==uid)return false;
+    try{
+      const ref=fbDb.collection('users').doc(uid);
+      const nextVersion=await fbDb.runTransaction(async tx=>{
+        const current=await tx.get(ref);
+        const remoteVersion=Number(current.data()?.version)||0;
+        if(remoteVersion!==fbBaseVersion)throw new Error('CLOUD_CONFLICT');
+        tx.set(ref,{...payload,version:remoteVersion+1,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        return remoteVersion+1;
+      });
+      fbBaseVersion=nextVersion;
+      save('lastSyncDigest',JSON.stringify(payload));
+      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+      return true;
+    }catch(e){
+      console.error(e);
+      fbConflict=true;
+      syncWarning(e.message==='CLOUD_CONFLICT'
+        ?'Another device changed the cloud data. Your changes remain on this device. Download a backup before loading the latest cloud copy.'
+        :'Cloud save failed. Your changes remain on this device. Download a backup and retry after checking your connection.',true);
+      return false;
+    }
+  });
+  return fbSaveQueue;
 }
 
 // Firebase save is called explicitly from saveQuote and saveAll
