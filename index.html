@@ -2408,7 +2408,7 @@ fbAuth.onAuthStateChanged(async user => {
     await fbLoad();
   } else {
     fbUser = null;
-    fbReady=false; fbConflict=false; fbBaseVersion=null; fbRemoteData=null;
+    fbReady=false; fbConflict=false; fbBaseVersion=null; fbBaseLegacyUpdatedAt=null; fbRemoteData=null;
     document.querySelector('.main').inert=false;
     btn.textContent = '🔑 Sign in with Google';
     btn.style.background = 'rgba(255,255,255,.08)';
@@ -2421,7 +2421,7 @@ fbAuth.onAuthStateChanged(async user => {
 
 // Each cloud write checks the version in a Firestore transaction. The local
 // copy stays available when another device has saved in the meantime.
-let fbReady=false, fbConflict=false, fbBaseVersion=null, fbRemoteData=null;
+let fbReady=false, fbConflict=false, fbBaseVersion=null, fbBaseLegacyUpdatedAt=null, fbRemoteData=null;
 let fbSaveQueue=Promise.resolve();
 function syncWarning(message, canLoadCloud=false){
   const banner=document.getElementById('sync-warning');
@@ -2486,6 +2486,7 @@ async function useCloudCopy(){
     applyCloud(fbRemoteData);
     fbConflict=false;
     fbBaseVersion=Number(fbRemoteData.version)||0;
+    fbBaseLegacyUpdatedAt=fbRemoteData.updatedAt?.toMillis?.()||null;
     document.getElementById('sync-warning').style.display='none';
     fbSetStatus('☁️ Synced cloud copy','rgba(255,255,255,.5)');
   }catch(e){
@@ -2508,6 +2509,7 @@ async function fbLoad(){
     if(data){
       fbRemoteData=data;
       fbBaseVersion=Number(data.version)||0;
+      fbBaseLegacyUpdatedAt=data.updatedAt?.toMillis?.()||null;
       const remote={customers:data.customers||[],quotes:data.quotes||[],
         invoices:data.invoices||[],settings:Object.assign({},ST,data.settings||{}),
         quoteCounter:Math.max(Number(data.quoteCounter)||0,0,...(data.quotes||[]).map(q=>Number(q.num)||0)),
@@ -2521,6 +2523,7 @@ async function fbLoad(){
       }
     }else{
       fbBaseVersion=0;
+      fbBaseLegacyUpdatedAt=null;
       fbReady=true;
       await fbSave();
     }
@@ -2548,7 +2551,9 @@ function fbSave(){
       const nextVersion=await fbDb.runTransaction(async tx=>{
         const current=await tx.get(ref);
         const remoteVersion=Number(current.data()?.version)||0;
-        if(remoteVersion!==fbBaseVersion)throw new Error('CLOUD_CONFLICT');
+        const legacyTime=current.data()?.updatedAt?.toMillis?.()||null;
+        if(remoteVersion!==fbBaseVersion || (remoteVersion===0 && legacyTime!==fbBaseLegacyUpdatedAt))
+          throw new Error('CLOUD_CONFLICT');
         tx.set(ref,{...payload,version:remoteVersion+1,
           updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
         return remoteVersion+1;
