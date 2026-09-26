@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elite Kitchens</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--g:#111827;--g2:#000000;--gl:#f3f4f6;--gm:#d1d5db;--gray:#6b7280;--grayL:#f3f4f6;--grayM:#e5e7eb;--grayD:#374151;--red:#991b1b;--redL:#fee2e2;--blue:#1e3a8a;--blueL:#dbeafe;--gold:#d97706;--amberL:#fef3c7;--black:#111827;--white:#fff;--r:8px;--rL:12px}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;background:#f5f5f3;color:var(--black)}
+button,input,select,textarea{font-family:inherit}
+/* LAYOUT */
+.sb{width:210px;min-height:100vh;background:var(--g);position:fixed;top:0;left:0;z-index:100}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-logo h1{color:#fff;font-size:16px;font-weight:700;margin-bottom:2px}
+.sb-logo small{color:rgba(255,255,255,.45);font-size:11px}
+.sb-sec{color:rgba(255,255,255,.4);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:14px 18px 4px}
+.sb a{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(255,255,255,.72);text-decoration:none;font-size:13px;border-left:3px solid transparent;transition:all .15s;cursor:pointer}
+.sb a:hover,.sb a.on{color:#fff;background:rgba(255,255,255,.1);border-left-color:#9ca3af}
+.main{margin-left:210px;padding:28px 32px}
+/* SCREENS */
+.scr{display:none}.scr.on{display:block}
+/* CARDS */
+.card{background:#fff;border:1px solid var(--grayM);border-radius:var(--rL);padding:20px 22px;margin-bottom:16px}
+.ct{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:13px;font-weight:600;border:none;cursor:pointer;text-decoration:none}
+.btn-g{background:var(--g);color:#fff;transition:all .15s}.btn-g:hover{background:#374151;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.btn-o{background:#fff;color:var(--grayD);border:1px solid var(--grayM);transition:all .15s}.btn-o:hover{background:var(--grayL);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.btn-r{background:var(--redL);color:var(--red);border:1px solid #fca5a5}
+.btn-sm{padding:5px 11px;font-size:12px}
+/* FORMS */
+.fl{display:block;font-size:12px;font-weight:600;color:var(--grayD);margin-bottom:4px}
+.fc{width:100%;padding:8px 10px;border:1px solid var(--grayM);border-radius:var(--r);font-size:13px;color:var(--black);background:#fff}
+.fc:focus{outline:none;border-color:var(--g);box-shadow:0 0 0 3px rgba(26,92,58,.1)}
+.name-suggest-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--grayL)}
+.name-suggest-item:last-child{border-bottom:none}
+.name-suggest-item:hover{background:var(--grayL)}
+.fg{margin-bottom:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+/* TABLES */
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;padding:0 0 8px;border-bottom:1px solid var(--grayM);text-align:left}
+td{padding:10px 0;border-bottom:1px solid var(--grayL);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+/* BADGES */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px}
+.b-draft{background:var(--grayL);color:var(--gray)}
+.b-sent{background:var(--blueL);color:var(--blue)}
+.b-accepted{background:#d1fae5;color:#065f46}
+.b-declined{background:var(--redL);color:var(--red)}
+.b-followup{background:#fef3c7;color:#92400e}
+.b-auto{background:#d1fae5;color:#065f46}
+.b-opt{background:#e0e7ff;color:#3730a3}
+.b-man{background:var(--redL);color:var(--red)}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stats-3{grid-template-columns:repeat(3,1fr)}
+.stats-4{grid-template-columns:repeat(4,1fr)}
+.sc{background:#fff;border:1px solid var(--grayM);border-radius:var(--rL);padding:16px 18px}
+.sv{font-size:26px;font-weight:700}.sl{font-size:12px;color:var(--gray);margin-top:2px}
+/* PKG */
+.pkg{border:2px solid var(--grayM);border-radius:var(--rL);padding:14px 16px;margin-bottom:12px;transition:all .2s}
+.pkg.ess-on{border-color:var(--g);background:var(--gl)}
+.pkg.prem-on{border-color:var(--blue);background:var(--blueL)}
+.pkg.pp-on{border-color:var(--gold);background:var(--amberL)}
+.pkg-hdr{display:flex;justify-content:space-between;align-items:center}
+.pkg-price{font-size:20px;font-weight:700;color:var(--g)}
+.pkg-body{margin-top:12px;display:none}
+.pkg-hint{font-size:12px;color:#9ca3af;margin-top:8px}
+/* TOTALS */
+.tl{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid var(--grayL)}
+.tl:last-child{border:none}
+/* EXTRAS */
+.exrow{display:grid;grid-template-columns:2fr 80px 90px 36px;gap:8px;align-items:end;margin-bottom:8px}
+.cat-btn{font-size:12px;padding:5px 11px;border:1px solid var(--grayM);border-radius:99px;background:#fff;cursor:pointer;transition:all .15s;color:var(--grayD)}
+.cat-btn:hover{background:var(--gl);border-color:var(--g);color:var(--g)}
+/* SECTION BLOCK */
+.sblk{border:1px solid var(--grayM);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.sblk-t{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+/* PAGE HEADER */
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.pt{font-size:20px;font-weight:700}
+/* MULTI-COLUMN LAYOUTS (extracted so mobile media query can override them) */
+.builder-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+.builder-summary{position:sticky;top:20px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+/* PAGE HEADER ACTION GROUPS (search box + button, or the builder's button row) —
+   extracted so they can wrap onto their own row instead of overflowing on mobile */
+.ph-actions{display:flex;gap:8px;align-items:center}
+.search-inp{width:220px}
+/* TABLE SCROLL WRAPPER — lets wide tables scroll within their own box instead
+   of forcing the whole page to scroll sideways on a phone */
+.tscroll{overflow-x:auto}
+/* MOBILE — phone-sized screens (Thomas quotes jobs from the customer's kitchen) */
+@media (max-width:900px){
+  .sb{position:sticky;top:0;width:100%;min-height:auto;display:flex;flex-wrap:nowrap;align-items:center;overflow-x:auto;z-index:100}
+  .sb-logo{padding:8px 12px;border-bottom:none;white-space:nowrap;flex:0 0 auto}
+  .sb-logo h1{font-size:14px}
+  .sb-logo small{display:none}
+  #fb-status{padding:0 8px;border-bottom:none;flex:0 0 auto;white-space:nowrap}
+  #fb-info{margin-top:0}
+  .sb-sec{display:none}
+  .sb a{padding:10px 12px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;flex:0 0 auto}
+  .sb a:hover,.sb a.on{border-left-color:transparent;border-bottom-color:#9ca3af}
+  .main{margin-left:0;padding:16px 14px}
+  .row2,.row3{grid-template-columns:1fr}
+  .stats,.stats-3,.stats-4{grid-template-columns:repeat(2,1fr)}
+  .builder-grid,.settings-grid{grid-template-columns:1fr}
+  .ph{flex-wrap:wrap;row-gap:10px}
+  .ph-actions{flex-wrap:wrap;width:100%}
+  .search-inp{width:auto;flex:1;min-width:0}
+  .builder-summary{position:sticky;top:auto;bottom:0;background:#fff;box-shadow:0 -4px 16px rgba(0,0,0,.12);z-index:60;margin:0 -14px;padding:10px 14px;border-top:1px solid var(--grayM)}
+  .builder-summary .card{margin-bottom:0;max-height:38vh;overflow-y:auto}
+  .fc{font-size:16px}
+}
+</style>
+<script>
+// Browser-only test backend. No requests go to the real Firebase project.
+const previewCloudKey='ek_preview_cloud_v1';
+const previewUser={uid:'preview-only',displayName:'Preview user'};
+function previewData(){try{return JSON.parse(localStorage.getItem(previewCloudKey))}catch(e){return null}}
+function previewSnapshot(){const data=previewData();return {exists:!!data,data:()=>structuredClone(data)}}
+const previewAuth={
+  onAuthStateChanged(callback){queueMicrotask(()=>callback(previewUser))},
+  signInWithPopup:async()=>previewUser,
+  signOut:async()=>{}
+};
+function previewFirestore(){
+  return {
+    collection(){return {doc(){return {get:async()=>previewSnapshot()}}}},
+    async runTransaction(callback){
+      let pending=null;
+      const tx={
+        get:async()=>previewSnapshot(),
+        set(_ref,data){pending={...(previewData()||{}),...data}}
+      };
+      const result=await callback(tx);
+      if(pending)localStorage.setItem(previewCloudKey,JSON.stringify(pending));
+      return result;
+    }
+  };
+}
+previewFirestore.FieldValue={serverTimestamp:()=>({seconds:Math.floor(Date.now()/1000)})};
+function previewAuthFactory(){return previewAuth}
+previewAuthFactory.GoogleAuthProvider=class {};
+const firebase={initializeApp(){},auth:previewAuthFactory,firestore:previewFirestore};
+function resetPreview(){
+  if(!confirm('Delete all test quotes and reset this preview?'))return;
+  Object.keys(localStorage).filter(k=>k.startsWith('ek_preview_')).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+</script>
+</head>
+<body>
+
+<div class="sb">
+  <div class="sb-logo"><h1>🪵 Elite Kitchens</h1><small>Quoting System</small></div>
+  <div id="fb-status" style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.12)">
+    <button id="fb-btn" onclick="fbSignIn()" style="width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;text-align:left">🔑 Sign in with Google</button>
+    <div id="fb-info" style="display:none;font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;text-align:center"></div>
+  </div>
+  <div class="sb-sec">Main</div>
+  <a id="nav-dashboard">📊 Dashboard</a>
+  <a id="nav-customers">👤 Customers</a>
+  <a id="nav-quotes">📄 All Quotes</a>
+  <a id="nav-invoices">🧾 Invoices</a>
+  <div class="sb-sec">Actions</div>
+  <a id="nav-builder">➕ New Quote</a>
+  <a id="nav-settings">⚙️ Settings</a>
+</div>
+
+<div class="main">
+<div class="card" style="background:#e0f2fe;border-color:#7dd3fc;color:#0c4a6e">
+  <strong>TEST PREVIEW — no real customer data</strong>
+  <div style="font-size:12px;margin-top:5px">This copy uses test storage in your browser. Open two tabs to try a conflicting save. Your live app and Firebase account are separate.</div>
+  <button class="btn btn-o btn-sm" onclick="resetPreview()" style="margin-top:10px">Reset test data</button>
+</div>
+<div id="sync-warning" class="card" style="display:none;background:#fef3c7;border-color:#f59e0b;color:#78350f;font-size:13px"></div>
+
+<!-- DASHBOARD -->
+<div class="scr" id="scr-dashboard">
+  <div class="ph"><div class="pt">Dashboard</div><button class="btn btn-g" id="dash-new-btn">➕ New Quote</button></div>
+
+  <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">This Month</div>
+  <div class="stats" style="margin-bottom:20px">
+    <div class="sc"><div class="sv" id="st-month-quotes" style="font-size:20px">€0</div><div class="sl">Quoted (dearest option)</div></div>
+    <div class="sc"><div class="sv" id="st-month-invoiced" style="font-size:20px">€0</div><div class="sl">Invoiced</div></div>
+    <div class="sc"><div class="sv" id="st-outstanding" style="font-size:20px;color:#991b1b">€0</div><div class="sl">Outstanding</div></div>
+    <div class="sc"><div class="sv" id="st-collected" style="font-size:20px;color:#065f46">€0</div><div class="sl">Collected</div></div>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Quotes Pipeline</div>
+  <div class="stats stats-3" style="margin-bottom:20px">
+    <div class="sc"><div class="sv" id="st-total">0</div><div class="sl">Total Quotes</div></div>
+    <div class="sc"><div class="sv" id="st-draft">0</div><div class="sl">Drafts</div></div>
+    <div class="sc"><div class="sv" id="st-accepted">0</div><div class="sl">Accepted</div></div>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Invoices</div>
+  <div class="stats stats-3" style="margin-bottom:20px">
+    <div class="sc"><div class="sv" id="st-inv-total">0</div><div class="sl">Total Invoices</div></div>
+    <div class="sc"><div class="sv" id="st-inv-unpaid" style="color:#991b1b">0</div><div class="sl">Unpaid</div></div>
+    <div class="sc"><div class="sv" id="st-inv-paid" style="color:#065f46">0</div><div class="sl">Paid</div></div>
+  </div>
+
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div class="ct" style="margin:0">Recent Quotes</div></div><div id="dash-list"></div></div>
+</div>
+
+<!-- CUSTOMERS -->
+<div class="scr" id="scr-customers">
+  <div class="ph">
+    <div class="pt">Customers</div>
+    <div class="ph-actions">
+      <input class="fc search-inp" id="custs-search" placeholder="🔍 Search customers..." oninput="renderCusts()">
+      <button class="btn btn-g" id="cust-add-btn">➕ Add Customer</button>
+    </div>
+  </div>
+  <div class="card"><div id="cust-list"></div></div>
+</div>
+
+<!-- ADD CUSTOMER -->
+<div class="scr" id="scr-addcust">
+  <div class="ph"><div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="addcust-back-btn">← Back</button><div class="pt" id="addcust-title">Add Customer</div></div></div>
+  <div class="card" style="max-width:560px">
+    <div class="row2"><div class="fg"><label class="fl">Full Name *</label><input class="fc" id="ac-name" placeholder="Mary O'Brien"></div><div class="fg"><label class="fl">Phone</label><input class="fc" id="ac-phone" placeholder="089 xxx xxxx"></div></div>
+    <div class="row2"><div class="fg"><label class="fl">Email</label><input class="fc" id="ac-email" placeholder="mary@email.com"></div><div class="fg"><label class="fl">Address</label><input class="fc" id="ac-addr" placeholder="14 Oak Lane, Galway"></div></div>
+    <div style="display:flex;gap:8px;margin-top:4px"><button class="btn btn-g" id="ac-save-btn">💾 Save Customer</button><button class="btn btn-o" id="ac-cancel-btn">Cancel</button></div>
+  </div>
+</div>
+
+<!-- QUOTES LIST -->
+<div class="scr" id="scr-quotes">
+  <div class="ph">
+    <div class="pt">All Quotes</div>
+    <div class="ph-actions">
+      <input class="fc search-inp" id="quotes-search" placeholder="🔍 Search quotes..." oninput="renderQuotes()">
+      <button class="btn btn-g" id="quotes-new-btn">➕ New Quote</button>
+    </div>
+  </div>
+  <div class="card"><div id="quotes-list"></div></div>
+</div>
+
+<!-- QUOTE BUILDER -->
+<div class="scr" id="scr-builder">
+  <div class="ph">
+    <div style="display:flex;align-items:center;gap:12px"><button class="btn btn-o" id="builder-back-btn">← Back</button><div class="pt" id="builder-title">New Quote</div></div>
+    <div class="ph-actions"><button class="btn btn-g" id="builder-save-btn">💾 Save Quote</button><button class="btn btn-o" id="builder-pdf-btn" style="display:none">📄 Generate PDF</button><button class="btn btn-o" id="builder-inv-btn" style="display:none">📋 Invoice</button><button class="btn btn-o" id="builder-email-btn" style="display:none">📧 Email Quote</button></div>
+  </div>
+  <div id="rates-banner" class="card" style="display:none;background:#fef3c7;border-color:#fde68a;margin-bottom:16px;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+    <div style="font-size:13px;color:#92400e"><strong>⚠️ Prices have changed since this quote was created.</strong><div id="rates-banner-detail" style="font-size:12px;margin-top:4px"></div></div>
+    <button class="btn btn-o btn-sm" style="background:#fff;flex-shrink:0" onclick="updateToCurrentRates()">Update to current prices</button>
+  </div>
+  <div class="builder-grid">
+  <div>
+    <!-- Customer -->
+    <div class="card">
+      <div class="ct">Customer Details</div>
+      <div class="row2">
+        <div class="fg" style="position:relative">
+          <label class="fl">Full Name *</label>
+          <input class="fc" id="q-name" placeholder="Mary O'Brien" autocomplete="off">
+          <div id="q-name-suggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--grayM);border-radius:var(--r);box-shadow:0 4px 14px rgba(0,0,0,.12);max-height:220px;overflow-y:auto;z-index:50;margin-top:2px"></div>
+        </div>
+        <div class="fg"><label class="fl">Phone</label><input class="fc" id="q-phone" placeholder="089 xxx xxxx"></div>
+      </div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Email</label><input class="fc" id="q-email" placeholder="mary@email.com"></div>
+        <div class="fg"><label class="fl">Address</label><input class="fc" id="q-addr" placeholder="14 Oak Lane, Galway"></div>
+      </div>
+    </div>
+    <!-- Doors -->
+    <div class="card">
+      <div class="ct">Number of Doors</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:420px">
+        <div><label class="fl">Number of doors</label><input class="fc" type="number" id="q-doors" min="0" placeholder="e.g. 14"></div>
+        <div><label class="fl">Number of top boxes</label><input class="fc" type="number" id="q-topboxes" min="0" placeholder="e.g. 6"></div>
+        <div><label class="fl">Number of drawers</label><input class="fc" type="number" id="q-drawers" min="0" placeholder="e.g. 8"></div>
+      </div>
+    </div>
+    <!-- Packages -->
+    <div class="card">
+      <div class="ct">Packages</div>
+      <!-- Essential -->
+      <div class="pkg ess-on" id="pkg-ess">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-ess-on" checked style="width:16px;height:16px;accent-color:var(--g)">
+            <span class="badge b-opt">Optional</span><strong>Essential</strong>
+          </div>
+          <div class="pkg-price" id="live-ess">€0</div>
+        </div>
+        <div class="pkg-body" id="ess-body" style="display:block">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" min="0" id="q-ess-ppd" value="300"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" min="0" id="q-ess-tppd" value="200"></div>
+          </div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-ess-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div style="font-size:12px;color:var(--gray);margin-top:8px">Vinyl wrap or melamine · Blum hinges · Installation</div>
+        </div>
+        <div class="pkg-hint" id="ess-hint" style="display:none">Tick to add an Essential option to this quote</div>
+      </div>
+      <!-- Premium -->
+      <div class="pkg" id="pkg-prem">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-prem-on" style="width:16px;height:16px;accent-color:var(--blue)">
+            <span class="badge b-opt">Optional</span><strong>Premium</strong>
+          </div>
+          <div class="pkg-price" id="live-prem" style="color:var(--gray)">€0</div>
+        </div>
+        <div class="pkg-body" id="prem-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" min="0" id="q-prem-ppd" value="360"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" min="0" id="q-prem-tppd" value="200"></div>
+          </div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-prem-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-prem-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Blum soft-close hinges&#10;Professional installation"></textarea></div>
+        </div>
+        <div class="pkg-hint" id="prem-hint">Tick to add a Premium option to this quote</div>
+      </div>
+      <!-- Premium Plus -->
+      <div class="pkg" id="pkg-pp">
+        <div class="pkg-hdr">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="q-pp-on" style="width:16px;height:16px;accent-color:var(--gold)">
+            <span class="badge b-opt">Optional</span><strong>Premium Plus</strong>
+          </div>
+          <div class="pkg-price" id="live-pp" style="color:var(--gray)">€0</div>
+        </div>
+        <div class="pkg-body" id="pp-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;max-width:380px">
+            <div><label class="fl">Price per door (€)</label><input class="fc" type="number" min="0" id="q-pp-ppd" value="360"></div>
+            <div><label class="fl">Price per top box (€)</label><input class="fc" type="number" min="0" id="q-pp-tppd" value="200"></div>
+          </div>
+          <div style="max-width:220px;margin-top:8px"><label class="fl">Drawer Box Type</label><select class="fc" id="q-pp-drawer" onchange="recalc()"><option value="none">No drawers</option><option value="cemux" class="opt-dr-cemux">Cemux Soft-Close — €60/drawer</option><option value="blum" class="opt-dr-blum">Blum Merivobox — €100/drawer</option></select></div>
+          <div class="fg" style="margin-top:8px"><label class="fl">What's included (one per line — shown on PDF)</label><textarea class="fc" id="q-pp-desc" rows="4" placeholder="Lacquered or solid wood doors&#10;Blum Merivobox drawer boxes&#10;Pocket door system&#10;Oak cutlery trays&#10;Professional installation"></textarea></div>
+          <!-- Premium Plus own extras -->
+          <div style="margin-top:14px;border-top:1px solid var(--grayM);padding-top:14px">
+            <div class="ct" style="margin-bottom:10px">Premium Plus Extras</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px" id="pp-cat-btns"></div>
+            <div id="pp-extra-rows"></div>
+            <div id="pp-no-extras" style="color:#9ca3af;font-size:12px;padding:4px 0">No Premium Plus extras added yet.</div>
+          </div>
+        </div>
+        <div class="pkg-hint" id="pp-hint">Tick to add a Premium Plus option to this quote</div>
+      </div>
+    </div>
+    <!-- Worktops -->
+    <div class="card">
+      <div class="ct">Worktops</div>
+      <div class="sblk">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" id="q-wt-on" style="width:16px;height:16px;accent-color:var(--g)">
+          <div class="sblk-t" style="margin:0">Worktop <span class="badge b-man" style="margin-left:4px">Manual price</span></div>
+        </div>
+        <div id="wt-fields" style="display:none"><label class="fl">Total price (€)</label><input class="fc" type="number" min="0" id="q-wt" value="0" style="max-width:150px"></div>
+      </div>
+    </div>
+    <!-- Inclusions -->
+    <div class="card">
+      <div class="ct">Standard Inclusions</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-sink" style="width:16px;height:16px;accent-color:var(--g)">
+          Sink included
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-extractor" style="width:16px;height:16px;accent-color:var(--g)">
+          Extractor included
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-removal" style="width:16px;height:16px;accent-color:var(--g)">
+          Removal of existing kitchen
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-electrical" style="width:16px;height:16px;accent-color:var(--g)">
+          Electrical included
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-incl-plumbing" style="width:16px;height:16px;accent-color:var(--g)">
+          Plumbing included
+        </label>
+      </div>
+    </div>
+    <!-- Glass Doors -->
+    <div class="card">
+      <div class="ct">Glass Door Cabinets</div>
+      <div class="row2">
+        <div><label class="fl">Small glazed doors (€<span id="gs-lbl">500</span> each)</label><div style="display:flex;align-items:center;gap:10px"><input class="fc" type="number" min="0" id="q-gs" value="0" style="max-width:80px"><span style="font-weight:700;color:var(--g)" id="gs-total">€0</span></div></div>
+        <div><label class="fl">Large glazed larder doors (€<span id="gl-lbl">1000</span> each)</label><div style="display:flex;align-items:center;gap:10px"><input class="fc" type="number" min="0" id="q-gl" value="0" style="max-width:80px"><span style="font-weight:700;color:var(--g)" id="gl-total">€0</span></div></div>
+      </div>
+    </div>
+    <!-- Extras -->
+    <div class="card">
+      <div class="ct">Extras</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px" id="cat-btns"></div>
+      <div id="extra-rows"></div>
+      <div id="no-extras" style="color:#9ca3af;font-size:12px;padding:4px 0">No extras added yet — click an item above to add it.</div>
+    </div>
+    <!-- Status -->
+    <div class="card">
+      <div class="ct">Status &amp; Notes</div>
+      <div class="row2">
+        <div class="fg"><label class="fl">Status</label>
+          <select class="fc" id="q-status"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Declined</option><option>Follow-Up</option></select>
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="q-show-exvat" style="width:16px;height:16px;accent-color:var(--g)">
+          Show ex-VAT price on PDF quote
+        </label>
+      </div>
+      <div class="fg"><label class="fl">Internal Notes (not on PDF)</label><textarea class="fc" id="q-notes" rows="3" placeholder="Customer preferences, survey notes..."></textarea></div>
+    </div>
+  </div>
+  <!-- Summary sidebar -->
+  <div class="builder-summary">
+    <div class="card">
+      <div class="ct">Internal Summary</div>
+      <div class="tl" id="s-ess-row"><span style="color:var(--gray)">Essential kitchen</span><span id="s-ess">€0</span></div>
+      <div class="tl" id="s-prem-row" style="display:none"><span style="color:var(--gray)">Premium kitchen</span><span id="s-prem">€0</span></div>
+      <div class="tl" id="s-pp-row" style="display:none"><span style="color:var(--gray)">Premium Plus kitchen</span><span id="s-pp">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Extras</span><span id="s-ext">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Worktops</span><span id="s-wt">€0</span></div>
+      <div class="tl"><span style="color:var(--gray)">Glass cabinets</span><span id="s-gl">€0</span></div>
+      <div style="font-size:11px;color:#9ca3af;margin:10px 0 6px">Customer sees (inc. 13.5% VAT):</div>
+      <div class="tl" id="sf-ess-row" style="font-weight:700"><span>Essential</span><span id="sf-ess" style="color:var(--g)">€0</span></div>
+      <div class="tl" id="sf-prem-row" style="display:none;font-weight:700"><span>Premium</span><span id="sf-prem" style="color:var(--blue)">€0</span></div>
+      <div class="tl" id="sf-pp-row" style="display:none;font-weight:700"><span>Premium Plus</span><span id="sf-pp" style="color:var(--gold)">€0</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="scr" id="scr-settings">
+  <div class="ph"><div class="pt">Settings</div></div>
+  <div class="settings-grid">
+    <div>
+      <!-- Logo -->
+      <div class="card">
+        <div class="ct">Company Logo</div>
+        <div style="display:flex;align-items:center;gap:18px">
+          <div id="logo-wrap" style="width:130px;height:65px;border:2px dashed var(--grayM);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--grayL);flex-shrink:0">
+            <img id="logo-img" style="max-width:126px;max-height:61px;object-fit:contain;display:none">
+            <span id="logo-ph" style="font-size:11px;color:var(--gray);text-align:center">No logo</span>
+          </div>
+          <div>
+            <label class="btn btn-o" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">📁 Choose Image<input type="file" id="logo-file" accept="image/*" style="display:none"></label>
+            <div style="font-size:11px;color:var(--gray);line-height:1.7">PNG or JPG recommended.<br>Appears on all PDF quotes.</div>
+            <button class="btn btn-r btn-sm" id="logo-remove-btn" style="margin-top:8px;display:none">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+      <!-- Prices -->
+      <div class="card">
+        <div class="ct">Package Prices (per door)</div>
+        <div class="row3">
+          <div class="fg"><label class="fl">Essential (€)</label><input class="fc" type="number" min="0" id="s-ess-ppd"></div>
+          <div class="fg"><label class="fl">Premium (€)</label><input class="fc" type="number" min="0" id="s-prem-ppd"></div>
+          <div class="fg"><label class="fl">Prem Plus (€)</label><input class="fc" type="number" min="0" id="s-pp-ppd"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Worktop &amp; Glass Prices</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Laminate worktop (€/m)</label><input class="fc" type="number" min="0" id="s-lam"></div>
+          <div></div>
+          <div class="fg"><label class="fl">Small glazed door (€)</label><input class="fc" type="number" min="0" id="s-gs"></div>
+          <div class="fg"><label class="fl">Large glazed larder (€)</label><input class="fc" type="number" min="0" id="s-gl-price"></div>
+        </div>
+      </div>
+      <!-- Drawer box prices -->
+      <div class="card">
+        <div class="ct">Drawer Box Prices</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Cemux Soft-Close (€/drawer)</label><input class="fc" type="number" min="0" id="s-dr-cemux"></div>
+          <div class="fg"><label class="fl">Blum Merivobox (€/drawer)</label><input class="fc" type="number" min="0" id="s-dr-blum"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="ct">Extras Default Prices</div>
+        <div id="settings-extras"></div>
+      </div>
+      <!-- Business details -->
+      <div class="card">
+        <div class="ct">Business Details</div>
+        <div class="row2">
+          <div class="fg"><label class="fl">Phone</label><input class="fc" id="s-biz-phone"></div>
+          <div class="fg"><label class="fl">Email</label><input class="fc" id="s-biz-email"></div>
+          <div class="fg"><label class="fl">Website</label><input class="fc" id="s-biz-web"></div>
+          <div class="fg"><label class="fl">Address</label><input class="fc" id="s-biz-addr"></div>
+          <div class="fg"><label class="fl">BIC</label><input class="fc" id="s-biz-bic"></div>
+          <div class="fg"><label class="fl">IBAN</label><input class="fc" id="s-biz-iban"></div>
+          <div class="fg" style="grid-column:1/-1"><label class="fl">VAT Number (optional — printed only if set)</label><input class="fc" id="s-biz-vat" placeholder="e.g. IE1234567A"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-g" id="settings-save-btn">💾 Save Settings</button> <button class="btn btn-o" onclick="downloadBackup()">⬇️ Download backup</button>
+</div>
+
+<!-- INVOICES -->
+<div class="scr" id="scr-invoices">
+  <div class="ph">
+    <div class="pt">Invoices</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="fc" id="inv-filter" style="width:160px" onchange="renderInvoices()">
+        <option value="all">All Invoices</option>
+        <option value="Unpaid">Unpaid</option>
+        <option value="Partially Paid">Partially Paid</option>
+        <option value="Paid">Paid</option>
+        <option value="accountant">Ready for Accountant</option>
+      </select>
+    </div>
+  </div>
+  <div class="stats stats-4" id="inv-stats">
+    <div class="sc"><div class="sv" id="ist-total">0</div><div class="sl">Total Invoices</div></div>
+    <div class="sc"><div class="sv" id="ist-unpaid" style="color:#991b1b">0</div><div class="sl">Unpaid</div></div>
+    <div class="sc"><div class="sv" id="ist-partial" style="color:#d97706">0</div><div class="sl">Partially Paid</div></div>
+    <div class="sc"><div class="sv" id="ist-paid" style="color:#065f46">0</div><div class="sl">Paid</div></div>
+  </div>
+  <div class="card"><div id="inv-list"></div></div>
+</div>
+
+<div id="render-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:420px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:26px;margin-bottom:8px">🖼️</div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Add Render Images?</div>
+    <div style="color:#6b7280;font-size:13px;margin-bottom:16px">Upload up to 5 renders to include as extra pages in the PDF, one per page. Optional — skip to generate without any.</div>
+    <input type="file" id="render-file-input" accept="image/*" multiple style="display:none">
+    <div id="render-file-label" style="border:2px dashed #d1d5db;border-radius:8px;padding:14px;margin-bottom:16px;cursor:pointer;font-size:13px;color:#6b7280" onclick="document.getElementById('render-file-input').click()">📁 Click to choose images</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="renderModalSkip()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Skip</button>
+      <button id="render-go-btn" onclick="renderModalGo()" style="background:var(--g);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">📄 Generate PDF</button>
+    </div>
+  </div>
+</div>
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:22px;margin-bottom:8px">🗑️</div>
+    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Delete Quote?</div>
+    <div style="color:#6b7280;font-size:13px;margin-bottom:20px">This cannot be undone.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="confirmYes()" style="background:#991b1b;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Yes, Delete</button>
+      <button onclick="confirmNo()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PACKAGE CHOOSER — in-page modal (was a window.open() popup with a
+     window.opener.genInvoice() callback; replaced so it works with popups
+     blocked and doesn't depend on an opener relationship) -->
+<div id="pkg-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:400px;width:90%;box-shadow:0 8px 30px rgba(0,0,0,.2)">
+    <div style="font-size:18px;font-weight:700;margin-bottom:6px">Generate Invoice</div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:20px">Which package did the customer choose?</div>
+    <div id="pkg-modal-opts"></div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button onclick="pkgModalGo()" style="flex:1;padding:12px;background:#111827;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Generate Invoice →</button>
+      <button onclick="pkgModalCancel()" style="padding:12px 18px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Historical specifications are read-only; they can be previewed as a PDF. -->
+<div id="quote-history-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:12px;padding:24px;max-width:480px;width:92%;max-height:80vh;overflow:auto">
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px">Quote history</div>
+    <div id="quote-history-list"></div>
+    <button class="btn btn-o" onclick="closeQuoteHistory()" style="margin-top:14px">Close</button>
+  </div>
+</div>
+
+<!-- DOCUMENT VIEWER — full-screen same-origin iframe, replacing the
+     window.open()+document.write() (quote PDF) / Blob+URL.createObjectURL
+     (invoice) popups. Both are blocked by default on mobile, and the
+     invoice previously depended on window.opener surviving across a blob
+     URL to save itself back — an iframe has neither problem: it's always
+     same-origin to the page that set its srcdoc, so genPDF/genInvoice's own
+     "no-print" toolbar buttons and (for the invoice) doSave()'s
+     window.parent call all just work. -->
+<div id="doc-viewer" style="display:none;position:fixed;inset:0;background:#fff;z-index:10000;flex-direction:column">
+  <div style="background:#111827;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <span style="font-weight:700;font-size:13px">Document Preview</span>
+    <button onclick="closeDocViewer()" style="background:rgba(255,255,255,.15);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">✕ Close</button>
+  </div>
+  <iframe id="doc-viewer-frame" style="flex:1;width:100%;border:none"></iframe>
+</div>
+</div><!-- /main -->
+<div id="toast" style="display:none;position:fixed;bottom:28px;right:28px;background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:all .3s"></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+function load(k){try{return JSON.parse(localStorage.getItem('ek_preview_'+k))}catch(e){return null}}
+function save(k,v){localStorage.setItem('ek_preview_'+k,JSON.stringify(v))}
+
+// Shared HTML-escaping helper — used anywhere self-entered data (customer
+// names, extras names, addresses) is interpolated into a template literal
+// or innerHTML, so a name containing a quote or angle bracket can't break
+// the markup around it.
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+
+const DEF_EXTRAS=[
+  {key:'pocket', name:'Pocket door system',   unit:'per opening', price:0,   manual:true},
+  {key:'bifold', name:'Bi-fold door system',   unit:'per opening', price:300, manual:false},
+  {key:'cutlery',name:'Oak cutlery tray',      unit:'per drawer',  price:150, manual:false},
+  {key:'bin',    name:'Pull-out bin system',   unit:'per unit',    price:250, manual:false},
+  {key:'intbin', name:'Integrated pull-out bin', unit:'per unit',  price:250, manual:false},
+  {key:'magic',  name:'Magic corner / Le Mans',unit:'per unit',    price:300, manual:false},
+  {key:'larder', name:'Tall pull-out larder',  unit:'per unit',    price:500, manual:false},
+  {key:'base',   name:'150mm base pull-out',   unit:'per unit',    price:150, manual:false},
+  {key:'ledun',  name:'LED underpanel',         unit:'per metre',   price:300, manual:false},
+  {key:'ledla',  name:'LED inside larder',      unit:'per unit',    price:300, manual:false},
+  {key:'ledki',  name:'LED kickboard',          unit:'per metre',   price:300, manual:false},
+  {key:'sink',   name:'Composite sink',          unit:'included',    price:0,   manual:false, free:true},
+];
+const DEF_SETTINGS={
+  ess_ppd:300,prem_ppd:360,pp_ppd:360,lam_rate:120,gs_price:500,gl_price:1000,extras:DEF_EXTRAS,
+  dr_cemux:60,dr_blum:100,
+  biz_phone:'',biz_email:'',biz_web:'',
+  biz_addr:'',biz_bic:'',biz_iban:'',
+  biz_vat:''
+};
+
+let customers    = load('customers')    || [];
+let quotes       = load('quotes')       || [];
+let invoices     = load('invoices')     || [];
+let quoteCounter = load('quoteCounter') || Math.max(0,...(quotes.map(q=>q.num||0)));
+// invoiceNums maps '<qid>_<pkgKey>' -> the invoice number allocated to that
+// quote+package, so two packages on one quote never share a number and
+// reopening either one reuses its own. invoiceCounter is seeded above the
+// highest number already issued (either recorded in invoiceNums, or parsed
+// out of existing invoice records) so it can never collide with history.
+let invoiceNums    = load('invoiceNums') || {};
+let invoiceCounter = load('invoiceCounter');
+if(!invoiceCounter){
+  const fromMap=Math.max(0,...Object.values(invoiceNums).map(n=>parseInt(String(n).replace(/\D/g,''),10)||0));
+  const fromInvoices=Math.max(0,...invoices.map(inv=>parseInt(String(inv.invNum||'').replace(/\D/g,''),10)||0));
+  invoiceCounter=Math.max(fromMap,fromInvoices);
+}
+let ST        = Object.assign({}, DEF_SETTINGS, load('settings') || {});
+if(!Array.isArray(ST.extras)||ST.extras.length===0) ST.extras=DEF_EXTRAS;
+// Carry an existing locally-saved logo into ST so it gets pushed to the cloud
+// on the next sync (older saves stored the logo only in localStorage).
+if(!ST.logo){ const localLogo=load('logo'); if(localLogo) ST.logo=localLogo; }
+
+let editQid=null, editCid=null, exIdx=0, editingCustId=null;
+const VAT=13.5;
+
+// ─── RATES ───────────────────────────────────────────────────────────────────
+// A quote freezes the unit prices it was built with in q.rates={gs,gl,cemux,blum}
+// so later Settings changes never re-price a quote that's already gone to a
+// customer. ratesOf() reads them, falling back to current settings for quotes
+// saved before q.rates existed. curRates is the builder's working copy: newQuote
+// starts it from current settings, editQuote from the quote's own frozen rates.
+function ratesOf(q){
+  return {
+    gs:    q?.rates?.gs    ?? ST.gs_price,
+    gl:    q?.rates?.gl    ?? ST.gl_price,
+    cemux: q?.rates?.cemux ?? ST.dr_cemux ?? 60,
+    blum:  q?.rates?.blum  ?? ST.dr_blum  ?? 100
+  };
+}
+function currentRates(){
+  return {gs:ST.gs_price, gl:ST.gl_price, cemux:ST.dr_cemux??60, blum:ST.dr_blum??100};
+}
+function drawerPrice(rates,key){
+  if(key==='cemux') return rates?.cemux ?? ST.dr_cemux ?? 60;
+  if(key==='blum')  return rates?.blum  ?? ST.dr_blum  ?? 100;
+  return 0;
+}
+let curRates=currentRates();
+
+// Shows/hides the builder's "prices have changed" banner by comparing the
+// quote's frozen rates against today's settings. Called from editQuote() and
+// from the banner's own "Update to current prices" button.
+function showRatesBanner(rates){
+  const banner=document.getElementById('rates-banner');
+  if(!banner) return;
+  const cur=currentRates();
+  const diffs=[];
+  if(rates.gs!==cur.gs)       diffs.push(`Small glazed door €${rates.gs} → €${cur.gs}`);
+  if(rates.gl!==cur.gl)       diffs.push(`Large glazed larder €${rates.gl} → €${cur.gl}`);
+  if(rates.cemux!==cur.cemux) diffs.push(`Cemux drawer €${rates.cemux} → €${cur.cemux}`);
+  if(rates.blum!==cur.blum)   diffs.push(`Blum drawer €${rates.blum} → €${cur.blum}`);
+  if(diffs.length){
+    document.getElementById('rates-banner-detail').textContent=diffs.join(' · ');
+    banner.style.display='flex';
+  } else {
+    banner.style.display='none';
+  }
+}
+function updateToCurrentRates(){
+  curRates=currentRates();
+  document.getElementById('rates-banner').style.display='none';
+  recalc();
+  showToast('Prices updated to today\'s settings — Save Quote to keep it.','#2e7d32');
+}
+
+// ─── INVOICE NUMBERING ───────────────────────────────────────────────────────
+// Allocated once per quote+package and reused on reopen — never derived from
+// q.num, which two packages on the same quote would otherwise share.
+function allocInvoiceNum(qid,pkgKey){
+  const key=qid+'_'+pkgKey;
+  if(invoiceNums[key]) return invoiceNums[key];
+  invoiceCounter++;
+  const num='INV-'+String(invoiceCounter).padStart(4,'0');
+  invoiceNums[key]=num;
+  save('invoiceCounter',invoiceCounter);
+  save('invoiceNums',invoiceNums);
+  return num;
+}
+
+function localDataset(){
+  return {customers,quotes,invoices,settings:ST,quoteCounter,invoiceCounter,invoiceNums};
+}
+function saveLocal(){
+  save('customers',customers);save('quotes',quotes);save('settings',ST);
+  save('invoices',invoices);save('quoteCounter',quoteCounter);
+  save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
+}
+async function datasetDigest(data){
+  const bytes=new TextEncoder().encode(JSON.stringify(data));
+  const hash=await crypto.subtle.digest('SHA-256',bytes);
+  return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),...localDataset()},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='elite-kitchens-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function saveAll(){saveLocal();return fbSave();}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
+function goTo(id){
+  SCREENS.forEach(s=>{
+    document.getElementById('scr-'+s).classList.toggle('on', s===id);
+    const n=document.getElementById('nav-'+s);
+    if(n) n.classList.toggle('on', s===id);
+  });
+  if(id==='dashboard') renderDash();
+  if(id==='customers') renderCusts();
+  if(id==='quotes')    renderQuotes();
+  if(id==='settings')  renderSettings();
+  if(id==='invoices')   renderInvoices();
+  if(id==='builder')   renderCatBtns();
+}
+
+// ─── SIDEBAR & BUTTON WIRING ─────────────────────────────────────────────────
+document.getElementById('nav-dashboard').onclick=()=>goTo('dashboard');
+document.getElementById('nav-customers').onclick=()=>goTo('customers');
+document.getElementById('nav-quotes').onclick=()=>goTo('quotes');
+document.getElementById('nav-invoices').onclick=()=>goTo('invoices');
+document.getElementById('nav-settings').onclick=()=>goTo('settings');
+document.getElementById('nav-builder').onclick=()=>newQuote();
+document.getElementById('dash-new-btn').onclick=()=>newQuote();
+document.getElementById('quotes-new-btn').onclick=()=>newQuote();
+document.getElementById('cust-add-btn').onclick=()=>{editingCustId=null;document.getElementById('addcust-title').textContent='Add Customer';['ac-name','ac-phone','ac-email','ac-addr'].forEach(id=>document.getElementById(id).value='');goTo('addcust');};
+document.getElementById('addcust-back-btn').onclick=()=>goTo('customers');
+document.getElementById('ac-cancel-btn').onclick=()=>{editingCustId=null;goTo('customers');};
+document.getElementById('builder-back-btn').onclick=()=>goTo('quotes');
+document.getElementById('builder-save-btn').onclick=()=>saveQuote();
+document.getElementById('builder-pdf-btn').onclick=()=>showRenderModal(editQid);
+document.getElementById('builder-inv-btn').onclick=()=>selectInvoicePkg(editQid);
+document.getElementById('builder-email-btn').onclick=()=>emailQuote(editQid);
+document.getElementById('settings-save-btn').onclick=()=>saveSettings();
+document.getElementById('ac-save-btn').onclick=()=>saveCustomer();
+document.getElementById('logo-file').onchange=function(){uploadLogo(this)};
+document.getElementById('logo-remove-btn').onclick=()=>removeLogo();
+
+// live recalc on input change in builder
+['q-doors','q-topboxes','q-drawers','q-ess-ppd','q-ess-tppd','q-prem-ppd','q-prem-tppd','q-pp-ppd','q-pp-tppd','q-gs','q-gl','q-wt'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener('input', recalc);
+});
+document.getElementById('q-ess-on').addEventListener('change', ()=>togglePkg('ess'));
+document.getElementById('q-prem-on').addEventListener('change', ()=>togglePkg('prem'));
+document.getElementById('q-pp-on').addEventListener('change', ()=>togglePkg('pp'));
+document.getElementById('q-wt-on').addEventListener('change', ()=>{
+  document.getElementById('wt-fields').style.display=document.getElementById('q-wt-on').checked?'block':'none';
+  recalc();
+});
+
+// ─── CUSTOMERS ───────────────────────────────────────────────────────────────
+function saveCustomer(){
+  const name=document.getElementById('ac-name').value.trim();
+  if(!name){alert('Please enter a name.');return;}
+  const phone=document.getElementById('ac-phone').value.trim();
+  const email=document.getElementById('ac-email').value.trim();
+  const addr=document.getElementById('ac-addr').value.trim();
+  if(editingCustId){
+    const c=customers.find(x=>x.id===editingCustId);
+    if(c){ c.name=name; c.phone=phone; c.email=email; c.addr=addr; }
+    editingCustId=null;
+  } else {
+    customers.push({id:Date.now(),name,phone,email,addr});
+  }
+  saveAll();
+  ['ac-name','ac-phone','ac-email','ac-addr'].forEach(id=>document.getElementById(id).value='');
+  goTo('customers');
+}
+function editCustomer(cid){
+  const c=customers.find(x=>x.id===cid); if(!c) return;
+  editingCustId=cid;
+  document.getElementById('addcust-title').textContent='Edit Customer';
+  document.getElementById('ac-name').value=c.name||'';
+  document.getElementById('ac-phone').value=c.phone||'';
+  document.getElementById('ac-email').value=c.email||'';
+  document.getElementById('ac-addr').value=c.addr||'';
+  goTo('addcust');
+}
+async function delCustomer(cid){
+  showConfirm(async()=>{
+    customers=customers.filter(c=>c.id!==cid);
+    await saveAll();
+    renderCusts();
+  });
+}
+function renderCusts(){
+  const el=document.getElementById('cust-list');
+  const c_search=(document.getElementById('custs-search')?.value||'').toLowerCase().trim();
+  let list=customers;
+  if(c_search) list=customers.filter(c=>
+    (c.name||'').toLowerCase().includes(c_search)||
+    (c.email||'').toLowerCase().includes(c_search)||
+    (c.phone||'').includes(c_search)||
+    (c.addr||'').toLowerCase().includes(c_search)
+  );
+  if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(c_search?'No customers match your search.':'No customers yet.')+'</p>';return;}
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Address</th><th></th></tr></thead><tbody>'+
+    list.map(c=>`<tr><td><strong>${esc(c.name)}</strong></td><td style="color:var(--gray)">${esc(c.phone)||'—'}</td><td style="color:var(--gray)">${esc(c.email)||'—'}</td><td style="color:var(--gray)">${esc(c.addr)||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-g btn-sm" onclick="newQuote(${c.id})">New Quote</button><button class="btn btn-o btn-sm" onclick="editCustomer(${c.id})">✏️ Edit</button><button class="btn btn-o btn-sm" onclick="delCustomer(${c.id})">🗑️</button></td></tr>`).join('')+
+  '</tbody></table></div>';
+}
+
+// ─── QUOTE BUILDER ───────────────────────────────────────────────────────────
+function newQuote(custId){
+  editQid=null; editCid=custId||null;
+  curRates=currentRates();
+  const rb=document.getElementById('rates-banner'); if(rb) rb.style.display='none';
+  document.getElementById('builder-title').textContent='New Quote';
+  document.getElementById('builder-pdf-btn').style.display='none';
+  document.getElementById('builder-inv-btn').style.display='none';
+  document.getElementById('builder-email-btn').style.display='none';
+  // clear fields
+  ['q-name','q-phone','q-email','q-addr','q-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('q-doors').value='';
+  document.getElementById('q-drawers').value='';
+  document.getElementById('q-incl-sink').checked=false;
+  document.getElementById('q-show-exvat').checked=false;
+  document.getElementById('q-incl-extractor').checked=false;
+  document.getElementById('q-incl-removal').checked=false;
+  document.getElementById('q-incl-electrical').checked=false;
+  document.getElementById('q-incl-plumbing').checked=false;
+  document.getElementById('q-topboxes').value='';
+  document.getElementById('q-ess-tppd').value='200';
+  document.getElementById('q-prem-tppd').value='200';
+  document.getElementById('q-pp-tppd').value='200';
+  document.getElementById('q-ess-drawer').value='none';
+  document.getElementById('q-prem-drawer').value='none';
+  document.getElementById('q-pp-drawer').value='none';
+  document.getElementById('q-ess-ppd').value=ST.ess_ppd;
+  document.getElementById('q-prem-ppd').value=ST.prem_ppd;
+  document.getElementById('q-pp-ppd').value=ST.pp_ppd;
+  document.getElementById('q-prem-on').checked=false;
+  document.getElementById('q-pp-on').checked=false;
+  if(document.getElementById('pp-extra-rows')) document.getElementById('pp-extra-rows').innerHTML='';
+  if(document.getElementById('pp-no-extras')) document.getElementById('pp-no-extras').style.display='block';
+  document.getElementById('q-prem-desc').value='';
+  document.getElementById('q-pp-desc').value='';
+  document.getElementById('q-wt-on').checked=false;
+  document.getElementById('q-wt').value='0';
+  document.getElementById('wt-fields').style.display='none';
+  document.getElementById('q-gs').value='0';
+  document.getElementById('q-gl').value='0';
+  document.getElementById('q-status').value='Draft';
+  document.getElementById('extra-rows').innerHTML='';
+  document.getElementById('no-extras').style.display='block';
+  // pkg reset
+  document.getElementById('q-ess-on').checked=true;
+  document.getElementById('ess-body').style.display='block';
+  document.getElementById('ess-hint').style.display='none';
+  document.getElementById('pkg-ess').className='pkg ess-on';
+  document.getElementById('s-ess-row').style.display='';
+  document.getElementById('sf-ess-row').style.display='';
+  document.getElementById('prem-body').style.display='none';
+  document.getElementById('prem-hint').style.display='block';
+  document.getElementById('pkg-prem').className='pkg';
+  document.getElementById('pp-body').style.display='none';
+  document.getElementById('pp-hint').style.display='block';
+  document.getElementById('pkg-pp').className='pkg';
+  document.getElementById('s-prem-row').style.display='none';
+  document.getElementById('s-pp-row').style.display='none';
+  document.getElementById('sf-prem-row').style.display='none';
+  document.getElementById('sf-pp-row').style.display='none';
+  // labels from settings
+  document.getElementById('gs-lbl').textContent=ST.gs_price;
+  document.getElementById('gl-lbl').textContent=ST.gl_price;
+  // prefill customer if coming from customers list
+  if(custId){const c=customers.find(x=>x.id===custId)||{};document.getElementById('q-name').value=c.name||'';document.getElementById('q-phone').value=c.phone||'';document.getElementById('q-email').value=c.email||'';document.getElementById('q-addr').value=c.addr||'';}
+  document.getElementById('q-name-suggest').style.display='none';
+  document.getElementById('q-name-suggest').innerHTML='';
+  recalc();
+  goTo('builder');
+}
+
+function renderNameSuggestions(){
+  const box=document.getElementById('q-name-suggest');
+  const val=document.getElementById('q-name').value.trim().toLowerCase();
+  if(!val){box.style.display='none';box.innerHTML='';return;}
+  const matches=customers.filter(c=>c.name&&c.name.toLowerCase().includes(val)).slice(0,6);
+  if(!matches.length){box.style.display='none';box.innerHTML='';return;}
+  box.innerHTML=matches.map(c=>`<div class="name-suggest-item" data-cid="${c.id}">${c.name}${c.phone?' — '+c.phone:''}</div>`).join('');
+  box.style.display='block';
+}
+function selectNameSuggestion(cid){
+  const c=customers.find(x=>x.id===cid); if(!c) return;
+  editCid=c.id;
+  document.getElementById('q-name').value=c.name||'';
+  document.getElementById('q-phone').value=c.phone||'';
+  document.getElementById('q-email').value=c.email||'';
+  document.getElementById('q-addr').value=c.addr||'';
+  const box=document.getElementById('q-name-suggest');
+  box.style.display='none';
+  box.innerHTML='';
+}
+document.getElementById('q-name').addEventListener('input',()=>{
+  editCid=null;
+  renderNameSuggestions();
+});
+document.getElementById('q-name').addEventListener('blur',()=>{
+  setTimeout(()=>{document.getElementById('q-name-suggest').style.display='none';},150);
+});
+document.getElementById('q-name-suggest').addEventListener('mousedown',(e)=>{
+  const item=e.target.closest('.name-suggest-item');
+  if(!item) return;
+  e.preventDefault();
+  selectNameSuggestion(Number(item.getAttribute('data-cid')));
+});
+
+function togglePkg(pkg){
+  const on=document.getElementById('q-'+pkg+'-on').checked;
+  document.getElementById(pkg+'-body').style.display=on?'block':'none';
+  document.getElementById(pkg+'-hint').style.display=on?'none':'block';
+  const cls={ess:'ess-on',prem:'prem-on',pp:'pp-on'};
+  document.getElementById('pkg-'+pkg).className='pkg'+(on?' '+cls[pkg]:'');
+  document.getElementById('s-'+pkg+'-row').style.display=on?'':'none';
+  document.getElementById('sf-'+pkg+'-row').style.display=on?'':'none';
+  recalc();
+}
+
+function renderCatBtns(){
+  const cont=document.getElementById('cat-btns');
+  cont.innerHTML='';
+  ST.extras.forEach((e,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn';
+    btn.innerHTML=e.name+(e.manual?' <span class="badge b-man">Manual</span>':' <span style="color:var(--gray);font-size:11px">(€'+e.price+')</span>');
+    btn.addEventListener('click',()=>addExtra(e.name,e.unit,e.manual?0:e.price,e.manual));
+    cont.appendChild(btn);
+  });
+  const custom=document.createElement('button');
+  custom.className='cat-btn';
+  custom.style.borderStyle='dashed';
+  custom.textContent='+ Custom item';
+  custom.addEventListener('click',()=>addExtra('','',0,true));
+  cont.appendChild(custom);
+  renderPPCatBtns();
+}
+
+// ─── PREMIUM PLUS OWN EXTRAS ─────────────────────────────────────────────────
+let ppxi=0;
+function renderPPCatBtns(){
+  const cont=document.getElementById('pp-cat-btns');
+  if(!cont) return;
+  cont.innerHTML='';
+  ST.extras.forEach((e,i)=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn';
+    const isFree=e.free||false;
+    btn.innerHTML=e.name+(isFree?' <span class="badge b-auto">Free</span>':e.manual?' <span class="badge b-man">Manual</span>':' <span style="color:var(--gray);font-size:11px">(€'+e.price+')</span>');
+    btn.addEventListener('click',()=>addPPExtra(e.name,e.unit,isFree?0:e.manual?0:e.price,e.manual||false,isFree));
+    cont.appendChild(btn);
+  });
+  const custom=document.createElement('button');
+  custom.className='cat-btn';
+  custom.style.borderStyle='dashed';
+  custom.textContent='+ Custom item';
+  custom.addEventListener('click',()=>addPPExtra('','',0,true,false));
+  cont.appendChild(custom);
+}
+
+function addPPExtra(name,unit,price,manual,isFree){
+  document.getElementById('pp-no-extras').style.display='none';
+  const id='ppex-'+ppxi++;
+  const div=document.createElement('div');
+  div.className='exrow ppexrow';
+  div.id=id;
+  if(isFree){
+    div.innerHTML=`<div style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f0fdf4;border-radius:6px;font-size:13px"><span>✓ ${name} <span class="badge b-auto" style="margin-left:6px">Free</span></span><button style="background:var(--redL);border:none;border-radius:6px;padding:4px 8px;color:var(--red);cursor:pointer;font-size:12px" onclick="rmPPExtra('${id}')">✕</button></div>`;
+  } else {
+    div.innerHTML=`<div><label class="fl">${name||'Description'} <span style="color:var(--gray);font-size:11px">${unit}</span></label><input class="fc ppex-name" type="text" value="${name}" placeholder="Description"></div><div><label class="fl">Qty</label><input class="fc ppex-qty" type="number" step="0.1" min="0" value="1"></div><div><label class="fl">€ Unit</label><input class="fc ppex-price" type="number" min="0" value="${manual?'':price}" placeholder="${manual?'Enter price':''}"></div><div style="padding-top:20px"><button style="background:var(--redL);border:none;border-radius:6px;padding:6px 8px;color:var(--red);cursor:pointer" onclick="rmPPExtra('${id}')">✕</button></div>`;
+    div.querySelectorAll('.ppex-qty,.ppex-price').forEach(el=>el.addEventListener('input',recalc));
+  }
+  div.dataset.free=isFree?'1':'0';
+  div.dataset.name=name;
+  document.getElementById('pp-extra-rows').appendChild(div);
+  recalc();
+}
+
+function rmPPExtra(id){
+  document.getElementById(id).remove();
+  if(!document.querySelectorAll('.ppexrow').length) document.getElementById('pp-no-extras').style.display='block';
+  recalc();
+}
+
+function getPPExtras(){
+  return [...document.querySelectorAll('.ppexrow')].map(r=>{
+    if(r.dataset.free==='1') return {name:r.dataset.name,qty:1,price:0,unit:'included',free:true};
+    const nameEl=r.querySelector('.ppex-name');
+    const qtyEl=r.querySelector('.ppex-qty');
+    const priceEl=r.querySelector('.ppex-price');
+    if(!nameEl) return null;
+    return {name:nameEl.value,qty:parseFloat(qtyEl?.value)||0,price:parseFloat(priceEl?.value)||0,unit:'',free:false};
+  }).filter(e=>e&&e.name&&(e.free||e.qty>0));
+}
+
+let xi=0;
+function addExtra(name,unit,price,manual){
+  document.getElementById('no-extras').style.display='none';
+  const id='ex-'+xi++;
+  const div=document.createElement('div');
+  div.className='exrow';
+  div.id=id;
+  div.innerHTML=`<div><label class="fl">${name||'Description'} <span style="color:var(--gray);font-size:11px">${unit}</span></label><input class="fc ex-name" type="text" value="${name}" placeholder="Description"></div><div><label class="fl">Qty</label><input class="fc ex-qty" type="number" step="0.1" min="0" value="1"></div><div><label class="fl">€ Unit</label><input class="fc ex-price" type="number" min="0" value="${manual?'':price}" placeholder="${manual?'Enter price':''}"></div><div style="padding-top:20px"><button style="background:var(--redL);border:none;border-radius:6px;padding:6px 8px;color:var(--red);cursor:pointer" onclick="rmExtra('${id}')">✕</button></div>`;
+  div.querySelectorAll('.ex-qty,.ex-price').forEach(el=>el.addEventListener('input',recalc));
+  document.getElementById('extra-rows').appendChild(div);
+  recalc();
+}
+function rmExtra(id){document.getElementById(id).remove();if(!document.getElementById('extra-rows').querySelectorAll('.exrow').length)document.getElementById('no-extras').style.display='block';recalc();}
+
+function getExtras(){
+  return [...document.getElementById('extra-rows').querySelectorAll('.exrow')].map(r=>({
+    name:r.querySelector('.ex-name').value,
+    qty:parseFloat(r.querySelector('.ex-qty').value)||0,
+    price:parseFloat(r.querySelector('.ex-price').value)||0,
+    unit:r.querySelector('.fl span')?.textContent||''
+  })).filter(e=>e.name&&e.qty>0);
+}
+
+function fmt(n){return '€'+Math.round(n).toLocaleString('en-IE')}
+function fmtd(n){return '€'+n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function incvat(n){return n+n*VAT/100}
+
+function recalc(){
+  const nd=parseFloat(document.getElementById('q-doors').value)||0;
+  const essPpd=parseFloat(document.getElementById('q-ess-ppd').value)||0;
+  const premPpd=parseFloat(document.getElementById('q-prem-ppd').value)||0;
+  const ppPpd=parseFloat(document.getElementById('q-pp-ppd').value)||0;
+  const essOn=document.getElementById('q-ess-on').checked;
+  const premOn=document.getElementById('q-prem-on').checked;
+  const ppOn=document.getElementById('q-pp-on').checked;
+  const dCount=parseInt(document.getElementById('q-drawers').value)||0;
+  const ntb=parseInt(document.getElementById('q-topboxes').value)||0;
+  const essDrawerT=dCount*drawerPrice(curRates,document.getElementById('q-ess-drawer').value);
+  const premDrawerT=premOn?dCount*drawerPrice(curRates,document.getElementById('q-prem-drawer').value):0;
+  const ppDrawerT=ppOn?dCount*drawerPrice(curRates,document.getElementById('q-pp-drawer').value):0;
+  const essTbPpd=parseFloat(document.getElementById('q-ess-tppd')?.value)||0;
+  const premTbPpd=parseFloat(document.getElementById('q-prem-tppd')?.value)||0;
+  const ppTbPpd=parseFloat(document.getElementById('q-pp-tppd')?.value)||0;
+  const essK=nd*essPpd+ntb*essTbPpd+essDrawerT;
+  const premK=nd*premPpd+ntb*premTbPpd+premDrawerT;
+  const ppK=nd*ppPpd+ntb*ppTbPpd+ppDrawerT;
+  const wtOn=document.getElementById('q-wt-on').checked;
+  const wtT=wtOn?(parseFloat(document.getElementById('q-wt').value)||0):0;
+  const gsQ=parseInt(document.getElementById('q-gs').value)||0;
+  const glQ=parseInt(document.getElementById('q-gl').value)||0;
+  const gsT=gsQ*curRates.gs, glT=glQ*curRates.gl, glassT=gsT+glT;
+  document.getElementById('gs-total').textContent=fmt(gsT);
+  document.getElementById('gl-total').textContent=fmt(glT);
+  const exts=getExtras();
+  const extT=exts.reduce((s,e)=>s+e.qty*e.price,0);
+  const ppExts=getPPExtras();
+  const ppExtT=ppExts.reduce((s,e)=>s+e.qty*e.price,0);
+  const shared=extT+wtT+glassT;
+  if(essOn){document.getElementById('live-ess').textContent=fmt(essK);document.getElementById('s-ess').textContent=fmt(essK);document.getElementById('sf-ess').textContent=fmtd(incvat(essK+shared));}
+  else{document.getElementById('live-ess').textContent=fmt(0);document.getElementById('s-ess').textContent=fmt(0);document.getElementById('sf-ess').textContent=fmtd(0);}
+  document.getElementById('s-ext').textContent=fmt(extT);
+  document.getElementById('s-wt').textContent=fmt(wtT);
+  document.getElementById('s-gl').textContent=fmt(glassT);
+  if(premOn){document.getElementById('live-prem').textContent=fmt(premK);document.getElementById('s-prem').textContent=fmt(premK);document.getElementById('sf-prem').textContent=fmtd(incvat(premK+shared));}
+  else{document.getElementById('live-prem').textContent=fmt(0);document.getElementById('s-prem').textContent=fmt(0);document.getElementById('sf-prem').textContent=fmtd(0);}
+  if(ppOn){document.getElementById('live-pp').textContent=fmt(ppK+ppExtT);document.getElementById('s-pp').textContent=fmt(ppK);document.getElementById('sf-pp').textContent=fmtd(incvat(ppK+shared+ppExtT));}
+  else{document.getElementById('live-pp').textContent=fmt(0);document.getElementById('s-pp').textContent=fmt(0);document.getElementById('sf-pp').textContent=fmtd(0);}
+}
+
+// Check numeric fields before changing customers, quotes, or cloud data.
+function validateQuoteNumbers(){
+  const builder=document.getElementById('scr-builder');
+  for(const input of builder.querySelectorAll('input[type="number"]')){
+    const pkg=input.closest('.pkg');
+    if(pkg && !pkg.querySelector('.pkg-hdr input[type="checkbox"]').checked) continue;
+    if(input.id==='q-wt' && !document.getElementById('q-wt-on').checked) continue;
+    const raw=input.value.trim();
+    const requiredPrice=/^q-(ess|prem|pp)-(ppd|tppd)$/.test(input.id);
+    if(raw==='' && !requiredPrice) continue;
+    const value=Number(raw);
+    const integer=['q-doors','q-topboxes','q-drawers','q-gs','q-gl'].includes(input.id);
+    if(raw==='' || !Number.isFinite(value) || value<0 || (integer && !Number.isInteger(value))){
+      input.focus();
+      showToast('Enter a valid, non-negative '+(integer?'whole number':'number')+' in the highlighted field.','#991b1b');
+      return false;
+    }
+  }
+  return true;
+}
+
+// Compare customer-facing specifications. Status and internal notes do not create a version.
+function quoteSpecification(q,c){
+  return {customer:{name:c?.name||'',phone:c?.phone||'',email:c?.email||'',addr:c?.addr||''},
+    doors:q.doors,drawers:q.drawers,topboxes:q.topboxes,rates:q.rates,
+    ess:q.ess,prem:q.prem,pp:q.pp,wt:q.wt,glass:q.glass,extras:q.extras,incl:q.incl,showExVat:q.showExVat};
+}
+function quoteLabel(q){
+  return 'Quote #'+String(q.num||q.id).padStart(4,'0')+' v'+(q.version||1);
+}
+
+// ─── SAVE QUOTE ──────────────────────────────────────────────────────────────
+function saveQuote(){
+  try{
+  if(!validateQuoteNumbers()) return;
+  const previous=editQid?quotes.find(x=>x.id===editQid):null;
+  const previousCustomer=previous?{...(previous.customerSnapshot||customers.find(x=>x.id===previous.cid)||{})}:null;
+  const name=document.getElementById('q-name').value.trim();
+  if(!name){showToast('Please enter a customer name.','#991b1b');return;}
+  // upsert customer
+  let cid=editCid;
+  const phone=document.getElementById('q-phone').value.trim();
+  const email=document.getElementById('q-email').value.trim();
+  const addr=document.getElementById('q-addr').value.trim();
+  if(cid){
+    const i=customers.findIndex(x=>x.id===cid);
+    if(i>=0) customers[i]={...customers[i],name,phone,email,addr};
+  } else {
+    const ex=customers.find(x=>x.name.toLowerCase()===name.toLowerCase());
+    if(ex){cid=ex.id;const i=customers.findIndex(x=>x.id===cid);customers[i]={...customers[i],name,phone,email,addr};}
+    else{cid=Date.now();customers.push({id:cid,name,phone,email,addr});}
+  }
+  editCid=cid;
+  const premOn=document.getElementById('q-prem-on').checked;
+  const ppOn=document.getElementById('q-pp-on').checked;
+  const q={
+    id:editQid||(Date.now()+1),
+    cid,
+    rates:{...curRates},
+    doors:parseInt(document.getElementById('q-doors').value)||0,
+    drawers:parseInt(document.getElementById('q-drawers').value)||0,
+    topboxes:parseInt(document.getElementById('q-topboxes').value)||0,
+    status:document.getElementById('q-status').value,
+    notes:document.getElementById('q-notes').value,
+    ess:{on:document.getElementById('q-ess-on').checked,ppd:Number(document.getElementById('q-ess-ppd').value),tppd:Number(document.getElementById('q-ess-tppd').value),drawer:document.getElementById('q-ess-drawer').value||'none'},
+    prem:{on:premOn,ppd:Number(document.getElementById('q-prem-ppd').value),tppd:Number(document.getElementById('q-prem-tppd').value),desc:document.getElementById('q-prem-desc').value,drawer:document.getElementById('q-prem-drawer').value||'none'},
+    pp:{on:ppOn,ppd:Number(document.getElementById('q-pp-ppd').value),tppd:Number(document.getElementById('q-pp-tppd').value),desc:document.getElementById('q-pp-desc').value,extras:getPPExtras(),drawer:document.getElementById('q-pp-drawer').value||'none'},
+    wt:{wtOn:document.getElementById('q-wt-on').checked,wtP:document.getElementById('q-wt-on').checked?(parseFloat(document.getElementById('q-wt').value)||0):0},
+    glass:{sq:parseInt(document.getElementById('q-gs').value)||0,lq:parseInt(document.getElementById('q-gl').value)||0},
+    extras:getExtras(),
+    incl:{sink:document.getElementById('q-incl-sink').checked, extractor:document.getElementById('q-incl-extractor').checked, removal:document.getElementById('q-incl-removal').checked, electrical:document.getElementById('q-incl-electrical').checked, plumbing:document.getElementById('q-incl-plumbing').checked},
+    showExVat:document.getElementById('q-show-exvat').checked,
+    created:editQid?(quotes.find(x=>x.id===editQid)||{}).created||new Date().toISOString():new Date().toISOString(),
+    num:editQid?(quotes.find(x=>x.id===editQid)||{}).num:undefined,
+    customerSnapshot:{name,phone,email,addr},
+    revisions:previous?.revisions||[],
+    version:previous?.version||1,
+    savedAt:previous?.savedAt||new Date().toISOString()
+  };
+  if(previous){
+    const changed=JSON.stringify(quoteSpecification(previous,previousCustomer))!==JSON.stringify(quoteSpecification(q,q.customerSnapshot));
+    if(changed && (previous.status!=='Draft' || previous.revisions?.length)){
+      const {revisions,...snapshot}=previous;
+      q.revisions=[...(previous.revisions||[]),{...structuredClone(snapshot),customerSnapshot:previousCustomer,version:previous.version||1}];
+      q.version=(previous.version||1)+1;
+      q.savedAt=new Date().toISOString();
+    }else if(changed){
+      q.savedAt=new Date().toISOString();
+    }
+  }
+  if(editQid){const i=quotes.findIndex(x=>x.id===editQid);if(i>=0)quotes[i]=q;else quotes.unshift(q);}
+  else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
+  editQid=q.id;
+  saveLocal();
+  document.getElementById('builder-title').textContent=quoteLabel(q);
+  document.getElementById('builder-pdf-btn').style.display='';
+  document.getElementById('builder-inv-btn').style.display='';
+  document.getElementById('builder-email-btn').style.display='';
+  showToast('⏳ Saving...');
+  fbSave().then(ok=>{
+    if(ok) showToast('✅ Quote saved to cloud!','#065f46');
+    else if(!fbUser) showToast('✅ Saved locally (sign in to sync)');
+    else showToast('⚠️ Saved locally — cloud sync needs attention','#991b1b');
+  });
+  } catch(err){
+    showToast('❌ Error: '+err.message,'#991b1b');
+    console.error('saveQuote error:',err);
+  }
+}
+
+// ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
+function editQuote(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const c=customers.find(x=>x.id===q.cid)||{};
+  editQid=qid; editCid=q.cid;
+  curRates=ratesOf(q);
+  showRatesBanner(curRates);
+  document.getElementById('builder-title').textContent=quoteLabel(q);
+  document.getElementById('builder-pdf-btn').style.display='';
+  document.getElementById('builder-inv-btn').style.display='';
+  document.getElementById('builder-email-btn').style.display='';
+  document.getElementById('q-name-suggest').style.display='none';
+  document.getElementById('q-name-suggest').innerHTML='';
+  document.getElementById('q-name').value=c.name||'';
+  document.getElementById('q-phone').value=c.phone||'';
+  document.getElementById('q-email').value=c.email||'';
+  document.getElementById('q-addr').value=c.addr||'';
+  document.getElementById('q-doors').value=q.doors;
+  document.getElementById('q-drawers').value=q.drawers||0;
+  document.getElementById('q-incl-sink').checked=q.incl?.sink||false;
+  document.getElementById('q-show-exvat').checked=q.showExVat||false;
+  document.getElementById('q-incl-extractor').checked=q.incl?.extractor||false;
+  document.getElementById('q-incl-removal').checked=q.incl?.removal||false;
+  document.getElementById('q-incl-electrical').checked=q.incl?.electrical||false;
+  document.getElementById('q-incl-plumbing').checked=q.incl?.plumbing||false;
+  document.getElementById('q-topboxes').value=q.topboxes||0;
+  document.getElementById('q-ess-tppd').value=q.ess?.tppd??200;
+  document.getElementById('q-prem-tppd').value=q.prem?.tppd??200;
+  document.getElementById('q-pp-tppd').value=q.pp?.tppd??200;
+  document.getElementById('q-ess-drawer').value=q.ess?.drawer||'none';
+  document.getElementById('q-prem-drawer').value=q.prem?.drawer||'none';
+  document.getElementById('q-pp-drawer').value=q.pp?.drawer||'none';
+  document.getElementById('q-ess-ppd').value=q.ess?.ppd??300;
+  document.getElementById('q-prem-ppd').value=q.prem?.ppd??360;
+  document.getElementById('q-pp-ppd').value=q.pp?.ppd??360;
+  document.getElementById('q-prem-desc').value=q.prem?.desc||'';
+  document.getElementById('q-pp-desc').value=q.pp?.desc||'';
+  document.getElementById('q-ess-on').checked=q.ess?.on!==false;
+  document.getElementById('q-prem-on').checked=q.prem?.on||false;
+  document.getElementById('q-pp-on').checked=q.pp?.on||false;
+  if(q.ess?.on!==false) togglePkg('ess'); else{document.getElementById('ess-body').style.display='none';document.getElementById('ess-hint').style.display='block';document.getElementById('pkg-ess').className='pkg';document.getElementById('s-ess-row').style.display='none';document.getElementById('sf-ess-row').style.display='none';}
+  if(q.prem?.on) togglePkg('prem'); else{document.getElementById('prem-body').style.display='none';document.getElementById('prem-hint').style.display='block';document.getElementById('pkg-prem').className='pkg';document.getElementById('s-prem-row').style.display='none';document.getElementById('sf-prem-row').style.display='none';}
+  if(q.pp?.on) togglePkg('pp'); else{document.getElementById('pp-body').style.display='none';document.getElementById('pp-hint').style.display='block';document.getElementById('pkg-pp').className='pkg';document.getElementById('s-pp-row').style.display='none';document.getElementById('sf-pp-row').style.display='none';}
+  document.getElementById('q-wt-on').checked=q.wt?.wtOn||false;
+  document.getElementById('wt-fields').style.display=q.wt?.wtOn?'block':'none';
+  document.getElementById('q-wt').value=q.wt?.wtP||0;
+  document.getElementById('q-gs').value=q.glass?.sq||0;
+  document.getElementById('q-gl').value=q.glass?.lq||0;
+  document.getElementById('q-status').value=q.status||'Draft';
+  document.getElementById('q-notes').value=q.notes||'';
+  document.getElementById('extra-rows').innerHTML='';
+  document.getElementById('no-extras').style.display=q.extras?.length?'none':'block';
+  (q.extras||[]).forEach(e=>{
+    addExtra(e.name,e.unit,e.price,false);
+    const rows=document.getElementById('extra-rows').querySelectorAll('.exrow');
+    const last=rows[rows.length-1];
+    last.querySelector('.ex-qty').value=e.qty;
+    last.querySelector('.ex-price').value=e.price;
+  });
+  document.getElementById('gs-lbl').textContent=ST.gs_price;
+  document.getElementById('gl-lbl').textContent=ST.gl_price;
+  // Restore PP extras
+  if(document.getElementById('pp-extra-rows')){
+    document.getElementById('pp-extra-rows').innerHTML='';
+    document.getElementById('pp-no-extras').style.display='block';
+    (q.pp?.extras||[]).forEach(e=>{
+      addPPExtra(e.name,e.unit,e.price,false,e.free||false);
+      if(!e.free){
+        const rows=document.querySelectorAll('.ppexrow');
+        const last=rows[rows.length-1];
+        if(last){if(last.querySelector('.ppex-qty'))last.querySelector('.ppex-qty').value=e.qty;if(last.querySelector('.ppex-price'))last.querySelector('.ppex-price').value=e.price;}
+      }
+    });
+  }
+  recalc();
+  goTo('builder');
+}
+
+async function delQuote(qid){
+  showConfirm(async()=>{
+  quotes=quotes.filter(q=>q.id!==qid);
+  await saveAll();
+  renderQuotes();
+  });
+}
+
+// ─── QUOTES LIST ─────────────────────────────────────────────────────────────
+// Quoted amount shown in the list — the HIGHEST active package total, inc. VAT
+// (Essential / Premium / Premium Plus each included only if enabled).
+// Mirrors genPDF()'s totalIncVAT() exactly: doors + top boxes + drawer boxes
+// + ppExtras (Premium Plus) + shared (worktops/glass/extras).
+function quoteAmount(q){
+  const R=ratesOf(q);
+  const gsT=(q.glass?.sq||0)*R.gs;
+  const glT=(q.glass?.lq||0)*R.gl;
+  const extT=(q.extras||[]).reduce((a,e)=>a+(Number(e.qty)||0)*(Number(e.price)||0),0);
+  const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
+  const shared=gsT+glT+extT+wtT;
+
+  const dCount=q.drawers||0;
+  const ntb=q.topboxes||0;
+  const doors=q.doors||0;
+
+  const essDrawerT=dCount*drawerPrice(R,q.ess?.drawer||'none');
+  const essK=doors*(q.ess?.ppd??300)+ntb*(q.ess?.tppd??200)+essDrawerT;
+  const essOn=q.ess?.on!==false;
+
+  let packages=essOn?[essK]:[];
+
+  if(q.prem?.on){
+    const premDrawerT=dCount*drawerPrice(R,q.prem?.drawer||'none');
+    packages.push(doors*(q.prem.ppd||360)+ntb*(q.prem?.tppd??200)+premDrawerT);
+  }
+  if(q.pp?.on){
+    const ppDrawerT=dCount*drawerPrice(R,q.pp?.drawer||'none');
+    const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:(Number(e.qty)||0)*(Number(e.price)||0)),0);
+    packages.push(doors*(q.pp.ppd||360)+ntb*(q.pp?.tppd??200)+ppDrawerT+ppExtTotal);
+  }
+
+  const highestK=packages.length?Math.max(...packages):essK;
+  return Math.round((highestK+shared)*(1+VAT/100));
+}
+function renderQuotes(){
+  const el=document.getElementById('quotes-list');
+  const q_search=(document.getElementById('quotes-search')?.value||'').toLowerCase().trim();
+  let list=quotes;
+  if(q_search) list=quotes.filter(q=>{
+    const c=customers.find(x=>x.id===q.cid)||{};
+    return (c.name||'').toLowerCase().includes(q_search)||
+           (c.email||'').toLowerCase().includes(q_search)||
+           (c.phone||'').includes(q_search)||
+           String(q.id).slice(-4).includes(q_search);
+  });
+  if(!list.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">'+(q_search?'No quotes match your search.':'No quotes yet.')+'</p>';return;}
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Doors</th><th>Packages</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+    list.map(q=>{
+      const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};
+      const pkgs=(q.ess?.on!==false?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
+      const amt='€'+Math.round(quoteAmount(q)).toLocaleString('en-IE');
+      const stCur=q.status||'Draft';
+      const stOpts=['Draft','Sent','Accepted','Declined','Follow-Up'];
+      const stSelect=`<select class="fc badge b-${stCur.toLowerCase().replace(/\s+/g,'')}" style="font-size:11px;padding:4px 6px;width:auto;border:none;font-weight:600" onchange="markQuoteStatus(${q.id},this.value)">${stOpts.map(s=>`<option ${s===stCur?'selected':''}>${s}</option>`).join('')}</select>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button>${q.revisions?.length?'<button class="btn btn-o btn-sm" onclick="showQuoteHistory('+q.id+')">🕘 History</button>':''}<button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+    }).join('')+'</tbody></table></div>';
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDash(){
+  // Pipeline stats
+  document.getElementById('st-total').textContent=quotes.length;
+  document.getElementById('st-draft').textContent=quotes.filter(q=>q.status==='Draft').length;
+  document.getElementById('st-accepted').textContent=quotes.filter(q=>q.status==='Accepted').length;
+
+  // Invoice stats
+  document.getElementById('st-inv-total').textContent=invoices.length;
+  document.getElementById('st-inv-unpaid').textContent=invoices.filter(x=>x.status==='Unpaid').length;
+  document.getElementById('st-inv-paid').textContent=invoices.filter(x=>x.status==='Paid').length;
+
+  // Financial stats
+  const now=new Date(); const thisMonth=now.getMonth(); const thisYear=now.getFullYear();
+  const fmt=n=>'€'+Math.round(n).toLocaleString('en-IE');
+
+  // This month quoted — sum of quoteAmount() (the HIGHEST active package,
+  // inc. VAT — see quoteAmount()'s own comment) for quotes created this month.
+  const monthQuoted=quotes.filter(q=>{
+    const d=new Date(q.created||0);
+    return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;
+  }).reduce((s,q)=>s+quoteAmount(q),0);
+
+  // This month invoiced
+  const monthInvoiced=invoices.filter(x=>{
+    const d=new Date(x.date||0);
+    return d.getMonth()===thisMonth&&d.getFullYear()===thisYear;
+  }).reduce((s,x)=>s+(Number(x.total)||0),0);
+
+  // Outstanding = unpaid + partially paid balance
+  const outstanding=invoices.filter(x=>x.status!=='Paid').reduce((s,x)=>s+(Number(x.total)||0)-(Number(x.paidAmount)||0),0);
+
+  // Collected = all paid amounts
+  const collected=invoices.reduce((s,x)=>s+(Number(x.paidAmount)||0)+(x.status==='Paid'?(Number(x.total)||0)-(Number(x.paidAmount)||0):0),0);
+
+  document.getElementById('st-month-quotes').textContent=fmt(monthQuoted);
+  document.getElementById('st-month-invoiced').textContent=fmt(monthInvoiced);
+  document.getElementById('st-outstanding').textContent=fmt(outstanding);
+  document.getElementById('st-collected').textContent=fmt(collected);
+
+  // Recent quotes
+  const el=document.getElementById('dash-list');
+  const recent=quotes.slice(0,8);
+  if(!recent.length){el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No quotes yet. <a href="#" onclick="newQuote()" style="color:var(--g)">Create your first →</a></p>';return;}
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Quote #</th><th>Customer</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>'+
+    recent.map(q=>{const c=customers.find(x=>x.id===q.cid)||{name:'Unknown'};return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td><span class="badge b-${(q.status||'draft').toLowerCase()}">${q.status}</span></td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">Open</button></td></tr>`;}).join('')+
+  '</tbody></table></div>';
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────────────────
+function renderSettings(){
+  document.getElementById('s-ess-ppd').value=ST.ess_ppd;
+  document.getElementById('s-prem-ppd').value=ST.prem_ppd;
+  document.getElementById('s-pp-ppd').value=ST.pp_ppd;
+  document.getElementById('s-lam').value=ST.lam_rate;
+  document.getElementById('s-gs').value=ST.gs_price;
+  document.getElementById('s-gl-price').value=ST.gl_price;
+  document.getElementById('s-dr-cemux').value=ST.dr_cemux??60;
+  document.getElementById('s-dr-blum').value=ST.dr_blum??100;
+  document.getElementById('s-biz-phone').value=ST.biz_phone||'';
+  document.getElementById('s-biz-email').value=ST.biz_email||'';
+  document.getElementById('s-biz-web').value=ST.biz_web||'';
+  document.getElementById('s-biz-addr').value=ST.biz_addr||'';
+  document.getElementById('s-biz-bic').value=ST.biz_bic||'';
+  document.getElementById('s-biz-iban').value=ST.biz_iban||'';
+  document.getElementById('s-biz-vat').value=ST.biz_vat||'';
+  const el=document.getElementById('settings-extras');
+  // Extras price inputs are read (not written) here — they only commit into
+  // ST.extras inside saveSettings(), same as every other field on this
+  // screen. No 'change' listener: typing a new price must not take effect
+  // until Save Settings is actually pressed.
+  el.innerHTML=ST.extras.map((e,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--grayL)"><span>${e.name} <span style="color:var(--gray);font-size:11px">${e.unit}</span></span>${e.manual?'<span class="badge b-man">Manual</span>':`<input class="fc" type="number" min="0" value="${e.price}" data-i="${i}" style="width:90px;text-align:right">`}</div>`).join('');
+  const logo=load('logo');
+  if(logo) showLogo(logo);
+}
+function saveSettings(){
+  ST.ess_ppd=parseFloat(document.getElementById('s-ess-ppd').value)||300;
+  ST.prem_ppd=parseFloat(document.getElementById('s-prem-ppd').value)||360;
+  ST.pp_ppd=parseFloat(document.getElementById('s-pp-ppd').value)||360;
+  ST.lam_rate=parseFloat(document.getElementById('s-lam').value)||120;
+  ST.gs_price=parseFloat(document.getElementById('s-gs').value)||500;
+  ST.gl_price=parseFloat(document.getElementById('s-gl-price').value)||1000;
+  ST.dr_cemux=parseFloat(document.getElementById('s-dr-cemux').value)||60;
+  ST.dr_blum=parseFloat(document.getElementById('s-dr-blum').value)||100;
+  ST.biz_phone=document.getElementById('s-biz-phone').value.trim();
+  ST.biz_email=document.getElementById('s-biz-email').value.trim();
+  ST.biz_web=document.getElementById('s-biz-web').value.trim();
+  ST.biz_addr=document.getElementById('s-biz-addr').value.trim();
+  ST.biz_bic=document.getElementById('s-biz-bic').value.trim();
+  ST.biz_iban=document.getElementById('s-biz-iban').value.trim();
+  ST.biz_vat=document.getElementById('s-biz-vat').value.trim();
+  document.querySelectorAll('#settings-extras input[data-i]').forEach(inp=>{
+    ST.extras[inp.dataset.i].price=parseFloat(inp.value)||0;
+  });
+  paintDrawerLabels();
+  saveAll(); alert('✅ Settings saved!');
+}
+
+// ─── LOGO ────────────────────────────────────────────────────────────────────
+function uploadLogo(input){
+  const file=input.files[0]; if(!file)return;
+  if(file.size>2*1024*1024){alert('Image too large — please use an image under 2MB.');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const scale=Math.min(1,400/img.width,400/img.height);
+      canvas.width=Math.max(1,Math.round(img.width*scale));
+      canvas.height=Math.max(1,Math.round(img.height*scale));
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      let data='';
+      for(const quality of [0.8,0.6,0.4]){
+        data=canvas.toDataURL('image/jpeg',quality);
+        if(data.length<200000)break;
+      }
+      if(data.length>=200000){alert('Logo is still too large. Please choose a simpler image.');return;}
+      save('logo',data);ST.logo=data;showLogo(data);saveAll();
+    };
+    img.onerror=()=>alert('Could not read that image.');
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function showLogo(data){
+  document.getElementById('logo-img').src=data;
+  document.getElementById('logo-img').style.display='block';
+  document.getElementById('logo-ph').style.display='none';
+  document.getElementById('logo-remove-btn').style.display='inline-flex';
+}
+function removeLogo(){
+  if(!confirm('Remove logo?')) return;
+  save('logo','');
+  ST.logo='';
+  saveAll();
+  document.getElementById('logo-img').style.display='none';
+  document.getElementById('logo-ph').style.display='block';
+  document.getElementById('logo-remove-btn').style.display='none';
+  document.getElementById('logo-file').value='';
+}
+
+// ─── PDF ─────────────────────────────────────────────────────────────────────
+function genPDF(qid,renderDataUrls,revisionIndex=null){
+  const current=quotes.find(x=>x.id===qid); if(!current){alert('Save the quote first.');return;}
+  const q=revisionIndex===null?current:current.revisions?.[revisionIndex];
+  if(!q){alert('That quote version is unavailable.');return;}
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
+  const logo=load('logo')||'';
+
+  // ── Calculations ──────────────────────────────────────────────────────────
+  const R=ratesOf(q);
+  const wtT=q.wt?.wtOn?(q.wt?.wtP||0):0;
+  const gsT=(q.glass?.sq||0)*R.gs;
+  const glT=(q.glass?.lq||0)*R.gl;
+  const glassT=gsT+glT;
+  const extT=(q.extras||[]).reduce((s,e)=>s+e.qty*e.price,0);
+  const shared=extT+wtT+glassT;
+
+  const DLABELS={none:'',cemux:'Cemux Soft-Close',blum:'Blum Merivobox'};
+  const dCount=q.drawers||0;
+  const ntb=q.topboxes||0;
+
+  // ── Date & reference ──────────────────────────────────────────────────────
+  const quoteDate=new Date(q.savedAt||q.created||Date.now());
+  const dateStr=quoteDate.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const validTo=new Date(quoteDate); validTo.setDate(validTo.getDate()+30);
+  const validStr=validTo.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const ref='EK-'+String(q.num||q.id).padStart(4,'0')+'-v'+(q.version||1);
+  const firstName=(c.name||'').split(' ')[0]||'there';
+
+  // ── Per-package totals ────────────────────────────────────────────────────
+  const essDrawerT=dCount*drawerPrice(R,q.ess?.drawer||'none');
+  const nDoors=q.doors||0;
+  const essK=nDoors*(q.ess?.ppd??300)+ntb*(q.ess?.tppd??200)+essDrawerT;
+
+  const ppExtTotal=(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0);
+  const premDrawerT=dCount*drawerPrice(R,q.prem?.drawer||'none');
+  const ppDrawerT=dCount*drawerPrice(R,q.pp?.drawer||'none');
+
+  function totalIncVAT(k,ppExt){
+    const ex=k+(ppExt||0)+shared;
+    return Math.round(ex*(1+VAT/100));
+  }
+  const money=n=>'€'+Math.round(n).toLocaleString('en-IE');
+
+  // ── Active packages ───────────────────────────────────────────────────────
+  const essDesc='Vinyl wrap or melamine doors\nBlum soft-close hinges\nInstallation';
+  const premDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nProfessional installation';
+  const ppDescFallback='Lacquered or solid wood doors\nBlum soft-close hinges\nPremium add-on systems\nProfessional installation';
+
+  const activePkgs=[];
+  if(q.ess?.on!==false) activePkgs.push({name:'Essential',k:essK,desc:essDesc,drawer:q.ess?.drawer||'none',ppExt:0,extras:[]});
+  if(q.prem?.on) activePkgs.push({name:'Premium',k:nDoors*(q.prem?.ppd??360)+ntb*(q.prem?.tppd??200)+premDrawerT,desc:q.prem?.desc||premDescFallback,drawer:q.prem?.drawer||'none',ppExt:0,extras:[]});
+  if(q.pp?.on) activePkgs.push({
+    name:'Premium Plus',
+    k:nDoors*(q.pp?.ppd??360)+ntb*(q.pp?.tppd??200)+ppDrawerT,
+    desc:q.pp?.desc||ppDescFallback,
+    drawer:q.pp?.drawer||'none',
+    ppExt:ppExtTotal,
+    extras:(q.pp?.extras||[]).filter(e=>e.name)
+  });
+  if(!activePkgs.length){alert('Please select at least one package (Essential, Premium, or Premium Plus) before generating a PDF.');return;}
+
+  const showExVat=q.showExVat||false;
+  const descLines=d=>(d||'').split('\n').map(s=>s.trim()).filter(Boolean);
+
+  // ── Logo ──────────────────────────────────────────────────────────────────
+  const logoHtml=logo
+    ?`<img src="${logo}" style="max-height:60px;max-width:200px;object-fit:contain">`
+    :`<div class="wordmark">Elite Kitchens</div><div class="wordmark-sub">Bespoke kitchens · design, supply &amp; fit</div>`;
+
+  // ── Specification facts ───────────────────────────────────────────────────
+  // Deliberately no door / top box / drawer counts here. Those are the units
+  // the price is built from, and printing them lets a customer divide the
+  // total by the count and read the per-door rate straight off the quote.
+  // Quantities stay internal; the customer sees what they're getting, not how
+  // it was costed.
+  const facts=[];
+  facts.push(['Hinges &amp; runners','Blum soft-close throughout']);
+  facts.push(['Panels &amp; gables','Finished to match your door colour']);
+  facts.push(['Handles','From our standard range']);
+  if(wtT>0) facts.push(['Worktops','Supplied and fitted<div style="font-size:9.5px;color:var(--faint);margin-top:2px">Laminate worktops are not covered against water damage.</div>']);
+  const factRows=facts.map(f=>
+    `<tr><td class="fact-k">${f[0]}</td><td class="fact-v">${f[1]}</td></tr>`).join('');
+
+  // ── Package cards ─────────────────────────────────────────────────────────
+  const colW=Math.floor(100/activePkgs.length);
+  // Build every card's spec list first, so all cards can be padded to the same
+  // number of lines — otherwise the prices sit at different heights and the
+  // row of options looks unconsidered.
+  const specs=activePkgs.map(p=>{
+    const out=[];
+    descLines(p.desc).slice(0,4).forEach(l=>out.push(esc(l)));
+    const drawerLbl=DLABELS[p.drawer]||'';
+    // Don't repeat the drawer box if the description already names it.
+    if(drawerLbl&&dCount>0&&!out.some(l=>l.toLowerCase().includes(drawerLbl.toLowerCase()))){
+      out.push(esc(drawerLbl)+' drawer boxes');
+    }
+    p.extras.filter(e=>e.free).forEach(e=>out.push(esc(e.name)));
+    p.extras.filter(e=>!e.free&&e.qty>0).forEach(e=>out.push(esc(e.name)+(e.qty>1?' ×'+e.qty:'')));
+    return out;
+  });
+  const maxSpec=Math.max(...specs.map(x=>x.length));
+
+  const cards=activePkgs.map((p,i)=>{
+    const inc=totalIncVAT(p.k,p.ppExt);
+    const ex=Math.round(p.k+(p.ppExt||0)+shared);
+    const lines=specs[i].slice();
+    while(lines.length<maxSpec) lines.push(null);   // pad to align the prices
+    return `<td class="pkg" style="width:${colW}%">
+      <div class="pkg-name">${esc(p.name)}</div>
+      <div class="pkg-spec">${lines.map(s=>s===null
+        ? `<div class="pkg-li" style="visibility:hidden">&nbsp;</div>`
+        : `<div class="pkg-li">${s}</div>`).join('')}</div>
+      <div class="pkg-rule"></div>
+      <div class="pkg-price">${money(inc)}</div>
+      <div class="pkg-vat">including VAT at ${VAT}%</div>
+      ${showExVat?`<div class="pkg-ex">${money(ex)} excluding VAT</div>`:''}
+    </td>`;
+  }).join('');
+
+  // ── What's included, split into two groups ────────────────────────────────
+  // Items in the kitchen are kept separate from work carried out, so a paid
+  // upgrade doesn't read like a free promise. Custom extras land in the
+  // kitchen group, which is correct nearly always.
+  const inclKitchen=[];
+  if(q.incl?.sink)      inclKitchen.push('Sink');
+  if(q.incl?.extractor) inclKitchen.push('Extractor');
+  if(wtT>0)             inclKitchen.push('Worktops');
+  const gsQty=q.glass?.sq||0, glQty=q.glass?.lq||0;
+  if(gsQty>0) inclKitchen.push(gsQty+' small glazed door cabinet'+(gsQty>1?'s':''));
+  if(glQty>0) inclKitchen.push(glQty+' large glazed larder door'+(glQty>1?'s':''));
+  (q.extras||[]).filter(e=>e.name).forEach(e=>inclKitchen.push(esc(e.name)+((e.qty>1)?' ×'+e.qty:'')));
+
+  const inclWork=['Kitchen cabinetry — supply and installation'];
+  if(q.incl?.removal)    inclWork.push('Removal of your existing kitchen');
+  if(q.incl?.electrical) inclWork.push('Electrical work');
+  if(q.incl?.plumbing)   inclWork.push('Plumbing');
+
+  const inclCol=arr=>arr.map(i=>`<div class="tick">${i}</div>`).join('');
+
+  const excl=['Appliances'];
+  if(!q.incl?.electrical) excl.push('Electrical work');
+  if(!q.incl?.plumbing)   excl.push('Plumbing');
+  excl.push('Gas disconnection and reconnection — arranged by you with a registered RGI installer');
+  excl.push('Tiling &amp; flooring');
+  excl.push('Painting and decorating — best done once the kitchen is fitted');
+  excl.push('Skip and waste removal — arranged by you');
+
+  // ── Full HTML ─────────────────────────────────────────────────────────────
+  const html=`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Elite Kitchens — Quotation ${ref}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Faustina:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:A4;margin:0}
+  :root{
+    --ink:#16130F; --soft:#5C554B; --faint:#8B8377;
+    --deep:#22302A; --brass:#9C7233; --grn:#3F6B4A; --excl:#8A3B2E;
+    --rule:#DFDBD2; --tint:#F6F3ED;
+  }
+  body{
+    font-family:'IBM Plex Sans','Segoe UI',Arial,sans-serif;
+    font-size:11.5px; line-height:1.55; color:var(--ink); background:#fff;
+    padding:15mm 16mm 13mm;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media print{ body{padding:13mm 14mm} .no-print{display:none!important} }
+  .serif{font-family:'Faustina',Georgia,'Times New Roman',serif}
+  .wordmark{font-family:'Faustina',Georgia,serif;font-size:27px;font-weight:600;letter-spacing:-.01em;line-height:1.05}
+  .wordmark-sub{font-size:9.5px;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-top:4px}
+  .contact{text-align:right;font-size:10.5px;line-height:1.85;color:var(--soft)}
+  .rule{height:1px;background:var(--rule);margin:13px 0}
+  .rule-ink{height:2px;background:var(--ink);margin:0 0 9px}
+
+  .eyebrow{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .sec-h{font-family:'Faustina',Georgia,serif;font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:9px}
+  .sec{margin-top:17px;page-break-inside:avoid}
+
+  .meta td{padding:0;vertical-align:top}
+  .meta .lbl{font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+  .meta .val{font-size:12px;font-weight:500}
+  .meta .ref{font-family:'Faustina',Georgia,serif;font-size:19px;font-weight:600}
+
+  .greet{font-size:12px;margin-bottom:5px}
+  .lede{font-size:12px;line-height:1.7;color:var(--soft);max-width:148mm}
+
+  .fact-k{font-size:11px;color:var(--faint);padding:4px 14px 4px 0;white-space:nowrap;vertical-align:top;width:34%}
+  .fact-v{font-size:11px;padding:4px 0;vertical-align:top}
+
+  .pkgs{width:100%;border-collapse:separate;border-spacing:9px 0;table-layout:fixed;margin:0 -9px}
+  .pkg{vertical-align:top;background:var(--tint);border:1px solid var(--rule);padding:13px 14px 15px}
+  .pkg-name{font-family:'Faustina',Georgia,serif;font-size:14.5px;font-weight:600;margin-bottom:8px}
+  .pkg-spec{}
+  .pkg-li{font-size:10.5px;color:var(--soft);line-height:1.5;padding-left:9px;position:relative;margin-bottom:2px}
+  .pkg-li:before{content:"–";position:absolute;left:0;color:var(--faint)}
+  .pkg-rule{height:2px;background:var(--brass);width:26px;margin:11px 0 8px}
+  .pkg-price{font-family:'Faustina',Georgia,serif;font-size:25px;font-weight:600;letter-spacing:-.015em;line-height:1}
+  .pkg-vat{font-size:9.5px;color:var(--faint);margin-top:3px}
+  .pkg-ex{font-size:9.5px;color:var(--faint);margin-top:1px}
+
+  .tick{font-size:10.5px;line-height:1.5;padding-left:14px;position:relative;margin-bottom:3px;color:var(--ink)}
+  .tick:before{content:"✓";position:absolute;left:0;color:var(--grn);font-weight:600}
+  .cross{font-size:10.5px;line-height:1.5;padding-left:14px;position:relative;margin-bottom:3px;color:var(--soft)}
+  .cross:before{content:"✕";position:absolute;left:0;color:var(--excl)}
+
+  .terms{background:var(--deep);color:#fff;padding:13px 16px}
+  .terms .eyebrow{color:rgba(255,255,255,.55)}
+  .terms-row{font-size:11px;line-height:1.75;color:rgba(255,255,255,.9)}
+  .terms-row b{color:#fff;font-weight:600}
+
+  .sign{font-size:11px;line-height:1.7}
+  .sign .nm{font-family:'Faustina',Georgia,serif;font-size:14px;font-weight:600}
+
+  .render-pg{page-break-before:always;text-align:center;padding-top:6mm}
+</style>
+</head>
+<body>
+
+<div class="no-print" style="background:#22302A;color:#fff;padding:10px 16px;margin:-15mm -16mm 12mm;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px">
+  <button onclick="dlPDF()" style="background:#9C7233;color:#fff;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Download PDF</button>
+  <button onclick="window.print()" style="background:#fff;color:#22302A;border:none;padding:8px 18px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Print</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+<script>
+function dlPDF(){
+  var bar=document.querySelector('.no-print');
+  bar.style.display='none';
+  document.body.style.padding='13mm 14mm';
+  var done=function(){ bar.style.display='flex'; document.body.style.padding='15mm 16mm'; };
+  // Wait for the webfonts, or the PDF renders in a fallback face.
+  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(function(){
+    html2pdf().set({
+      margin:0, filename:'EliteKitchens-${ref}.pdf',
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true},
+      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy']}
+    }).from(document.body).save().then(done,done);
+  });
+}
+<\/script>
+
+<table style="width:100%"><tr>
+  <td style="vertical-align:top">${logoHtml}</td>
+  <td class="contact">
+    ${ST.biz_phone?esc(ST.biz_phone)+'<br>':''}
+    ${ST.biz_email?esc(ST.biz_email)+'<br>':''}
+    ${ST.biz_web?esc(ST.biz_web)+'<br>':''}
+    ${ST.biz_addr?esc(ST.biz_addr):''}
+    ${ST.biz_vat?'<br>VAT '+esc(ST.biz_vat):''}
+  </td>
+</tr></table>
+
+<div class="rule"></div>
+
+<table class="meta" style="width:100%"><tr>
+  <td style="width:34%">
+    <div class="lbl">Quotation</div>
+    <div class="ref">${ref}</div>
+  </td>
+  <td style="width:33%">
+    <div class="lbl">Date</div>
+    <div class="val">${dateStr}</div>
+  </td>
+  <td style="width:33%">
+    <div class="lbl">Valid until</div>
+    <div class="val">${validStr}</div>
+  </td>
+</tr></table>
+
+<div class="rule"></div>
+
+<div class="eyebrow" style="margin-bottom:5px">Prepared for</div>
+<div class="serif" style="font-size:17px;font-weight:600;margin-bottom:2px">${esc(c.name||'')}</div>
+${c.addr?`<div style="font-size:11px;color:var(--soft);margin-bottom:11px">${esc(c.addr)}</div>`:'<div style="margin-bottom:9px"></div>'}
+
+<div class="greet">Dear ${esc(firstName)},</div>
+<div class="lede">Thank you for the opportunity to quote for your new kitchen. Below you'll find the specification and pricing for the work as we discussed it. A detailed design is prepared on confirmation of order and receipt of deposit.</div>
+
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">Your kitchen</div>
+  <table style="width:100%"><tr>
+    <td style="width:48%;vertical-align:top"><table style="width:100%">${factRows}</table></td>
+    <td style="width:4%"></td>
+    <td style="width:48%;vertical-align:top;font-size:11px;color:var(--soft);line-height:1.65">
+      Every cabinet is made to fit your room rather than assembled from stock sizes, with panels and gables finished to match the doors you choose. Hinges and runners are Blum throughout, soft-close as standard.
+    </td>
+  </tr></table>
+</div>
+
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">${activePkgs.length>1?'Your options':'Your quotation'}</div>
+  <table class="pkgs"><tr>${cards}</tr></table>
+</div>
+
+<div class="sec">
+  <div class="rule-ink"></div>
+  <div class="sec-h">${activePkgs.length>1?'Every option includes':'Included'}</div>
+  <table style="width:100%"><tr>
+    ${inclKitchen.length?`<td style="width:49%;vertical-align:top">
+      <div class="eyebrow" style="margin-bottom:7px">In your kitchen</div>
+      ${inclCol(inclKitchen)}
+    </td>
+    <td style="width:2%"></td>`:''}
+    <td style="width:${inclKitchen.length?'49':'100'}%;vertical-align:top">
+      <div class="eyebrow" style="margin-bottom:7px">Work included</div>
+      ${inclCol(inclWork)}
+    </td>
+  </tr></table>
+</div>
+
+<div class="sec">
+  <table style="width:100%"><tr>
+    <td style="width:47%;vertical-align:top;padding-right:14px">
+      <div class="eyebrow" style="margin-bottom:7px">Not included</div>
+      ${excl.map(e=>`<div class="cross">${e}</div>`).join('')}
+    </td>
+    <td style="width:53%;vertical-align:top">
+      <div class="terms">
+        <div class="eyebrow" style="margin-bottom:7px">Terms</div>
+        <div class="terms-row"><b>30%</b> deposit to secure your installation date</div>
+        <div class="terms-row"><b>70%</b> on completion</div>
+        <div class="terms-row"><b>6-month</b> snagging after completion</div>
+        <div class="terms-row" style="margin-top:5px;color:rgba(255,255,255,.65)">This quotation is valid until ${validStr}.</div>
+      </div>
+    </td>
+  </tr></table>
+</div>
+
+<div class="sec sign">
+  <div class="rule"></div>
+  <div style="color:var(--soft);margin-bottom:9px">I'd be glad to talk anything through — changes to the spec, or how a different door style would look in your room. Just give me a call.</div>
+  <div style="margin-bottom:2px">Kind regards,</div>
+  <div class="nm">Thomas</div>
+  <div style="color:var(--soft)">Elite Kitchens${ST.biz_phone?' · '+esc(ST.biz_phone):''}${ST.biz_email?' · '+esc(ST.biz_email):''}</div>
+</div>
+
+${(renderDataUrls&&renderDataUrls.length)?renderDataUrls.map((url,i)=>`
+<div class="render-pg">
+  <div class="eyebrow" style="margin-bottom:10px">Design render${renderDataUrls.length>1?' '+(i+1)+' of '+renderDataUrls.length:''} · ${ref}</div>
+  <img src="${url}" style="max-width:100%;max-height:225mm;object-fit:contain;display:block;margin:0 auto">
+  <div style="font-size:9.5px;color:var(--faint);margin-top:12px">Indicative render. Final design confirmed at detailed design stage.</div>
+</div>`).join(''):''}
+
+
+</body>
+</html>`;
+
+  showDocViewer(html);
+  if(renderDataUrls&&renderDataUrls.length) showToast(`📸 ${renderDataUrls.length} render${renderDataUrls.length>1?'s':''} attached — scroll down in PDF to see ${renderDataUrls.length>1?'them':'it'}`,'#2e7d32');
+}
+
+function saveInvoiceRecord(qid, pkgKey, invNum, total){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
+  const existing=invoices.findIndex(x=>x.id===qid+'_'+pkgKey);
+  const invRecord={
+    id:qid+'_'+pkgKey,
+    qid,pkgKey,
+    invNum,
+    customerName:c.name||'Unknown',
+    customerId:q.cid,
+    // An issued invoice must stay tied to the quote version it was made from.
+    quoteSnapshot:existing>=0?(invoices[existing].quoteSnapshot||null):structuredClone((({revisions,...snapshot})=>snapshot)(q)),
+    total,
+    date:new Date().toISOString(),
+    status:'Unpaid',
+    paidAmount:0,
+    sentToAccountant:false
+  };
+  if(existing>=0){
+    invRecord.date=invoices[existing].date||invRecord.date;
+    invRecord.status=invoices[existing].status;
+    invRecord.paidAmount=invoices[existing].paidAmount;
+    invRecord.sentToAccountant=invoices[existing].sentToAccountant;
+    invoices[existing]=invRecord;
+  } else {
+    invoices.unshift(invRecord);
+  }
+  // Auto-mark the quote as Accepted
+  const qi=quotes.findIndex(x=>x.id===qid);
+  if(qi>=0 && quotes[qi].status!=='Accepted'){
+    quotes[qi].status='Accepted';
+  }
+  saveAll();
+}
+
+
+
+// ─── INVOICE ──────────────────────────────────────────────────────────────────
+function selectInvoicePkg(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q){alert('Save the quote first.');return;}
+  const active=[];
+  if(q.ess?.on!==false) active.push({key:'ess',label:'Essential'});
+  if(q.prem?.on) active.push({key:'prem',label:'Premium'});
+  if(q.pp?.on)   active.push({key:'pp',  label:'Premium Plus'});
+
+  if(!active.length){alert('Please select at least one package before generating an invoice.');return;}
+  if(active.length===1){genInvoice(qid,active[0].key);return;}
+
+  // Multi-package: ask which one via the in-page modal (#pkg-modal)
+  _pkgModalQid=qid;
+  const optHtml=active.map(p=>`
+    <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid #e5e7eb;border-radius:8px;cursor:pointer;margin-bottom:8px;font-size:14px">
+      <input type="radio" name="pkg-modal-choice" value="${p.key}" style="width:16px;height:16px">
+      <span><strong>${p.label}</strong></span>
+    </label>`).join('');
+  document.getElementById('pkg-modal-opts').innerHTML=optHtml;
+  document.getElementById('pkg-modal').style.display='flex';
+}
+
+let _pkgModalQid=null;
+function pkgModalGo(){
+  const sel=document.querySelector('input[name=pkg-modal-choice]:checked');
+  if(!sel){alert('Please select a package.');return;}
+  const qid=_pkgModalQid;
+  document.getElementById('pkg-modal').style.display='none';
+  _pkgModalQid=null;
+  genInvoice(qid, sel.value);
+}
+function pkgModalCancel(){
+  document.getElementById('pkg-modal').style.display='none';
+  _pkgModalQid=null;
+}
+
+function genInvoice(qid, pkgKey){
+  const current=quotes.find(x=>x.id===qid); if(!current) return;
+  const issued=invoices.find(x=>x.id===qid+'_'+pkgKey);
+  const q=issued?.quoteSnapshot||current;
+  const c=q.customerSnapshot||customers.find(x=>x.id===q.cid)||{};
+  const logo=load('logo')||'';
+
+  const R=ratesOf(q);
+  const DLABELS={none:'Standard',cemux:'Cemux Soft-Close',blum:'Blum Merivobox'};
+  const dCount=q.drawers||0;
+
+  // ── Chosen package ────────────────────────────────────────────────────────
+  const pkgMap={
+    ess:{label:'Essential',ppd:q.ess?.ppd??300,tppd:q.ess?.tppd??200,desc:'Kitchen Cabinetry — Essential',drawer:q.ess?.drawer||'none'},
+    prem:{label:'Premium',ppd:q.prem?.ppd??360,tppd:q.prem?.tppd??200,desc:'Kitchen Cabinetry — Premium',drawer:q.prem?.drawer||'none'},
+    pp:{label:'Premium Plus',ppd:q.pp?.ppd??360,tppd:q.pp?.tppd??200,desc:'Kitchen Cabinetry — Premium Plus',drawer:q.pp?.drawer||'none'}
+  };
+  const pkg=pkgMap[pkgKey]||pkgMap.ess;
+  const ppExtTotal=pkgKey==='pp'?(q.pp?.extras||[]).reduce((s,e)=>s+(e.free?0:e.qty*e.price),0):0;
+
+  // ── Line items ─────────────────────────────────────────────────────────────
+  const items=[];
+
+  // Kitchen — single line covering cabinetry, drawers, extras, glass (customer sees one price)
+  const ntbInv=q.topboxes||0;
+  const cabNet=(Number(q.doors)||0)*(Number(pkg.ppd)||300)+(ntbInv*(Number(pkg.tppd)||200));
+  const drawerNet=dCount*((pkg.drawer&&pkg.drawer!=='none')?drawerPrice(R,pkg.drawer):0);
+  const ppExtNet=pkgKey==='pp'?(q.pp?.extras||[]).filter(e=>!e.free).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0):0;
+  const gsQ=q.glass?.sq||0, glQ=q.glass?.lq||0;
+  const glassNet=gsQ*R.gs+glQ*R.gl;
+  const extrasNet=(q.extras||[]).reduce((s,e)=>s+(Number(e.qty)||0)*(Number(e.price)||0),0);
+  const wtNet=q.wt?.wtOn?(q.wt?.wtP||0):0;
+  const kitchenTotal=cabNet+drawerNet+ppExtNet+glassNet+extrasNet+wtNet;
+  // Build included items list (shown on invoice, no prices)
+  const includedItems=[];
+  if(wtNet>0) includedItems.push('Worktop');
+  if(dCount>0&&pkg.drawer&&pkg.drawer!=='none') includedItems.push(`${DLABELS[pkg.drawer]} drawer boxes (${dCount} units)`);
+  if(pkgKey==='pp')(q.pp?.extras||[]).filter(e=>e.name&&(e.free||e.qty>0)).forEach(e=>includedItems.push(esc(e.name)));
+  const igsQ=q.glass?.sq||0, iglQ=q.glass?.lq||0;
+  if(igsQ>0) includedItems.push(`Glazed door cabinet${igsQ>1?'s':''} — small (${igsQ})`);
+  if(iglQ>0) includedItems.push(`Glazed larder door${iglQ>1?'s':''} — large (${iglQ})`);
+  (q.extras||[]).filter(e=>e.name).forEach(e=>includedItems.push(esc(e.name)));
+
+  const includedHtml=includedItems.length
+    ?'<div style="margin-top:6px">'+includedItems.map(it=>'<div style="font-size:11px;color:#4b5563;padding:2px 0">&#8226; '+it+'</div>').join('')+'</div>'
+    :'';
+
+  items.push({desc:'Kitchen Supply & Installation — '+pkg.label+includedHtml,qty:1,rate:kitchenTotal,amt:kitchenTotal});
+
+
+
+  // ── Totals (with VAT-correct rounding) ────────────────────────────────────
+  // We round the gross TOTAL down to the nearest euro, then work backwards to
+  // a "Rounding" line item on the NET subtotal — so VAT is correctly charged
+  // on the discounted (taxable) amount, exactly as Revenue requires. This is
+  // the same method used on the Metric Kitchens / MK Doors invoice template.
+  const rawSubtotal=items.reduce((s,i)=>s+i.amt,0);
+  const rawTotal=rawSubtotal*(1+VAT/100);
+  const total=Math.floor(rawTotal);
+  const newSubtotal=total/(1+VAT/100);
+  const roundingNet=rawSubtotal-newSubtotal;
+  if(roundingNet>0.004){
+    items.push({desc:'Rounding',qty:1,rate:-roundingNet,amt:-roundingNet});
+  }
+  const subtotal=items.reduce((s,i)=>s+i.amt,0);
+  const vatAmt=total-subtotal;
+  const deposit=total*0.30;
+  const balance=total*0.70;
+
+  // ── Invoice meta ──────────────────────────────────────────────────────────
+  const invNum=allocInvoiceNum(qid,pkgKey);
+  const today=new Date(issued?.date||Date.now());
+  const dateStr=today.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+  const due=new Date(today); due.setDate(due.getDate()+30);
+  const dueStr=due.toLocaleDateString('en-IE',{day:'numeric',month:'long',year:'numeric'});
+
+  function fmt(n){return '€'+Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+  function fmtSigned(n){return n<0?'('+fmt(n)+')':fmt(n)}
+
+  const logoHtml=logo
+    ?`<img src="${logo}" style="max-height:70px;max-width:200px;object-fit:contain">`
+    :`<div style="font-size:22px;font-weight:900;color:#111;letter-spacing:-1px">ELITE KITCHENS</div>`;
+
+  const itemRows=items.map((it,i)=>`
+    <tr style="background:${i%2?'#f9fafb':'#fff'}">
+      <td style="padding:10px 14px;font-size:12px">${it.desc}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:center">${it.qty}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:right">${fmtSigned(it.rate)}</td>
+      <td style="padding:10px 14px;font-size:12px;text-align:right;font-weight:600">${fmtSigned(it.amt)}</td>
+    </tr>`).join('');
+
+  const html=`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${invNum} — Elite Kitchens</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:A4;margin:0}
+  body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#111;background:#fff;padding:20mm}
+  @media print{body{padding:14mm 16mm}.no-print{display:none!important}}
+  table{width:100%;border-collapse:collapse}
+  hr.dv{border:none;border-top:1px solid #e5e7eb;margin:18px 0}
+</style>
+</head>
+<body>
+
+<div class="no-print" style="background:#111827;color:#fff;padding:12px 20px;margin:-20mm -20mm 20mm;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px">
+  <span id="save-confirm" style="font-size:13px;color:#6ee7b7;display:none">✅ Saved to Invoices!</span>
+  <button id="save-inv-btn" onclick="doSave()" style="background:#10b981;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">💾 Save to Invoices</button>
+  <button onclick="dlInvPDF()" style="background:#6366f1;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">⬇️ Download PDF</button>
+  <button onclick="window.print()" style="background:#fff;color:#111827;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Print</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+<script>
+function dlInvPDF(){
+  const toolbar=document.querySelector('.no-print');
+  toolbar.style.display='none';
+  document.body.style.padding='14mm 16mm';
+  html2pdf().set({
+    margin:0,filename:'${invNum}-EliteKitchens.pdf',
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(document.body).save().then(()=>{
+    toolbar.style.display='flex';
+    document.body.style.padding='20mm';
+  });
+}
+<\/script>
+<script>
+function doSave(){
+  if(window.parent && window.parent.saveInvoiceRecord){
+    window.parent.saveInvoiceRecord(${qid},'${pkgKey}','${invNum}',${total});
+    document.getElementById('save-confirm').style.display='inline';
+    document.getElementById('save-inv-btn').textContent='✅ Saved';
+    document.getElementById('save-inv-btn').style.background='#065f46';
+    document.getElementById('save-inv-btn').disabled=true;
+  } else {
+    alert('Could not save — please try reopening the invoice from the app.');
+  }
+}
+<\/script>
+
+<!-- HEADER -->
+<table style="margin-bottom:24px"><tr>
+  <td style="vertical-align:top">${logoHtml}</td>
+  <td style="text-align:right;vertical-align:top">
+    <div style="font-size:32px;font-weight:900;color:#111827;letter-spacing:-1px;margin-bottom:4px">INVOICE</div>
+    <div style="font-size:13px;color:#6b7280">${invNum}</div>
+  </td>
+</tr></table>
+
+<hr class="dv">
+
+<!-- FROM / BILL TO / DATES -->
+<table style="margin-bottom:24px"><tr>
+  <td style="vertical-align:top;width:35%">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px">From</div>
+    <div style="font-weight:700;margin-bottom:3px">Elite Kitchens</div>
+    <div style="font-size:12px;color:#374151;line-height:1.7">
+      ${ST.biz_phone}<br>
+      ${ST.biz_email}<br>
+      ${ST.biz_addr}${ST.biz_vat?'<br>VAT: '+ST.biz_vat:''}
+    </div>
+  </td>
+  <td style="vertical-align:top;width:35%">
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px">Bill To</div>
+    <div style="font-weight:700;margin-bottom:3px">${esc(c.name)}</div>
+    <div style="font-size:12px;color:#374151;line-height:1.7">
+      ${c.addr?esc(c.addr)+'<br>':''}
+      ${c.phone?esc(c.phone)+'<br>':''}
+      ${esc(c.email)}
+    </div>
+  </td>
+  <td style="vertical-align:top;text-align:right;width:30%">
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:3px">Issue Date</div>
+      <div style="font-size:12px">${dateStr}</div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:3px">Due Date</div>
+      <div style="font-size:12px">${dueStr}</div>
+    </div>
+  </td>
+</tr></table>
+
+<hr class="dv">
+
+<!-- LINE ITEMS TABLE -->
+<table style="border-collapse:collapse;margin-bottom:0">
+  <thead>
+    <tr style="background:#111827;color:#fff">
+      <th style="padding:11px 14px;text-align:left;font-size:12px;font-weight:700;width:55%">Description</th>
+      <th style="padding:11px 14px;text-align:center;font-size:12px;font-weight:700;width:10%">Qty</th>
+      <th style="padding:11px 14px;text-align:right;font-size:12px;font-weight:700;width:17%">Rate</th>
+      <th style="padding:11px 14px;text-align:right;font-size:12px;font-weight:700;width:18%">Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${itemRows}
+  </tbody>
+</table>
+
+<!-- TOTALS -->
+<table style="margin-top:0">
+  <tr><td colspan="3"></td></tr>
+  <tr style="border-top:1px solid #e5e7eb">
+    <td style="width:55%;padding:10px 0"></td>
+    <td style="width:27%;padding:10px 14px;font-size:12px;color:#6b7280;text-align:right">Subtotal (exc. VAT)</td>
+    <td style="width:18%;padding:10px 14px;font-size:12px;text-align:right">${fmt(subtotal)}</td>
+  </tr>
+  <tr>
+    <td></td>
+    <td style="padding:6px 14px;font-size:12px;color:#6b7280;text-align:right">VAT (13.5%)</td>
+    <td style="padding:6px 14px;font-size:12px;text-align:right">${fmt(vatAmt)}</td>
+  </tr>
+  <tr style="background:#111827;color:#fff">
+    <td style="padding:12px 14px"></td>
+    <td style="padding:12px 14px;font-size:14px;font-weight:700;text-align:right">TOTAL</td>
+    <td style="padding:12px 14px;font-size:14px;font-weight:700;text-align:right">${fmt(total)}</td>
+  </tr>
+</table>
+
+<hr class="dv" style="margin-top:20px">
+
+<!-- PAYMENT BREAKDOWN -->
+<div style="margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px">Payment Schedule</div>
+  <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px">
+    <tr style="background:#f3f4f6">
+      <td style="padding:10px 14px;font-weight:700">Booking Deposit (30%) — due now</td>
+      <td style="padding:10px 14px;text-align:right;font-weight:700;color:#111827">${fmt(deposit)}</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 14px">Balance (70%) — due on completion</td>
+      <td style="padding:10px 14px;text-align:right">${fmt(balance)}</td>
+    </tr>
+  </table>
+</div>
+
+<!-- BANK DETAILS -->
+<div style="margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px">Bank Account Details</div>
+  <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px">
+    <tr style="background:#f9fafb">
+      <td style="padding:8px 14px;font-weight:700;width:25%">BIC</td>
+      <td style="padding:8px 14px">${ST.biz_bic}</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 14px;font-weight:700">IBAN</td>
+      <td style="padding:8px 14px">${ST.biz_iban}</td>
+    </tr>
+  </table>
+</div>
+
+<!-- PLEASE NOTE -->
+<div style="margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px">Please Note — Not Included in This Price</div>
+  <table style="border-collapse:collapse;border:1px solid #e5e7eb;font-size:12px;width:100%">
+    <tr style="background:#f9fafb"><td style="padding:8px 14px;color:#c62828">✗ Appliances</td></tr>
+    ${!q.incl?.electrical?'<tr><td style="padding:8px 14px;color:#c62828">✗ Electrical work</td></tr>':''}
+    ${!q.incl?.plumbing?'<tr style="background:#f9fafb"><td style="padding:8px 14px;color:#c62828">✗ Plumbing</td></tr>':''}
+    <tr style="background:#f9fafb"><td style="padding:8px 14px;color:#c62828">✗ Tiling &amp; flooring</td></tr>
+  </table>
+</div>
+
+<div style="font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:14px;text-align:center">
+  Elite Kitchens · ${ST.biz_phone} · ${ST.biz_email} · ${ST.biz_addr}
+</div>
+
+</body>
+</html>`;
+
+  showDocViewer(html);
+}
+
+
+// ─── CONFIRM MODAL ───────────────────────────────────────────────────────────
+let _confirmCallback=null;
+function showConfirm(cb){
+  _confirmCallback=cb;
+  const m=document.getElementById('confirm-modal');
+  if(m) m.style.display='flex';
+}
+function confirmYes(){
+  const m=document.getElementById('confirm-modal');
+  if(m) m.style.display='none';
+  if(_confirmCallback) _confirmCallback();
+}
+function confirmNo(){
+  const m=document.getElementById('confirm-modal');
+  if(m) m.style.display='none';
+  _confirmCallback=null;
+}
+
+function showQuoteHistory(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const versions=[...(q.revisions||[]),q];
+  document.getElementById('quote-history-list').innerHTML=versions.map((v,i)=>
+    '<div style="padding:10px 0;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:8px">'+
+    '<span><strong>v'+(v.version||i+1)+'</strong> · '+esc((v.savedAt||v.created||'').slice(0,10))+
+    ' · €'+Math.round(quoteAmount(v)).toLocaleString('en-IE')+'</span>'+
+    '<button class="btn btn-o btn-sm" onclick="viewQuoteVersion('+qid+','+(i===versions.length-1?'null':i)+')">View PDF</button></div>'
+  ).join('');
+  document.getElementById('quote-history-modal').style.display='flex';
+}
+function closeQuoteHistory(){document.getElementById('quote-history-modal').style.display='none';}
+function viewQuoteVersion(qid,index){
+  closeQuoteHistory();
+  genPDF(qid,null,index);
+}
+
+// ─── DOCUMENT VIEWER ─────────────────────────────────────────────────────────
+// Shared by genPDF and genInvoice — see the HTML comment above #doc-viewer.
+function showDocViewer(html){
+  document.getElementById('doc-viewer-frame').srcdoc=html;
+  document.getElementById('doc-viewer').style.display='flex';
+}
+function closeDocViewer(){
+  document.getElementById('doc-viewer').style.display='none';
+  document.getElementById('doc-viewer-frame').srcdoc='';
+}
+
+// ─── RENDER MODAL ────────────────────────────────────────────────────────────
+const MAX_RENDER_IMAGES=5;
+let _renderQid=null;
+let _pendingRenderDataUrls=[];
+function showRenderModal(qid){
+  _renderQid=qid;
+  _pendingRenderDataUrls=[];
+  document.getElementById('render-file-input').value='';
+  document.getElementById('render-file-label').innerHTML='📁 Click to choose images';
+  document.getElementById('render-go-btn').disabled=false;
+  document.getElementById('render-go-btn').textContent='📄 Generate PDF';
+  document.getElementById('render-modal').style.display='flex';
+}
+document.getElementById('render-file-input').addEventListener('change',function(){
+  const files=[...this.files].slice(0,MAX_RENDER_IMAGES);
+  if(!files.length) return;
+  if(this.files.length>MAX_RENDER_IMAGES) showToast(`⚠️ Only the first ${MAX_RENDER_IMAGES} images were used`,'#b45309');
+  document.getElementById('render-file-label').innerHTML='⏳ Loading preview...';
+  document.getElementById('render-go-btn').disabled=true;
+  Promise.all(files.map(f=>new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>resolve(e.target.result);
+    reader.onerror=()=>reject();
+    reader.readAsDataURL(f);
+  }))).then(urls=>{
+    _pendingRenderDataUrls=urls;
+    document.getElementById('render-file-label').innerHTML=
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:6px">'+
+      urls.map(u=>`<img src="${u}" style="width:56px;height:56px;object-fit:cover;border-radius:6px">`).join('')+
+      '</div><span style="font-size:12px;color:#374151">✅ '+urls.length+' image'+(urls.length>1?'s':'')+' selected</span>';
+    document.getElementById('render-go-btn').disabled=false;
+  }).catch(()=>{
+    _pendingRenderDataUrls=[];
+    document.getElementById('render-file-label').innerHTML='❌ Could not load one of the images. Try again.';
+    document.getElementById('render-go-btn').disabled=false;
+  });
+});
+function renderModalSkip(){
+  const qid=_renderQid;
+  _renderQid=null; _pendingRenderDataUrls=[];
+  document.getElementById('render-modal').style.display='none';
+  genPDF(qid,null);
+}
+function renderModalGo(){
+  const qid=_renderQid;
+  const dataUrls=_pendingRenderDataUrls;
+  _renderQid=null; _pendingRenderDataUrls=[];
+  document.getElementById('render-modal').style.display='none';
+  genPDF(qid,dataUrls.length?dataUrls:null);
+}
+
+// ─── INVOICES ─────────────────────────────────────────────────────────────────
+function renderInvoices(){
+  const filter=document.getElementById('inv-filter')?.value||'all';
+  document.getElementById('ist-total').textContent=invoices.length;
+  document.getElementById('ist-unpaid').textContent=invoices.filter(x=>x.status==='Unpaid').length;
+  document.getElementById('ist-partial').textContent=invoices.filter(x=>x.status==='Partially Paid').length;
+  document.getElementById('ist-paid').textContent=invoices.filter(x=>x.status==='Paid').length;
+
+  let list=invoices;
+  if(filter==='accountant') list=invoices.filter(x=>x.sentToAccountant);
+  else if(filter!=='all') list=invoices.filter(x=>x.status===filter);
+
+  const el=document.getElementById('inv-list');
+  if(!list.length){
+    el.innerHTML='<p style="color:var(--gray);text-align:center;padding:24px">No invoices found.</p>';
+    return;
+  }
+
+  const statusBadge=(s)=>{
+    const map={'Unpaid':'background:#fee2e2;color:#991b1b','Partially Paid':'background:#fef3c7;color:#92400e','Paid':'background:#d1fae5;color:#065f46'};
+    return `<span class="badge" style="${map[s]||''}">${s}</span>`;
+  };
+
+  el.innerHTML='<div class="tscroll"><table><thead><tr><th>Invoice #</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Accountant</th><th></th></tr></thead><tbody>'+
+    list.map(inv=>{
+      const dateStr=(inv.date||'').slice(0,10);
+      const total=Number(inv.total)||0;
+      const paidAmount=Number(inv.paidAmount)||0;
+      const acct=inv.sentToAccountant
+        ?'<span class="badge b-auto">✓ Sent</span>'
+        :'<span style="color:var(--gray);font-size:12px">Not sent</span>';
+      return `<tr>
+        <td><strong>${esc(inv.invNum)}</strong></td>
+        <td>${esc(inv.customerName)}</td>
+        <td style="font-weight:700">
+          €${total.toFixed(2)}
+          ${inv.status==='Partially Paid'?`<div style="font-size:11px;color:#92400e;margin-top:2px">Paid: €${paidAmount.toFixed(2)} · Outstanding: €${(total-paidAmount).toFixed(2)}</div>`:''}
+          ${inv.status==='Paid'?'<div style="font-size:11px;color:#065f46;margin-top:2px">Fully paid ✓</div>':''}
+        </td>
+        <td>${statusBadge(inv.status)}</td>
+        <td style="color:var(--gray)">${dateStr}</td>
+        <td>${acct}</td>
+        <td style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-g btn-sm" onclick="genInvoice(${inv.qid},'${inv.pkgKey}')">📄 View</button>
+          <select class="fc" style="font-size:11px;padding:4px 6px;width:auto" onchange="markInvoice('${inv.id}',this.value)">
+            <option ${inv.status==='Unpaid'?'selected':''}>Unpaid</option>
+            <option ${inv.status==='Partially Paid'?'selected':''}>Partially Paid</option>
+            <option ${inv.status==='Paid'?'selected':''}>Paid</option>
+          </select>
+          <button class="btn btn-sm" style="${inv.sentToAccountant?'background:#d1fae5;color:#065f46':'background:#f3f4f6;color:#374151'};border:1px solid var(--grayM)" onclick="toggleAccountant('${inv.id}')">
+            ${inv.sentToAccountant?'✓ Accountant':'→ Accountant'}
+          </button>
+          <button class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca" onclick="deleteInvoice('${inv.id}')">🗑 Delete</button>
+        </td>
+      </tr>`;
+    }).join('')+
+  '</tbody></table></div>';
+}
+
+function markQuoteStatus(id, status){
+  const q=quotes.find(x=>x.id===id); if(!q) return;
+  q.status=status;
+  saveAll();
+  renderQuotes();
+  renderDash();
+}
+function markInvoice(id, status){
+  const inv=invoices.find(x=>x.id===id); if(!inv) return;
+  if(status==='Partially Paid'){
+    const amt=prompt('Amount received so far (€):', inv.paidAmount||'');
+    if(amt===null) return; // cancelled
+    const parsed=parseFloat(amt);
+    if(isNaN(parsed)||parsed<0){alert('Please enter a valid amount.');return;}
+    inv.paidAmount=parsed;
+  } else {
+    inv.paidAmount=status==='Paid'?(Number(inv.total)||0):0;
+  }
+  inv.status=status;
+  saveAll();
+  renderInvoices();
+}
+
+function toggleAccountant(id){
+  const inv=invoices.find(x=>x.id===id); if(!inv) return;
+  inv.sentToAccountant=!inv.sentToAccountant;
+  saveAll();
+  renderInvoices();
+}
+
+function deleteInvoice(id){
+  const inv=invoices.find(x=>x.id===id); if(!inv) return;
+  if(!confirm('Delete invoice '+(inv.invNum||'')+' for '+(inv.customerName||'this customer')+'? This cannot be undone.')) return;
+  invoices=invoices.filter(x=>x.id!==id);
+  saveAll();
+  renderInvoices();
+  showToast('Invoice deleted','#374151');
+}
+
+
+// ─── FIREBASE ────────────────────────────────────────────────────────────────
+const fbConfig = {}; // test backend only
+firebase.initializeApp(fbConfig);
+const fbAuth = firebase.auth();
+const fbDb   = firebase.firestore();
+let fbUser   = null;
+let fbSaving = false;
+
+function fbSetStatus(msg, color){
+  const info = document.getElementById('fb-info');
+  info.style.display = 'block';
+  info.style.color = color || 'rgba(255,255,255,.5)';
+  info.textContent = msg;
+}
+
+function fbSignIn(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  fbAuth.signInWithPopup(provider).catch(e => fbSetStatus('❌ Sign-in failed','#f87171'));
+}
+
+function fbSignOut(){
+  fbAuth.signOut();
+}
+
+// Listen for auth state — fires on every page load if already signed in
+document.querySelector('.main').inert=true;
+fbAuth.onAuthStateChanged(async user => {
+  const btn  = document.getElementById('fb-btn');
+  const info = document.getElementById('fb-info');
+  if(user){
+    fbUser = user;
+    btn.textContent  = '✅ ' + user.displayName.split(' ')[0];
+    btn.style.background = 'rgba(16,185,129,.2)';
+    btn.style.borderColor = '#10b981';
+    btn.onclick = fbSignOut;
+    fbSetStatus('Loading your data...','rgba(255,255,255,.5)');
+    await fbLoad();
+  } else {
+    fbUser = null;
+    fbReady=false; fbConflict=false; fbBaseVersion=null; fbBaseLegacyUpdatedAt=null; fbRemoteData=null;
+    document.querySelector('.main').inert=false;
+    btn.textContent = '🔑 Sign in with Google';
+    btn.style.background = 'rgba(255,255,255,.08)';
+    btn.style.borderColor = 'rgba(255,255,255,.2)';
+    btn.onclick = fbSignIn;
+    fbSetStatus('','rgba(255,255,255,.5)');
+    info.style.display = 'none';
+  }
+});
+
+// Each cloud write checks the version in a Firestore transaction. The local
+// copy stays available when another device has saved in the meantime.
+let fbReady=false, fbConflict=false, fbBaseVersion=null, fbBaseLegacyUpdatedAt=null, fbRemoteData=null;
+let fbSaveQueue=Promise.resolve();
+function syncWarning(message, canLoadCloud=false){
+  const banner=document.getElementById('sync-warning');
+  banner.style.display='block';
+  banner.innerHTML='';
+  const p=document.createElement('div');p.textContent=message;banner.appendChild(p);
+  const backup=document.createElement('button');
+  backup.className='btn btn-o btn-sm';backup.style.marginTop='10px';
+  backup.textContent='⬇️ Download local backup';backup.onclick=downloadBackup;
+  banner.appendChild(backup);
+  const retry=document.createElement('button');
+  retry.className='btn btn-o btn-sm';retry.style.margin='10px 0 0 8px';
+  retry.textContent='Retry cloud save';retry.onclick=retryCloudSave;
+  banner.appendChild(retry);
+  if(canLoadCloud){
+    const loadButton=document.createElement('button');
+    loadButton.className='btn btn-o btn-sm';loadButton.style.margin='10px 0 0 8px';
+    loadButton.textContent='Download backup and use cloud copy';
+    loadButton.onclick=useCloudCopy;banner.appendChild(loadButton);
+  }
+  fbSetStatus('⚠️ Cloud sync stopped','#f87171');
+}
+async function applyCloud(data){
+  customers=data.customers||[];
+  quotes=data.quotes||[];
+  invoices=data.invoices||[];
+  ST=Object.assign({},ST,data.settings||{});
+  quoteCounter=Math.max(Number(data.quoteCounter)||0,0,...quotes.map(q=>Number(q.num)||0));
+  invoiceCounter=Number(data.invoiceCounter)||invoiceCounter;
+  invoiceNums=data.invoiceNums||{};
+  if(ST.logo) save('logo',ST.logo);
+  saveLocal();
+  save('lastSyncDigest',await datasetDigest(localDataset()));
+  const active=document.querySelector('.scr.on');
+  if(active)goTo(active.id.replace('scr-',''));
+}
+async function retryCloudSave(){
+  if(!fbUser)return;
+  try{
+    const doc=await fbDb.collection('users').doc(fbUser.uid).get();
+    const remoteVersion=Number(doc.data()?.version)||0;
+    if(remoteVersion!==fbBaseVersion){
+      fbRemoteData=doc.data()||null;
+      fbConflict=true;
+      syncWarning('The cloud has newer changes. Your local work is safe here. Download a backup before choosing the cloud copy.',!!fbRemoteData);
+      return;
+    }
+    fbConflict=false;fbReady=true;
+    if(await fbSave())document.getElementById('sync-warning').style.display='none';
+  }catch(e){
+    console.error(e);
+    syncWarning('Could not reach the cloud. Your changes remain on this device. Retry when connected.',!!fbRemoteData);
+  }
+}
+async function useCloudCopy(){
+  downloadBackup();
+  if(!fbUser)return;
+  try{
+    const doc=await fbDb.collection('users').doc(fbUser.uid).get();
+    if(!doc.exists)throw new Error('Cloud copy missing');
+    fbRemoteData=doc.data();
+    await applyCloud(fbRemoteData);
+    fbConflict=false;
+    fbBaseVersion=Number(fbRemoteData.version)||0;
+    fbBaseLegacyUpdatedAt=fbRemoteData.updatedAt?.toMillis?.()||null;
+    document.getElementById('sync-warning').style.display='none';
+    fbSetStatus('☁️ Synced cloud copy','rgba(255,255,255,.5)');
+  }catch(e){
+    console.error(e);
+    syncWarning('Could not load the latest cloud copy. Your local backup was downloaded; try again when connected.',true);
+  }
+}
+async function fbLoad(){
+  if(!fbUser)return;
+  const uid=fbUser.uid;
+  try{
+    const doc=await fbDb.collection('users').doc(uid).get();
+    if(!fbUser || fbUser.uid!==uid)return;
+    const data=doc.exists?doc.data():null;
+    const local=localDataset();
+    const previousDigest=load('lastSyncDigest');
+    const localChanged=previousDigest!==null
+      ?(await datasetDigest(local))!==previousDigest
+      :!!(local.quotes.length||local.customers.length||local.invoices.length||load('settings')!==null||load('logo')!==null||local.quoteCounter||local.invoiceCounter);
+    if(data){
+      fbRemoteData=data;
+      fbBaseVersion=Number(data.version)||0;
+      fbBaseLegacyUpdatedAt=data.updatedAt?.toMillis?.()||null;
+      const remote={customers:data.customers||[],quotes:data.quotes||[],
+        invoices:data.invoices||[],settings:Object.assign({},ST,data.settings||{}),
+        quoteCounter:Math.max(Number(data.quoteCounter)||0,0,...(data.quotes||[]).map(q=>Number(q.num)||0)),
+        invoiceCounter:Number(data.invoiceCounter)||invoiceCounter,invoiceNums:data.invoiceNums||{}};
+      if(localChanged && JSON.stringify(local)!==JSON.stringify(remote)){
+        fbConflict=true;
+        syncWarning('Local data differs from the cloud. Nothing has been overwritten. Download a backup, then choose the cloud copy to continue.',true);
+      }else{
+        await applyCloud(data);
+        fbSetStatus('☁️ Synced '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+      }
+    }else{
+      fbBaseVersion=0;
+      fbBaseLegacyUpdatedAt=null;
+      fbReady=true;
+      await fbSave();
+    }
+    fbReady=true;
+  }catch(e){
+    console.error(e);
+    syncWarning('Could not load cloud data. Your local data is available; cloud saving is paused.');
+  }finally{
+    document.querySelector('.main').inert=false;
+  }
+}
+function fbSave(){
+  if(!fbUser)return Promise.resolve(false);
+  if(!fbReady || fbConflict){
+    syncWarning('Cloud saving is paused. Your changes are saved on this device. Download a backup and resolve the sync warning before continuing.',!!fbRemoteData);
+    return Promise.resolve(false);
+  }
+  // Capture this save before another UI action changes the in-memory arrays.
+  const payload=structuredClone(localDataset());
+  const uid=fbUser.uid;
+  fbSaveQueue=fbSaveQueue.catch(()=>{}).then(async()=>{
+    if(fbConflict || !fbUser || fbUser.uid!==uid)return false;
+    try{
+      const ref=fbDb.collection('users').doc(uid);
+      const nextVersion=await fbDb.runTransaction(async tx=>{
+        const current=await tx.get(ref);
+        const remoteVersion=Number(current.data()?.version)||0;
+        const legacyTime=current.data()?.updatedAt?.toMillis?.()||null;
+        if(remoteVersion!==fbBaseVersion || (remoteVersion===0 && legacyTime!==fbBaseLegacyUpdatedAt))
+          throw new Error('CLOUD_CONFLICT');
+        tx.set(ref,{...payload,version:remoteVersion+1,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        return remoteVersion+1;
+      });
+      fbBaseVersion=nextVersion;
+      save('lastSyncDigest',await datasetDigest(payload));
+      fbSetStatus('☁️ Saved '+new Date().toLocaleTimeString('en-IE',{hour:'2-digit',minute:'2-digit'}),'rgba(255,255,255,.5)');
+      return true;
+    }catch(e){
+      console.error(e);
+      fbConflict=true;
+      syncWarning(e.message==='CLOUD_CONFLICT'
+        ?'Another device changed the cloud data. Your changes remain on this device. Download a backup before loading the latest cloud copy.'
+        :'Cloud save failed. Your changes remain on this device. Download a backup and retry after checking your connection.',true);
+      return false;
+    }
+  });
+  return fbSaveQueue;
+}
+
+// Firebase save is called explicitly from saveQuote and saveAll
+
+
+// ─── EMAIL QUOTE ──────────────────────────────────────────────────────────────
+function emailQuote(qid){
+  const q=quotes.find(x=>x.id===qid); if(!q) return;
+  const c=customers.find(x=>x.id===q.cid)||{};
+  if(!c.email){alert('No email address saved for this customer. Please add one in the quote.');return;}
+
+  const firstName=(c.name||'').split(' ')[0]||'there';
+  const qNum='#'+String(q.num||q.id).padStart(4,'0')+' v'+(q.version||1);
+
+  // Work out active packages for subject
+  const pkgs=['Essential'];
+  if(q.prem?.on) pkgs.push('Premium');
+  if(q.pp?.on) pkgs.push('Premium Plus');
+
+  const subject=`Elite Kitchens — Kitchen Quote ${qNum}`;
+
+  const body=`Hi ${firstName},
+
+Thank you for getting in touch with Elite Kitchens. Please find attached your kitchen quote ${qNum}.
+
+I've put together ${pkgs.length>1?pkgs.length+' options':'a proposal'} based on our conversation — all details are outlined in the attached PDF.
+
+The quote is valid for 30 days. If you have any questions or would like to make any changes, please don't hesitate to get in touch.
+
+Looking forward to hearing from you.
+
+Kind regards,
+Thomas
+Elite Kitchens
+${ST.biz_phone} | ${ST.biz_email}`;
+
+  const gmailUrl='https://mail.google.com/mail/?view=cm'
+    +'&to='+encodeURIComponent(c.email)
+    +'&su='+encodeURIComponent(subject)
+    +'&body='+encodeURIComponent(body);
+
+  window.open(gmailUrl,'_blank');
+}
+
+function showToast(msg, color){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background=color||'#111827';
+  t.style.display='block';
+  t.style.opacity='1';
+  clearTimeout(window._toastTimer);
+  window._toastTimer=setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.style.display='none',300);},2500);
+}
+
+// Repaints the three drawer-type dropdowns' price labels from Settings, so
+// they can never drift from what's actually charged.
+function paintDrawerLabels(){
+  document.querySelectorAll('.opt-dr-cemux').forEach(o=>o.textContent='Cemux Soft-Close — €'+(ST.dr_cemux??60)+'/drawer');
+  document.querySelectorAll('.opt-dr-blum').forEach(o=>o.textContent='Blum Merivobox — €'+(ST.dr_blum??100)+'/drawer');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+paintDrawerLabels();
+goTo('dashboard');
+
+</script>
+</body>
+</html>
