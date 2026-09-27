@@ -695,8 +695,16 @@ function saveLocal(){
   save('invoices',invoices);save('quoteCounter',quoteCounter);
   save('invoiceCounter',invoiceCounter);save('invoiceNums',invoiceNums);
 }
+function datasetJSON(data){
+  // Firestore may return the same fields in a different order from localStorage.
+  // Sort object keys recursively; keep array order because it is meaningful.
+  return JSON.stringify(data,(key,value)=>
+    value && typeof value==='object' && !Array.isArray(value)
+      ?Object.fromEntries(Object.keys(value).sort().map(k=>[k,value[k]]))
+      :value);
+}
 async function datasetDigest(data){
-  const bytes=new TextEncoder().encode(JSON.stringify(data));
+  const bytes=new TextEncoder().encode(datasetJSON(data));
   const hash=await crypto.subtle.digest('SHA-256',bytes);
   return Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
 }
@@ -2528,7 +2536,7 @@ async function fbLoad(){
         invoices:data.invoices||[],settings:Object.assign({},ST,data.settings||{}),
         quoteCounter:Math.max(Number(data.quoteCounter)||0,0,...(data.quotes||[]).map(q=>Number(q.num)||0)),
         invoiceCounter:Number(data.invoiceCounter)||invoiceCounter,invoiceNums:data.invoiceNums||{}};
-      if(localChanged && JSON.stringify(local)!==JSON.stringify(remote)){
+      if(localChanged && datasetJSON(local)!==datasetJSON(remote)){
         fbConflict=true;
         syncWarning('Local data differs from the cloud. Nothing has been overwritten. Download a backup, then choose the cloud copy to continue.',true);
       }else{
