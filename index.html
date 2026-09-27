@@ -1314,10 +1314,10 @@ function renderQuotes(){
       const pkgs=(q.ess?.on!==false?'<span class="badge b-auto" style="margin-right:3px">Essential</span>':'')+(q.prem?.on?'<span class="badge b-opt" style="margin-right:3px">Premium</span>':'')+(q.pp?.on?'<span class="badge b-opt">Premium+</span>':'');
       const amt='€'+Math.round(quoteAmount(q)).toLocaleString('en-IE');
       const stCur=q.status||'Draft';
-      const stSelect=`<span class="badge b-${stCur.toLowerCase().replace(/\s+/g,'')}">${esc(stCur)}</span>`;
-      const sentButton=['Draft','Follow-Up'].includes(stCur)
-        ?`<button class="btn btn-o btn-sm" onclick="markQuoteStatus(${q.id},'Sent')">✓ Mark Sent</button>` : '';
-      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button>${q.revisions?.length?'<button class="btn btn-o btn-sm" onclick="showQuoteHistory('+q.id+')">🕘 History</button>':''}<button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button>${sentButton}<button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
+      const stSelect=['Draft','Follow-Up'].includes(stCur)
+        ?`<button class="btn btn-o btn-sm" style="white-space:nowrap" title="Mark quote as sent" onclick="markQuoteStatus(${q.id},'Sent')">✓ Mark Sent</button>`
+        :`<span class="badge b-${stCur.toLowerCase().replace(/\s+/g,'')}">${esc(stCur)}</span>`;
+      return `<tr><td><strong>#${String(q.num||q.id).padStart(4,'0')} v${q.version||1}</strong></td><td>${esc(c.name)}</td><td>${q.doors}</td><td>${pkgs}</td><td style="font-weight:700">${amt}</td><td>${stSelect}</td><td style="color:var(--gray)">${(q.created||'').slice(0,10)}</td><td style="display:flex;gap:6px"><button class="btn btn-o btn-sm" onclick="editQuote(${q.id})">✏️ Edit</button><button class="btn btn-g btn-sm" onclick="showRenderModal(${q.id})">📄 PDF</button>${q.revisions?.length?'<button class="btn btn-o btn-sm" onclick="showQuoteHistory('+q.id+')">🕘 History</button>':''}<button class="btn btn-o btn-sm" onclick="selectInvoicePkg(${q.id})">📋 Invoice</button><button class="btn btn-o btn-sm" onclick="emailQuote(${q.id})">📧 Email</button><button class="btn btn-r btn-sm" onclick="delQuote(${q.id})">🗑</button></td></tr>`;
     }).join('')+'</tbody></table></div>';
 }
 
