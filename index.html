@@ -514,8 +514,8 @@ tr:last-child td{border-bottom:none}
 <div id="confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.2)">
     <div style="font-size:22px;margin-bottom:8px">🗑️</div>
-    <div style="font-weight:700;font-size:16px;margin-bottom:6px">Delete Quote?</div>
-    <div style="color:#6b7280;font-size:13px;margin-bottom:20px">This cannot be undone.</div>
+    <div id="confirm-title" style="font-weight:700;font-size:16px;margin-bottom:6px">Delete Quote?</div>
+    <div id="confirm-detail" style="color:#6b7280;font-size:13px;margin-bottom:20px">This cannot be undone.</div>
     <div style="display:flex;gap:10px;justify-content:center">
       <button onclick="confirmYes()" style="background:#991b1b;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Yes, Delete</button>
       <button onclick="confirmNo()" style="background:#f3f4f6;color:#374151;border:none;padding:9px 22px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px">Cancel</button>
@@ -720,7 +720,29 @@ function saveAll(){saveLocal();return fbSave();}
 
 // ─── NAV ─────────────────────────────────────────────────────────────────────
 const SCREENS=['dashboard','customers','addcust','quotes','builder','settings','invoices'];
+let builderBaseline=null;
+function builderSnapshot(){
+  const fields=[...document.querySelectorAll('#scr-builder input, #scr-builder select, #scr-builder textarea')]
+    .map(el=>[el.id,el.name,el.className,el.type,el.value,el.checked]);
+  return JSON.stringify({fields,rates:curRates});
+}
+function builderHasUnsavedChanges(){
+  return builderBaseline!==null && builderSnapshot()!==builderBaseline;
+}
+function confirmLeaveBuilder(){
+  return !document.getElementById('scr-builder').classList.contains('on')
+    || !builderHasUnsavedChanges()
+    || confirm('You have unsaved changes to this quote. Leave without saving?');
+}
+window.addEventListener('beforeunload',event=>{
+  if(builderHasUnsavedChanges() && document.getElementById('scr-builder').classList.contains('on')){
+    event.preventDefault();
+    event.returnValue='';
+  }
+});
+
 function goTo(id){
+  if(id!=='builder' && !confirmLeaveBuilder())return false;
   SCREENS.forEach(s=>{
     document.getElementById('scr-'+s).classList.toggle('on', s===id);
     const n=document.getElementById('nav-'+s);
@@ -732,6 +754,7 @@ function goTo(id){
   if(id==='settings')  renderSettings();
   if(id==='invoices')   renderInvoices();
   if(id==='builder')   renderCatBtns();
+  return true;
 }
 
 // ─── SIDEBAR & BUTTON WIRING ─────────────────────────────────────────────────
@@ -797,11 +820,17 @@ function editCustomer(cid){
   goTo('addcust');
 }
 async function delCustomer(cid){
+  const linked=quotes.filter(q=>q.cid===cid);
+  const linkedInvoices=invoices.filter(inv=>inv.customerId===cid);
+  if(linked.length || linkedInvoices.length){
+    alert('This customer has '+linked.length+' linked quote(s) and '+linkedInvoices.length+' invoice(s). Delete those records first to keep your records connected.');
+    return;
+  }
   showConfirm(async()=>{
     customers=customers.filter(c=>c.id!==cid);
     await saveAll();
     renderCusts();
-  });
+  },'Delete Customer?');
 }
 function renderCusts(){
   const el=document.getElementById('cust-list');
@@ -821,6 +850,7 @@ function renderCusts(){
 
 // ─── QUOTE BUILDER ───────────────────────────────────────────────────────────
 function newQuote(custId){
+  if(!confirmLeaveBuilder())return;
   editQid=null; editCid=custId||null;
   curRates=currentRates();
   const rb=document.getElementById('rates-banner'); if(rb) rb.style.display='none';
@@ -888,6 +918,7 @@ function newQuote(custId){
   document.getElementById('q-name-suggest').innerHTML='';
   recalc();
   goTo('builder');
+  builderBaseline=builderSnapshot();
 }
 
 function renderNameSuggestions(){
@@ -1174,6 +1205,7 @@ function saveQuote(){
   else{if(!q.num){quoteCounter++;q.num=quoteCounter;}quotes.unshift(q);}
   editQid=q.id;
   saveLocal();
+  builderBaseline=builderSnapshot();
   document.getElementById('builder-title').textContent=quoteLabel(q);
   document.getElementById('builder-pdf-btn').style.display='';
   document.getElementById('builder-inv-btn').style.display='';
@@ -1192,6 +1224,7 @@ function saveQuote(){
 
 // ─── EDIT QUOTE ──────────────────────────────────────────────────────────────
 function editQuote(qid){
+  if(!confirmLeaveBuilder())return;
   const q=quotes.find(x=>x.id===qid); if(!q) return;
   const c=customers.find(x=>x.id===q.cid)||{};
   editQid=qid; editCid=q.cid;
@@ -1266,9 +1299,15 @@ function editQuote(qid){
   }
   recalc();
   goTo('builder');
+  builderBaseline=builderSnapshot();
 }
 
 async function delQuote(qid){
+  const linked=invoices.filter(inv=>inv.qid===qid || inv.quoteId===qid || String(inv.id||'').startsWith(qid+'_'));
+  if(linked.length){
+    alert('This quote has '+linked.length+' linked invoice(s). Delete those invoices first to keep your records connected.');
+    return;
+  }
   showConfirm(async()=>{
   quotes=quotes.filter(q=>q.id!==qid);
   await saveAll();
@@ -2188,8 +2227,10 @@ function doSave(){
 
 // ─── CONFIRM MODAL ───────────────────────────────────────────────────────────
 let _confirmCallback=null;
-function showConfirm(cb){
+function showConfirm(cb,title="Delete Quote?",detail="This cannot be undone."){
   _confirmCallback=cb;
+  document.getElementById("confirm-title").textContent=title;
+  document.getElementById("confirm-detail").textContent=detail;
   const m=document.getElementById('confirm-modal');
   if(m) m.style.display='flex';
 }
@@ -2662,4 +2703,3 @@ goTo('dashboard');
 </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
